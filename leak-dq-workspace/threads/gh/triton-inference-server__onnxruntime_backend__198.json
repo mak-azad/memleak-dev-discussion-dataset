@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "GPU memory leak with high load for ONNX model",
+ "author_login": "junwang-wish",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:25Z",
+ "final_url": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198",
+ "repo": "triton-inference-server/onnxruntime_backend",
+ "repo_language": "C++",
+ "number": 198,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-06-14T20:10:31Z",
+ "updated_at": "2023-06-22T22:56:56Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "junwang-wish",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-14T20:10:31Z",
+   "updated_utc": "2023-06-22T22:56:56Z",
+   "permalink": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198",
+   "body_markdown": "**Description**\r\nGPU memory leak with high load, GPU memory usage goes up and never come down when high load requests stop coming (memory never released)\r\n\r\n**Triton Information**\r\nWhat version of Triton are you using? \r\n\r\n23.02\r\n\r\nAre you using the Triton container or did you build it yourself?\r\n\r\nTriton container\r\n\r\n**To Reproduce**\r\nAny ONNX model under high load would result in monotonically increasing GPU memory usage\r\n\r\n**Expected behavior**\r\nWhen requests stop coming, GPU memory should be released\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1603411566,
+   "author_login": "kthui",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-06-20T19:41:34Z",
+   "updated_utc": "2023-06-20T19:41:34Z",
+   "permalink": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198#issuecomment-1603411566",
+   "body_markdown": "I wonder if the memory usage would come down if the model is unloaded (i.e. via the unload API).\r\n\r\ncc @tanmayv25 if the memory usage is expected."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1603411568,
+   "author_login": "junwang-wish",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-20T20:06:11Z",
+   "updated_utc": "2023-06-20T20:06:11Z",
+   "permalink": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198#issuecomment-1603411568",
+   "body_markdown": "Thx @kthui , so I don't want to unload the model, since it is used but on a unfrequent basis, ideally if a model is unused for a prolonged period of time (say 2 hours) the GPU memory would be freed"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1603411571,
+   "author_login": "tanmayv25",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-06-22T22:56:38Z",
+   "updated_utc": "2023-06-22T22:56:38Z",
+   "permalink": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198#issuecomment-1603411571",
+   "body_markdown": "@[junwang-wish](https://github.com/junwang-wish) which execution provider in ORT are you using? Are you using TRT or CUDA?\r\nIs your model having dynamic shaped inputs?\r\nI am transferring the issue to ORT backend team as it seems to be an issue with ORT."
+  }
+ ]
+}

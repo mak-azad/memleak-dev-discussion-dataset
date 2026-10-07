@@ -1,0 +1,123 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/P-H-C/phc-winner-argon2/issues/257",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory Leak",
+ "author_login": "ErikPartridge",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:37Z",
+ "final_url": "https://github.com/P-H-C/phc-winner-argon2/issues/257",
+ "repo": "P-H-C/phc-winner-argon2",
+ "repo_language": "C",
+ "number": 257,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-07-03T13:11:01Z",
+ "updated_at": "2018-07-12T22:22:31Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 7,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ErikPartridge",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-07-03T13:11:01Z",
+   "updated_utc": "2018-07-12T22:22:31Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257",
+   "body_markdown": "Having run the code through Valgrind and Facebook's Infer, seem to have come across a memory leak, where the value of `ctx.out` is not free'd in some circumstances.\r\n\r\nHere's the full output of running Infer over the problematic function.\r\n```cpp\r\nexternal/argon2/src/argon2.c:289: error: MEMORY_LEAK\r\n  memory dynamically allocated by call to `malloc()` at line 280, column 15 is not reachable after line 289, column 11.\r\nShowing all 17 steps of the trace\r\n\r\n\r\nexternal/argon2/src/argon2.c:249:1: start of procedure argon2_verify()\r\n247.   }\r\n248.   \r\n249. > int argon2_verify(const char *encoded, const void *pwd, const size_t pwdlen,\r\n250.                     argon2_type type) {\r\n251.   \r\n\r\nexternal/argon2/src/argon2.c:253:5: \r\n251.   \r\n252.       argon2_context ctx;\r\n253. >     uint8_t *desired_result = NULL;\r\n254.   \r\n255.       int ret = ARGON2_OK;\r\n\r\nexternal/argon2/src/argon2.c:255:5: \r\n253.       uint8_t *desired_result = NULL;\r\n254.   \r\n255. >     int ret = ARGON2_OK;\r\n256.   \r\n257.       size_t encoded_len;\r\n\r\nexternal/argon2/src/argon2.c:260:9: Taking false branch\r\n258.       uint32_t max_field_len;\r\n259.   \r\n260.       if (pwdlen > ARGON2_MAX_PWD_LENGTH) {\r\n               ^\r\n261.           return ARGON2_PWD_TOO_LONG;\r\n262.       }\r\n\r\nexternal/argon2/src/argon2.c:264:9: Taking false branch\r\n262.       }\r\n263.   \r\n264.       if (encoded == NULL) {\r\n               ^\r\n265.           return ARGON2_DECODING_FAIL;\r\n266.       }\r\n\r\nexternal/argon2/src/argon2.c:268:5: \r\n266.       }\r\n267.   \r\n268. >     encoded_len = strlen(encoded);\r\n269.       if (encoded_len > UINT32_MAX) {\r\n270.           return ARGON2_DECODING_FAIL;\r\n\r\nexternal/argon2/src/argon2.c:269:9: Taking false branch\r\n267.   \r\n268.       encoded_len = strlen(encoded);\r\n269.       if (encoded_len > UINT32_MAX) {\r\n               ^\r\n270.           return ARGON2_DECODING_FAIL;\r\n271.       }\r\n\r\nexternal/argon2/src/argon2.c:274:5: \r\n272.   \r\n273.       /* No field can be longer than the encoded length */\r\n274. >     max_field_len = (uint32_t)encoded_len;\r\n275.   \r\n276.       ctx.saltlen = max_field_len;\r\n\r\nexternal/argon2/src/argon2.c:276:5: \r\n274.       max_field_len = (uint32_t)encoded_len;\r\n275.   \r\n276. >     ctx.saltlen = max_field_len;\r\n277.       ctx.outlen = max_field_len;\r\n278.   \r\n\r\nexternal/argon2/src/argon2.c:277:5: \r\n275.   \r\n276.       ctx.saltlen = max_field_len;\r\n277. >     ctx.outlen = max_field_len;\r\n278.   \r\n279.       ctx.salt = malloc(ctx.saltlen);\r\n\r\nexternal/argon2/src/argon2.c:279:5: \r\n277.       ctx.outlen = max_field_len;\r\n278.   \r\n279. >     ctx.salt = malloc(ctx.saltlen);\r\n280.       ctx.out = malloc(ctx.outlen);\r\n281.       if (!ctx.salt || !ctx.out) {\r\n\r\nexternal/argon2/src/argon2.c:280:5: \r\n278.   \r\n279.       ctx.salt = malloc(ctx.saltlen);\r\n280. >     ctx.out = malloc(ctx.outlen);\r\n281.       if (!ctx.salt || !ctx.out) {\r\n282.           ret = ARGON2_MEMORY_ALLOCATION_ERROR;\r\n\r\nexternal/argon2/src/argon2.c:281:10: Taking false branch\r\n279.       ctx.salt = malloc(ctx.saltlen);\r\n280.       ctx.out = malloc(ctx.outlen);\r\n281.       if (!ctx.salt || !ctx.out) {\r\n                ^\r\n282.           ret = ARGON2_MEMORY_ALLOCATION_ERROR;\r\n283.           goto fail;\r\n\r\nexternal/argon2/src/argon2.c:281:23: Taking false branch\r\n279.       ctx.salt = malloc(ctx.saltlen);\r\n280.       ctx.out = malloc(ctx.outlen);\r\n281.       if (!ctx.salt || !ctx.out) {\r\n                             ^\r\n282.           ret = ARGON2_MEMORY_ALLOCATION_ERROR;\r\n283.           goto fail;\r\n\r\nexternal/argon2/src/argon2.c:286:5: \r\n284.       }\r\n285.   \r\n286. >     ctx.pwd = (uint8_t *)pwd;\r\n287.       ctx.pwdlen = (uint32_t)pwdlen;\r\n288.   \r\n\r\nexternal/argon2/src/argon2.c:287:5: \r\n285.   \r\n286.       ctx.pwd = (uint8_t *)pwd;\r\n287. >     ctx.pwdlen = (uint32_t)pwdlen;\r\n288.   \r\n289.       ret = decode_string(&ctx, encoded, type);\r\n\r\nexternal/argon2/src/argon2.c:289:5: Skipping decode_string(): empty list of specs\r\n287.       ctx.pwdlen = (uint32_t)pwdlen;\r\n288.   \r\n289.       ret = decode_string(&ctx, encoded, type);\r\n           ^\r\n290.       if (ret != ARGON2_OK) {\r\n291.           goto fail;\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 402156334,
+   "author_login": "WOnder93",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2018-07-03T13:25:39Z",
+   "updated_utc": "2018-07-03T13:25:39Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-402156334",
+   "body_markdown": "Are you sure this is not a false positive? `decode_string()` does not overwrite the value of ctx.out, as far as I can tell. It can overwrite the contents of the allocated memory, but it should be still reachable when the function returns."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 402157211,
+   "author_login": "ErikPartridge",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-07-03T13:28:31Z",
+   "updated_utc": "2018-07-03T13:28:31Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-402157211",
+   "body_markdown": "That's what I thought too, so I isolated the code best I could in Valgrind and ran it. The code running the function otherwise lost 0 bytes, but when that function was called, 7,680 bytes were lost, which makes me believe Infer was correct."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 402214094,
+   "author_login": "ErikPartridge",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-07-03T16:20:17Z",
+   "updated_utc": "2018-07-03T16:20:17Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-402214094",
+   "body_markdown": "Update: ran this through cppcheck as well, which agrees it's a memory leak."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 402443052,
+   "author_login": "WOnder93",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2018-07-04T10:51:10Z",
+   "updated_utc": "2018-07-04T10:51:10Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-402443052",
+   "body_markdown": "Hm, that's weird... when I run `echo test | valgrind ./argon2 saltsalt` (which calls `argon2_verify()` internally), I don't get any leak. Could you please post the exact code you ran under valgrind? You say you 'isolated the code', so I'm wondering what exactly that means."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 402554254,
+   "author_login": "ErikPartridge",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-07-04T20:25:12Z",
+   "updated_utc": "2018-07-04T20:25:12Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-402554254",
+   "body_markdown": "```cpp\r\n    const char *value = pwd.c_str();\r\n\r\n    //Get a salt from /dev/urandom\r\n    uint8_t salt[SALTLEN];\r\n    int fd = open(\"/dev/urandom\", O_RDONLY);\r\n    ssize_t size = read(fd, salt, sizeof salt);\r\n    if ( size != sizeof salt ) {\r\n        throw \"Could not generate salt\";\r\n    }\r\n    close(fd);\r\n\r\n    unsigned long pwdlen = strlen(value);\r\n    char encoded[97];\r\n\r\n    argon2i_hash_encoded(T_COST, M_COST, PARALLELISM, value, pwdlen, salt, SALTLEN, HASHLEN, encoded, 97);\r\n    std::string res = encode;\r\n    \r\n    return res;\r\n```\r\n\r\nI tried to wrap it with as minimal code as possible, then separately analyzed that code without the argon2 code attached to ensure it was correct."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 404157149,
+   "author_login": "sneves",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2018-07-11T12:49:53Z",
+   "updated_utc": "2018-07-11T12:49:53Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-404157149",
+   "body_markdown": "Under which parameters is this reproducible? Does it happen when `PARALLELISM=1`?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 404669233,
+   "author_login": "technion",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2018-07-12T22:22:31Z",
+   "updated_utc": "2018-07-12T22:22:31Z",
+   "permalink": "https://github.com/P-H-C/phc-winner-argon2/issues/257#issuecomment-404669233",
+   "body_markdown": "I found a legitimate issue previously with Infer, but when I hit this this issue I eventually concluded it was an FP. I actually logged this with Infer:\r\n\r\nhttps://github.com/facebook/infer/issues/493\r\n\r\nThey appeared to agree, of course, there's room for something subtle to be hanging around.\r\n"
+  }
+ ]
+}

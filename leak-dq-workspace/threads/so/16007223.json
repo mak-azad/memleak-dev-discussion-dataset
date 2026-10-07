@@ -1,0 +1,52 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 16007223,
+ "url": "https://stackoverflow.com/questions/16007223/global-smart-pointer-is-not-cleaning-up-properly",
+ "title": "Global smart pointer is not cleaning up properly",
+ "tags": [
+  "c++",
+  "memory-leaks",
+  "c++11",
+  "shared-ptr",
+  "smart-pointers"
+ ],
+ "score": 2,
+ "view_count": 1956,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 16007447,
+ "created_utc": "2013-04-15T03:25:15Z",
+ "last_activity_utc": "2013-04-15T05:06:01Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1086958,
+ "author_display_name": "aiman09",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/16007223/global-smart-pointer-is-not-cleaning-up-properly",
+ "body_html": "<p>I have a c++ interface, and the derived class of that interface in one DLL, I am using the class in another process by including the interface header file, and importing a factory function that returns an object of the derived class (COM style):</p>\n\n<pre><code>MyInterface\n{\npublic:\n virtual ~MyInterface(){}\n virtual A() = 0;\n}\n\nMyDerivedClass : MyInterface\n{\n public:\n virtual ~MyDerivedClass (){...};\n A(){...};\n}\n\n__declspec(dllexport) MyInterface* getObject()\n{\n return (new MyDerivedClass());\n}\n</code></pre>\n\n<p>When I test in my DLL (unit testing), I do like this:</p>\n\n<pre><code>std::tr1::shared_ptr&lt;MyInterface&gt; MyInterfaceObj; //global\n\nfunc1() //initilize\n{\n std::tr1::shared_ptr&lt;MyInterface&gt; temp(getObject());\n MyInterfaceObj.swap(temp);\n}\n\nfunc2()\n{\n //use MyInterfaceObj;\n}\n</code></pre>\n\n<p>everything is OK, I use visual leak detector, no complains, and I can see that  MyDerivedClass destructor is called.</p>\n\n<p>however, when I do exactly the same thing in my process (which loads the DLL), MyDerivedClass destructor is never called, and VLD complains about memory leaks.</p>\n\n<p>BUT, if I declare everything inside func2() [in my process], everything works fine, no leaks and the destructor is called:</p>\n\n<pre><code>func2()\n{\n std::tr1::shared_ptr&lt;MyInterface&gt; MyInterfaceObj; // not global anymore\n std::tr1::shared_ptr&lt;MyInterface&gt; temp(getObject());\n MyInterfaceObj.swap(temp); //I know this is useless here, just wanted to have the same steps as before\n //use MyInterfaceObj;\n}\n</code></pre>\n\n<p>I need to have the first structure in my process (a global variable,  initialized by one function, then used inside a heart beat function). </p>\n\n<p>Any Idea why this happens ?!, I tried to make a function to release the memory (it has \"delete this\") and pass it to the smart pointer constructor, but it does not change anything.</p>\n\n<p>(using visual c++ 2008 sp1)</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 16007447,
+   "parent_id": 16007223,
+   "author_user_id": 5987,
+   "author_display_name": "Mark Ransom",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/16007447",
+   "score": 3,
+   "created_utc": "2013-04-15T03:57:51Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2013-04-15T03:57:51Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>The order of destruction of globals isn't guaranteed. In the case of your test code in the DLL it's obviously destroying the global before the leak detection occurs, but when you have it in the application it doesn't. It will still be destroyed before the application exits.</p>\n\n<p>When you have the variable inside a function rather than global, it will only exist within the scope of the function. It will be destroyed at the end of the function.</p>\n"
+  }
+ ]
+}

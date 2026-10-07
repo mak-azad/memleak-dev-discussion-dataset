@@ -1,0 +1,91 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/alliedmodders/sourcemod/issues/2571",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug]: Heap corruption / deterministic `free(): invalid pointer` crash in PlayerManager destructor on shutdown (SDK2013 engine target)",
+ "author_login": "stive101",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:43Z",
+ "final_url": "https://github.com/alliedmodders/sourcemod/issues/2571",
+ "repo": "alliedmodders/sourcemod",
+ "repo_language": "C++",
+ "number": 2571,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-13T14:52:08Z",
+ "updated_at": "2026-09-15T04:45:01Z",
+ "closed_at": null,
+ "labels": [
+  "Bug"
+ ],
+ "comments_reported": 4,
+ "query_buckets": [
+  "762",
+  "763",
+  "459"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "stive101",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-13T14:52:08Z",
+   "updated_utc": "2026-09-15T04:45:01Z",
+   "permalink": "https://github.com/alliedmodders/sourcemod/issues/2571",
+   "body_markdown": "### Prerequisites\n\n- [x] I have checked that my issue doesn't exist yet in the [issue tracker](https://github.com/alliedmodders/sourcemod/issues)\n\n### Operating System and Version\n\nUbuntu 24\n\n### Game / AppID and Version\n\nSource SDK Multiplayer\n\n### SourceMod Version\n\nNewest stable\n\n### Metamod:Source Version\n\nNewest Stable\n\n### Version Verification\n\n- [x] I have updated SourceMod to the [latest version](https://www.sourcemod.net/downloads.php) and the issue persists\n- [x] I have updated SourceMod to the [latest snapshot](https://www.sourcemod.net/downloads.php?branch=dev) and the issue persists\n- [x] I have updated Metamod:Source to the [latest snapshot](https://sourcemm.net/downloads.php?branch=dev) and the issue persists\n\n### Updated SourceMod Version\n\n1.12 - build 7253\n\n### Updated Metamod:Source Version\n\n.12 - build 1226:\n\n### Description\n\n## SourceMod Version\n1.12.0.7253 (stock build, `sourcemod.2.sdk2013.so`)\n\n## Description of the problem\nOn every clean server shutdown/restart (`quit`, `+restart`), the server deterministically crashes with:\n\nfree(): invalid pointer\n\n### Steps to Reproduce\n\nThis happens even with **zero third-party plugins loaded** (clean SourceMod install, only Core) and **zero players connected** at the time of shutdown. Reproduced with `MALLOC_CHECK_=3` set, which confirms this is a genuine invalid/corrupted heap pointer, not a random race.\n\n## Backtrace (gdb, no debug symbols but resolved dynamic symbols)\n\n#0 abort () from libc.so.6\n#1 ?? () from libc.so.6\n#2 ?? () from libc.so.6\n#3 ?? () from libc.so.6\n#4 free () from libc.so.6\n#5 operator delete(void*) () from libstdc++.so.6\n#6 operator delete () from libstdc++.so.6\n#7 PlayerManager::~PlayerManager () from sourcemod.2.sdk2013.so\n#8 __cxa_finalize () from libc.so.6\n#9 __do_global_dtors_aux () from sourcemod.2.sdk2013.so\n...\n#19 UnloadInterface_MMS () from sourcemod_mm_i486.so\n#20 Unloader::ReadyToUnload(int) () from metamod.2.sdk2013.so\n...\n#29 SV_ShutdownGameDLL () from engine_srv.so\n\nThe crash occurs on the **second** `delete[]` call inside `PlayerManager::~PlayerManager()` during the global destructor chain triggered by `dlclose()` on module unload.\n\n## Suspected root cause\nThis looks structurally identical to the historically fixed issue #1107 (unchecked `-1` return of `engine->GetPlayerUserId()` writing out of bounds into `m_UserIdLookUp`, corrupting the heap chunk header, with the crash surfacing much later at `free()`).\n\nThat specific instance (in `InvalidatePlayer()`) was fixed in commit 8c380e4 (Oct 2019). However, the **same unchecked pattern still exists** in `PlayerManager::OnClientConnect()`:\n\n```cpp\nm_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;\n```\n\nNo bounds/`-1` check is performed here, same as the originally reported bug. Given this reproduces 100% deterministically on a custom SDK2013-based mod (non-standard edict/userid handling), it's plausible this specific engine target hits the `-1` edge case reliably where stock games rarely do.\n\n## Suggested fix\nApply the same guard as in the #1107 fix:\n```cpp\nint userid = engine->GetPlayerUserId(pEntity);\nif (userid >= 0 && userid <= USHRT_MAX)\n{\n    m_UserIdLookUp[userid] = client;\n}\n```\n\n## Environment\n- Engine target: SDK2013 (custom mod, \"sgm_beta\")\n- OS: Linux (i386/x86 32-bit binaries)\n- Reproducible on every shutdown, independent of player count/session activity\n\n### Relevant Log Output\n\n```shell\n\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5654205457,
+   "author_login": "psychonic",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-13T15:29:22Z",
+   "updated_utc": "2026-09-13T15:29:22Z",
+   "permalink": "https://github.com/alliedmodders/sourcemod/issues/2571#issuecomment-5654205457",
+   "body_markdown": "The suggested change seems fine as a good defensive check, but it may or may not actually fix the issue. The suggested root cause is just speculative, and the part about edict and userid handling doesn't make sense, as mods don't have control over that. It's in the engine"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5654592414,
+   "author_login": "stive101",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-13T16:39:32Z",
+   "updated_utc": "2026-09-13T16:39:42Z",
+   "permalink": "https://github.com/alliedmodders/sourcemod/issues/2571#issuecomment-5654592414",
+   "body_markdown": "yeah its just speculative but the only hangup i found ;/"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5673959615,
+   "author_login": "Kenzzer",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-15T02:55:01Z",
+   "updated_utc": "2026-09-15T02:55:01Z",
+   "permalink": "https://github.com/alliedmodders/sourcemod/issues/2571#issuecomment-5673959615",
+   "body_markdown": "I'm essentially going to repeat what was already said, but here goes.\n\nWhile userid being potentially -1 made sense in the context of #1107 I don't see it here.\n\nOne has to essentially showcase the engine has not assigned a user id to the edict **it provides** under `IServerGameClients::ClientConnect`. It's safe to say that regardless this should be guarded against, but I don't believe this is the source of your specific issue."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5674862713,
+   "author_login": "stive101",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-15T04:45:01Z",
+   "updated_utc": "2026-09-15T04:45:01Z",
+   "permalink": "https://github.com/alliedmodders/sourcemod/issues/2571#issuecomment-5674862713",
+   "body_markdown": "\"I think one of the issues is that the mod I play has a cure-time fix where a fake player joins while the server is starting up and leaves afterward.\nMaybe the join happens too early during the startup process, and when the fake player leaves, it produces the -1.\""
+  }
+ ]
+}

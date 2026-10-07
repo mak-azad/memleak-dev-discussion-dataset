@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ZahiMATA/42_Cube3d/issues/16",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Fd leak",
+ "author_login": "CSharpCpp",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:54Z",
+ "final_url": "https://github.com/ZahiMATA/42_Cube3d/issues/16",
+ "repo": "ZahiMATA/42_Cube3d",
+ "repo_language": "C",
+ "number": 16,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-12-02T22:12:34Z",
+ "updated_at": "2025-12-02T22:12:34Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "CSharpCpp",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-12-02T22:12:34Z",
+   "updated_utc": "2025-12-02T22:12:34Z",
+   "permalink": "https://github.com/ZahiMATA/42_Cube3d/issues/16",
+   "body_markdown": "FILE DESCRIPTORS: 4 open (3 std) at exit.\nSi la texture n'existe pas NO ./test_files/textures/fn1.xpm"
+  }
+ ]
+}

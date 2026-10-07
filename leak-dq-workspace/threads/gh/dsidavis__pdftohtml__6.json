@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/dsidavis/pdftohtml/issues/6",
+ "passes": [
+  "main"
+ ],
+ "title": "alloc-dealloc-mismatch-HtmlString-~HtmlString",
+ "author_login": "Aurorainfinity",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:55Z",
+ "final_url": "https://github.com/dsidavis/pdftohtml/issues/6",
+ "repo": "dsidavis/pdftohtml",
+ "repo_language": "C++",
+ "number": 6,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-07-10T04:27:14Z",
+ "updated_at": "2020-07-10T04:27:14Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Aurorainfinity",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-07-10T04:27:14Z",
+   "updated_utc": "2020-07-10T04:27:14Z",
+   "permalink": "https://github.com/dsidavis/pdftohtml/issues/6",
+   "body_markdown": "$./pdftohtml 03-alloc-dealloc-mismatch-HtmlString-~HtmlString\r\n\r\n\t==126277==ERROR: AddressSanitizer: alloc-dealloc-mismatch (malloc vs operator delete) on 0x606000008420\r\n\t    #0 0x7f795792cb2a in operator delete(void*) (/usr/lib/x86_64-linux-gnu/libasan.so.2+0x99b2a)\r\n\t    #1 0x40380b in HtmlString::~HtmlString() /home/test/pdftohtml_tmp/src/HtmlOutputDev.cc:152\r\n\t    #2 0x408206 in HtmlPage::coalesce() /home/test/pdftohtml_tmp/src/HtmlOutputDev.cc:672\r\n\t    #3 0x40d943 in HtmlOutputDev::endPage() /home/test/pdftohtml_tmp/src/HtmlOutputDev.cc:1458\r\n\t    #4 0x471ab5 in Gfx::~Gfx() /home/test/pdftohtml_tmp/xpdf/Gfx.cc:509\r\n\t    #5 0x43ebe5 in Page::displaySlice(OutputDev*, double, double, int, int, int, int, int, int, int, Links*, Catalog*, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/Page.cc:347\r\n\t    #6 0x43e1ad in Page::display(OutputDev*, double, double, int, int, int, Links*, Catalog*, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/Page.cc:223\r\n\t    #7 0x43fa41 in PDFDoc::displayPage(OutputDev*, int, double, double, int, int, int, int, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/PDFDoc.cc:327\r\n\t    #8 0x43fb1c in PDFDoc::displayPages(OutputDev*, int, int, double, double, int, int, int, int, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/PDFDoc.cc:343\r\n\t    #9 0x41ce0a in main /home/test/pdftohtml_tmp/src/pdftohtml.cc:300\r\n\t    #10 0x7f7956c4883f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)\r\n\t    #11 0x4028a8 in _start (/home/test/pdftohtml_tmp/src/pdftohtml+0x4028a8)\r\n\r\n\t0x606000008420 is located 0 bytes inside of 64-byte region [0x606000008420,0x606000008460)\r\n\tallocated by thread T0 here:\r\n\t    #0 0x7f795792b602 in malloc (/usr/lib/x86_64-linux-gnu/libasan.so.2+0x98602)\r\n\t    #1 0x4a7c4d in grealloc (/home/test/pdftohtml_tmp/src/pdftohtml+0x4a7c4d)\r\n\t    #2 0x403a6b in HtmlString::addChar(GfxState*, double, double, double, double, unsigned int) /home/test/pdftohtml_tmp/src/HtmlOutputDev.cc:167\r\n\t    #3 0x405646 in HtmlPage::addChar(GfxState*, double, double, double, double, double, double, unsigned int*, int) /home/test/pdftohtml_tmp/src/HtmlOutputDev.cc:361\r\n\t    #4 0x40df16 in HtmlOutputDev::drawChar(GfxState*, double, double, double, double, double, double, unsigned int, int, unsigned int*, int) /home/test/pdftohtml_tmp/src/HtmlOutputDev.cc:1513\r\n\t    #5 0x47ef30 in Gfx::doShowText(GString*) /home/test/pdftohtml_tmp/xpdf/Gfx.cc:2823\r\n\t    #6 0x47df96 in Gfx::opShowSpaceText(Object*, int) /home/test/pdftohtml_tmp/xpdf/Gfx.cc:2681\r\n\t    #7 0x47244c in Gfx::execOp(Object*, Object*, int) /home/test/pdftohtml_tmp/xpdf/Gfx.cc:676\r\n\t    #8 0x471e7a in Gfx::go(int) /home/test/pdftohtml_tmp/xpdf/Gfx.cc:566\r\n\t    #9 0x471c5e in Gfx::display(Object*, int) /home/test/pdftohtml_tmp/xpdf/Gfx.cc:538\r\n\t    #10 0x43e9e1 in Page::displaySlice(OutputDev*, double, double, int, int, int, int, int, int, int, Links*, Catalog*, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/Page.cc:317\r\n\t    #11 0x43e1ad in Page::display(OutputDev*, double, double, int, int, int, Links*, Catalog*, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/Page.cc:223\r\n\t    #12 0x43fa41 in PDFDoc::displayPage(OutputDev*, int, double, double, int, int, int, int, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/PDFDoc.cc:327\r\n\t    #13 0x43fb1c in PDFDoc::displayPages(OutputDev*, int, int, double, double, int, int, int, int, int (*)(void*), void*) /home/test/pdftohtml_tmp/xpdf/PDFDoc.cc:343\r\n\t    #14 0x41ce0a in main /home/test/pdftohtml_tmp/src/pdftohtml.cc:300\r\n\t    #15 0x7f7956c4883f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)\r\n\r\n\tSUMMARY: AddressSanitizer: alloc-dealloc-mismatch ??:0 operator delete(void*)\r\n\t==126277==HINT: if you don't care about these warnings you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0\r\n\t==126277==ABORTING\r\n\r\nref:https://github.com/Aurorainfinity/Poc/tree/master/pdftohtml\r\n[03-alloc-dealloc-mismatch-HtmlString-~HtmlString.pdf](https://github.com/dsidavis/pdftohtml/files/4900776/03-alloc-dealloc-mismatch-HtmlString-.HtmlString.pdf)\r\n"
+  }
+ ]
+}

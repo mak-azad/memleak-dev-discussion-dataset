@@ -1,0 +1,69 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 12313405,
+ "url": "https://stackoverflow.com/questions/12313405/garbage-collection-in-c11",
+ "title": "Garbage Collection in C++11",
+ "tags": [
+  "c++",
+  "visual-studio-2010",
+  "visual-c++",
+  "c++11",
+  "garbage-collection"
+ ],
+ "score": 26,
+ "view_count": 13113,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 12314089,
+ "created_utc": "2012-09-07T07:09:42Z",
+ "last_activity_utc": "2013-02-01T22:14:25Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1224455,
+ "author_display_name": "Adam Reed",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/12313405/garbage-collection-in-c11",
+ "body_html": "<p>I have been looking through and playing with different features of C++11, specifically in Visual Studio 2010.</p>\n\n<p>One of the things mentioned is <a href=\"http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2670.htm\">minimal garbage collection</a>:</p>\n\n<p>According to this <a href=\"http://blogs.msdn.com/b/vcblog/archive/2011/09/12/10209291.aspx\">blog post</a>, VC10 supports this feature.</p>\n\n<blockquote>\n  <p>My tests show that the destructor is not called on objects that are lost, so I am not sure as to whether their memory location has been freed or if they are leaking.</p>\n</blockquote>\n\n<p>I have no intention of depending on it, by any means, but couldn't find a straight, definitive answer on its behavior.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 12314089,
+   "parent_id": 12313405,
+   "author_user_id": 224671,
+   "author_display_name": "kennytm",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/12314089",
+   "score": 37,
+   "created_utc": "2012-09-07T08:02:18Z",
+   "last_edit_utc": "2012-09-07T08:33:03Z",
+   "last_activity_utc": "2012-09-07T08:33:03Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Minimal GC support (n2670) only means functions like <a href=\"http://msdn.microsoft.com/en-us/library/ee410598.aspx\"><code>std::declare_reachable</code></a> are included, and define what is the meaning of a \"safely-derived pointer\", so making certain operations like XOR-ing pointer values becomes undefined behavior and the GC don't need to worry about it. See also <a href=\"http://www.stroustrup.com/C++11FAQ.html#gc-abi\">Bjarne Stroustrup's C++11 FAQ on the GC ABI</a>, and <a href=\"http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2585.pdf\">n2585: Minimal Support for Garbage\nCollection and Reachability-Based Leak Detection</a>.</p>\n\n<p>The proposal allows a GC to be implemented within C++11's framework. But the proposal itself does not mean the implementation needs to support GC. Some library e.g. libc++ simply implement the library functions as no-op. </p>\n\n<p>I'm pretty sure, at this point, the memory in your case is just leaked away. But notice that the destructor is indeed not required to run when GC happens. Assuming \"§3.8 Object lifetime\" also supplies to GC-ed pointers, we have (§3.8/4):</p>\n\n<blockquote>\n  <p>... For an object of a class type with a non-trivial destructor, <strong>the program is not required to call the destructor explicitly before the storage which the object occupies is reused or released</strong>; however, if there is no explicit call to the destructor or if a delete-expression (5.3.5) is not used to release the storage, the destructor shall not be implicitly called and any program that depends on the side effects produced by the destructor has undefined behavior.</p>\n</blockquote>\n\n<p>So it is also possible the memory is already freed without the destructor called. In fact, earlier GC proposals such as <a href=\"http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2310.pdf\">n2310: Transparent Programmer-Directed Garbage Collection for C++</a> explicitly states that (n2310 §7)</p>\n\n<blockquote>\n  <p>When an object is recycled by the garbage collector, its destructor is not invoked (Of\n  course, explicit deletion always invokes destructors).</p>\n</blockquote>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 46447009,
+   "parent_id": 12314089,
+   "parent_type": "answer",
+   "author_user_id": 309334,
+   "author_display_name": "Eponymous",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/12313405/#comment46447009_12314089",
+   "score": 0,
+   "created_utc": "2015-03-17T20:09:42Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "As I understand it, 3.8/4 is a section talking about &quot;the program&quot;, not needing to call the destructor. In other words, we don&#39;t need to say <code>foo-&gt;~MyClass(); delete foo;</code>. In the GC case it would be reasonable to assume that GC running was like using the <code>delete</code> expression - in which case the GC is responsible for calling the destructor."
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 33321056,
+ "url": "https://stackoverflow.com/questions/33321056/diagnosing-memory-leaks-in-windows-with-umdh",
+ "title": "Diagnosing memory leaks in Windows with UMDH",
+ "tags": [
+  "c++",
+  "c",
+  "dll",
+  "memory-leaks",
+  "mariadb"
+ ],
+ "score": 0,
+ "view_count": 419,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2015-10-24T17:17:29Z",
+ "last_activity_utc": "2015-10-26T01:57:42Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 4670926,
+ "author_display_name": "AirCal86",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/33321056/diagnosing-memory-leaks-in-windows-with-umdh",
+ "body_html": "<p>As a pre-req: I am fairly new to C++ / C</p>\n\n<p>I work with a server side C++ application that recently had a major memory leak. I was able to diagnose and subsequently fix the memory leak with the help of UMDH. The leak was in one of the primary DLLs that is written in C. After correcting this, I started to review other potential leaks that UMDH had reported. The next biggest reported leak appeared to be coming from the Maria DB connector library -> to interact with a SQL DB, we load the Maria DB connector library using LoadLibraryA. This is what one of the call stacks looked like once we got into the DLL:</p>\n\n<pre><code>libmariadb!_heap_alloc_base+0000005D (f:\\dd\\vctools\\crt_bld\\self_64_amd64\\crt\\src\\malloc.c, 55)\nlibmariadb!_heap_alloc_dbg_impl+0000028D (f:\\dd\\vctools\\crt_bld\\self_64_amd64\\crt\\src\\dbgheap.c, 431)\nlibmariadb!_nh_malloc_dbg_impl+00000039 (f:\\dd\\vctools\\crt_bld\\self_64_amd64\\crt\\src\\dbgheap.c, 239)\nlibmariadb!_nh_malloc_dbg+00000049 (f:\\dd\\vctools\\crt_bld\\self_64_amd64\\crt\\src\\dbgheap.c, 302)\nlibmariadb!malloc+0000002A (f:\\dd\\vctools\\crt_bld\\self_64_amd64\\crt\\src\\dbgmalloc.c, 56)\nlibmariadb!my_malloc+0000009A (c:\\mariadb-connector-c-2010\\libmariadb\\my_malloc.c, 36)\nlibmariadb!alloc_root+00000101 (c:\\mariadb-connector-c-2010\\libmariadb\\my_alloc.c, 81)\nlibmariadb!mthd_stmt_read_all_rows+000000C9 (c:\\mariadb-connector-c-2010\\libmariadb\\my_stmt.c, 181)\nlibmariadb!mysql_stmt_store_result+000003E6 (c:\\mariadb-connector-c-2010\\libmariadb\\my_stmt.c, 1357)\n</code></pre>\n\n<p>We pass a pointer to the DLL function and ultimately one of the destructors back in one of our C++ DLL's call's another DLL function (mysql_stmt_free_result) to free the memory pointed to by the identifier that was passed in to the initial call stack I mentioned above. After doing some debugging I have confirmed that the destructor is properly calling up the DLL function to perform the clean up and it is successful.</p>\n\n<p>We are dynamically linking the Maria DB Connector DLL, so this leads me to believe that the heap this DLL is using is different than the heap the DLL that loaded it is using (please correct me if that's wrong). If this is true, I'm wondering if this could be causing issues when UMDH uses the heap manager's facilities to get information about call stacks / outstanding allocations? From what I've read it appears that all heaps associated to a process should be accounted for here. I hope a more experienced individual could provide some insight on this topic.</p>\n\n<p><strong>Edit (Resolution):</strong></p>\n\n<p>After further review, I no longer believe this is a false positive, it appears that the code was not de-allocating the statement handle, you can use <a href=\"http://dev.mysql.com/doc/refman/5.7/en/mysql-stmt-free-result.html\" rel=\"nofollow\">mysql_stmt_close</a> to accomplish this. So my suspicions were incorrect and UMDH has prevailed.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 54440277,
+   "parent_id": 33321056,
+   "parent_type": "question",
+   "author_user_id": 758133,
+   "author_display_name": "Martin James",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/33321056/#comment54440277_33321056",
+   "score": 0,
+   "created_utc": "2015-10-24T17:37:28Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "&#39;the heap this DLL is using is different than the heap the DLL that loaded it is using&#39; - that&#39;s not unusual.  In fact, it&#39;s normal:("
+  },
+  {
+   "post_type": "comment",
+   "post_id": 54440364,
+   "parent_id": 33321056,
+   "parent_type": "question",
+   "author_user_id": 4670926,
+   "author_display_name": "AirCal86",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/33321056/#comment54440364_33321056",
+   "score": 0,
+   "created_utc": "2015-10-24T17:42:27Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Ok that is what I expected as many different Windows DLLs are in use throughout runtime."
+  }
+ ]
+}

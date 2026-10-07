@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 76025633,
+ "url": "https://stackoverflow.com/questions/76025633/c-memory-leak-despite-freeing-everything",
+ "title": "C memory leak despite freeing everything",
+ "tags": [
+  "c",
+  "memory-leaks",
+  "pcre"
+ ],
+ "score": 0,
+ "view_count": 74,
+ "answer_count": 1,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2023-04-16T02:21:49Z",
+ "last_activity_utc": "2023-04-16T02:40:23Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 12809652,
+ "author_display_name": "expoodo",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/76025633/c-memory-leak-despite-freeing-everything",
+ "body_html": "<p>What my program does right now is split the operands and operators from a given string (using pcre regex), and puts them as separate elements/strings in a 2d array. However, valgrind keeps telling that I have a memory leak, despite me freeing all the calloc's that I did in my code? All the matches from the regex are copied into a segment of <code>*raw</code> from a pointer in <code>**buffer</code>, then after outputting it all, I free them both.</p>\n<pre class=\"lang-c prettyprint-override\"><code>#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include &lt;pcre.h&gt;\n\nint compile_expression(char *raw, char **buffer, int segment_count, int segment_size,\n                       char *source, int size, pcre *regex);\n\nint main(void)\n{\n    char input[100] = {0};\n    int input_size;\n\n    fgets(input, 99, stdin);\n    input_size = strlen(input);\n\n    // compile regex\n    char regex[] = &quot;\\\\(.+\\\\)|\\\\d+\\\\.?\\\\d*|[-+*/^]&quot;;\n    const char *errptr;\n    int erroffset;\n    pcre *re = pcre_compile(regex, 0, &amp;errptr, &amp;erroffset, NULL);\n\n    if (re == NULL)\n    {\n        printf(&quot;regex compile error&quot;);\n        return -1;\n    }\n\n    char *raw = calloc(20, 10);\n    char **buffer = calloc(20, sizeof(char*));\n\n    if (raw != NULL &amp;&amp; buffer != NULL)\n    {\n        int err;\n\n        err = compile_expression(raw, buffer, 20, 10, input, input_size, re);\n\n        // output\n        if (err == 0)\n        {\n            for (int i = 0; i &lt; 20 &amp;&amp; buffer[i] != NULL; i++)\n            {\n                printf(&quot;[ %s ]&quot;, buffer[i]);\n            }\n            printf(&quot;\\n&quot;);\n        } else return -1;\n    }\n\n    free(buffer);\n    free(raw);\n\n    return 0;\n}\n\nint compile_expression(char *raw, char **buffer, int segment_count, int segment_size,\n                       char *source, int size, pcre *regex)\n{\n    int result = 1;\n    int last_offset = 0;\n    char match_buffer[size];\n    int ovector[30];\n\n    for (int i = 0; i &lt; segment_count &amp;&amp; result == 1; i++)\n    {\n        result = pcre_exec(regex, NULL, source, size, last_offset, 0, ovector, 30);\n\n        if (result &lt; 0)\n            break;\n        \n        memset(match_buffer, 0, sizeof(match_buffer)); // clear\n        strncpy(match_buffer, source + ovector[0], ovector[1] - ovector[0]);\n\n        buffer[i] = raw + segment_size * i;\n        strncpy(buffer[i], match_buffer, segment_size - 1);\n\n        last_offset = ovector[1];\n    }\n\n    if (result != PCRE_ERROR_NOMATCH &amp;&amp; result &lt; 0)\n    {\n        return -1;\n    }\n    \n    return 0;\n}\n</code></pre>\n<p>valgrind output</p>\n<pre><code>==28424== \n1 + 1\n[ 1 ][ + ][ 1 ]\n==28424== \n==28424== HEAP SUMMARY:\n==28424==     in use at exit: 122 bytes in 1 blocks\n==28424==   total heap usage: 5 allocs, 4 frees, 2,530 bytes allocated\n==28424== \n==28424== 122 bytes in 1 blocks are definitely lost in loss record 1 of 1\n==28424==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==28424==    by 0x487D70E: pcre_compile2 (in /usr/lib/x86_64-linux-gnu/libpcre.so.3.13.3)\n==28424==    by 0x1093A0: main (in /home/canada/VScode-projects/test/test)\n==28424== \n==28424== LEAK SUMMARY:\n==28424==    definitely lost: 122 bytes in 1 blocks\n==28424==    indirectly lost: 0 bytes in 0 blocks\n==28424==      possibly lost: 0 bytes in 0 blocks\n==28424==    still reachable: 0 bytes in 0 blocks\n==28424==         suppressed: 0 bytes in 0 blocks\n==28424== \n==28424== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 134083854,
+   "parent_id": 76025633,
+   "parent_type": "question",
+   "author_user_id": 920069,
+   "author_display_name": "Retired Ninja",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/76025633/#comment134083854_76025633",
+   "score": 0,
+   "created_utc": "2023-04-16T02:36:15Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "I beliebe you need to use <code>pcre_free</code> to free the compiled expression."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 76025662,
+   "parent_id": 76025633,
+   "author_user_id": 12809652,
+   "author_display_name": "expoodo",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/76025662",
+   "score": 0,
+   "created_utc": "2023-04-16T02:40:23Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2023-04-16T02:40:23Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>Turns out the compilied regex needed to be freed, <code>free(re)</code></p>\n"
+  }
+ ]
+}

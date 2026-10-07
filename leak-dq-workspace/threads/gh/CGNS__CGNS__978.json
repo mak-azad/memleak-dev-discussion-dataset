@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/CGNS/CGNS/issues/978",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "test_back_comp: heap-use-after-free -- ReferenceState printed after cg_free()",
+ "author_login": "brtnfld",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:06Z",
+ "final_url": "https://github.com/CGNS/CGNS/issues/978",
+ "repo": "CGNS/CGNS",
+ "repo_language": "C",
+ "number": 978,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-05T20:47:07Z",
+ "updated_at": "2026-08-05T20:47:07Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "brtnfld",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-05T20:47:07Z",
+   "updated_utc": "2026-08-05T20:47:07Z",
+   "permalink": "https://github.com/CGNS/CGNS/issues/978",
+   "body_markdown": "`src/tests/test_back_comp.c` frees the `ReferenceState` string and then prints it:\n\nhttps://github.com/CGNS/CGNS/blob/develop/src/tests/test_back_comp.c#L432-L438\n\n```c\n    if (cg_state_read(&state))\n      cg_error_exit();\n    if ( ! compareValuesChr(state,\"ReferenceQuantities\"))\n      cg_error_exit();\n    cg_free(state);\n\n    printf(\"\\nReferenceState = %s\\n\",state);   /* <-- state was freed on the line above */\n```\n\n`cg_state_read()` allocates via `cgi_malloc` (`cgnslib.c:19300`), `cg_free()`\nreleases it (`cgnslib.c:24627`), and the `printf` then reads it.\n\n### Reproduction\n\nBuild with AddressSanitizer and run the test:\n\n```\ncmake -DCMAKE_BUILD_TYPE=Debug \\\n      -DCMAKE_C_FLAGS=\"-g -O1 -fsanitize=address -fno-omit-frame-pointer\" \\\n      -DCMAKE_EXE_LINKER_FLAGS=\"-fsanitize=address\" \\\n      -DCMAKE_SHARED_LINKER_FLAGS=\"-fsanitize=address\" \\\n      -DCGNS_ENABLE_TESTS=ON ...\nctest -R test_back_comp\n```\n\n```\n==535512==ERROR: AddressSanitizer: heap-use-after-free on address 0x7b57d91eb5c0\nREAD of size 3 at 0x7b57d91eb5c0 thread T0\n    #2 in printf\n    #3 in main src/tests/test_back_comp.c:438\n\nfreed by thread T0 here:\n    #1 in cg_free src/cgnslib.c:24627\n    #2 in main src/tests/test_back_comp.c:436\n\npreviously allocated by thread T0 here:\n    #1 in cgi_malloc src/cgns_internals.c:93\n    #2 in cg_state_read src/cgnslib.c:19300\n    #3 in main src/tests/test_back_comp.c:432\n\nSUMMARY: AddressSanitizer: heap-use-after-free src/tests/test_back_comp.c:438 in main\n```\n\nThe test passes in ordinary builds because the freed block usually still holds\nthe old bytes, so this only surfaces under a sanitizer.\n\n### Suggested fix\n\nMove the `printf` above the `cg_free(state)`.\n\n### Notes\n\n- Present on `develop` (`8c1e96b`); the `cg_free` call dates to 3c42e51c, the\n  `printf` to afbbbc9e.\n- Bug is in the test, not in the library.\n- Found while running the test suite under ASAN/LSan during review of #916; it\n  is unrelated to that PR, which does not touch this file.\n- Two other tests fail the same ASAN run for a different, also pre-existing\n  reason -- `C_code_read_descriptor` and `C_code_read_nondimensional` leak the\n  buffer returned by `cg_descriptor_read` (`cgnslib.c:21365`). Happy to fold\n  those into this issue or file separately, whichever you prefer.\n"
+  }
+ ]
+}

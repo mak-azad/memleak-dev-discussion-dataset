@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/libarchive/libarchive/issues/3623",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "bsdunzip: Heap use-after-free when archive_read_free() returns non-ARCHIVE_OK status",
+ "author_login": "Abhirup0",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:00Z",
+ "final_url": "https://github.com/libarchive/libarchive/issues/3623",
+ "repo": "libarchive/libarchive",
+ "repo_language": "C",
+ "number": 3623,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2026-10-05T10:08:24Z",
+ "updated_at": "2026-10-06T14:15:06Z",
+ "closed_at": "2026-10-06T14:15:06Z",
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Abhirup0",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-05T10:08:24Z",
+   "updated_utc": "2026-10-06T14:15:06Z",
+   "permalink": "https://github.com/libarchive/libarchive/issues/3623",
+   "body_markdown": "### Basic Information\n* Version of libarchive: master / 3.8.x\n* Operating system: All (POSIX and Windows)\n* Component: `unzip/bsdunzip.c`\n\n### Description\nIn `unzip/bsdunzip.c`, the final cleanup of the read archive object at line 1142 is wrapped in the `ac()` macro:\n\n```c\nac(archive_read_free(a));\n```\n\nThe `ac()` macro (defined at lines 110-115) checks the return code of the wrapped call and dereferences `a` if the return value is not `ARCHIVE_OK`:\n\n```c\n#define ac(call)\t\t\t\t\t\t\\\n\tdo {\t\t\t\t\t\t\t\\\n\t\tint acret = (call);\t\t\t\t\\\n\t\tif (acret != ARCHIVE_OK)\t\t\t\\\n\t\t\terrorx(\"%s\", archive_error_string(a));\t\\\n\t} while (0)\n```\n\nHowever, `archive_read_free(a)` unconditionally frees the archive structure and its error string buffer before returning:\n\n```c\n// libarchive/archive_read.c\narchive_string_free(&a->archive.error_string);\n...\nfree(a);\nreturn (r);\n```\n\nIf closing the archive or tearing down filters/formats during `archive_read_free()` returns a warning or failure (such as `ARCHIVE_WARN`), `acret != ARCHIVE_OK` evaluates to true, and `ac()` calls `errorx(\"%s\", archive_error_string(a));`.\n\nBecause `a` was already passed to `free()`, `archive_error_string(a)` dereferences freed heap memory (`a->error_string.s`), resulting in a heap-use-after-free read.\n\n### Proposed Fix\nAlign `bsdunzip` with the cleanup pattern used in `bsdtar` (`tar/read.c`):\n1. Call `archive_read_close(a)` explicitly prior to freeing.\n2. Check the return status of `archive_read_close(a)` and print `archive_error_string(a)` while `a` is still allocated.\n3. Call `archive_read_free(a)` unconditionally without wrapping it in `ac()`.\n\n```diff\ndiff --git a/unzip/bsdunzip.c b/unzip/bsdunzip.c\nindex 28247071..7ec50c76 100644\n--- a/unzip/bsdunzip.c\n+++ b/unzip/bsdunzip.c\n@@ -1139,7 +1139,8 @@ unarchive(const char *fn)\n \t\t}\n \t}\n \n-\tac(archive_read_free(a));\n+\tac(archive_read_close(a));\n+\tarchive_read_free(a);\n \n \tif (passphrase_buf != NULL) {\n \t\tmemset(passphrase_buf, 0, PPBUFF_SIZE);\n```\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5997596111,
+   "author_login": "stoeckmann",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-10-05T15:27:43Z",
+   "updated_utc": "2026-10-05T15:27:43Z",
+   "permalink": "https://github.com/libarchive/libarchive/issues/3623#issuecomment-5997596111",
+   "body_markdown": "Looks right. Do you want to create a PR for this?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5998505998,
+   "author_login": "Abhirup0",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-05T16:19:49Z",
+   "updated_utc": "2026-10-05T16:19:49Z",
+   "permalink": "https://github.com/libarchive/libarchive/issues/3623#issuecomment-5998505998",
+   "body_markdown": "Sure! let me write up a pr"
+  }
+ ]
+}

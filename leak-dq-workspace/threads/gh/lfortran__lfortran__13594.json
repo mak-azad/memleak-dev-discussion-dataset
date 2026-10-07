@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lfortran/lfortran/issues/13594",
+ "passes": [
+  "main"
+ ],
+ "title": "Allocatable scalar derived-type function result assigned to a non-allocatable variable crashes (free(): invalid pointer / SIGSEGV)",
+ "author_login": "certik",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:42Z",
+ "final_url": "https://github.com/lfortran/lfortran/issues/13594",
+ "repo": "lfortran/lfortran",
+ "repo_language": "C++",
+ "number": 13594,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-26T23:20:03Z",
+ "updated_at": "2026-09-26T23:20:47Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "high priority",
+  "derived types"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "certik",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-26T23:20:03Z",
+   "updated_utc": "2026-09-26T23:20:47Z",
+   "permalink": "https://github.com/lfortran/lfortran/issues/13594",
+   "body_markdown": "A function whose result is `type(w), allocatable` crashes at run time when its value is assigned to a plain `type(w)` variable. The component is a single `integer`. Assigning the result to a `type(w), allocatable` variable works.\n\n```fortran\nprogram f12b\nimplicit none\ntype :: w\n  integer :: c\nend type\ntype(w) :: s\ns = mk1()\nprint *, s%c\nif (s%c /= 3) error stop 1\ncontains\nfunction mk1() result(r)\n  type(w), allocatable :: r\n  allocate(r)\n  r%c = 3\nend function\nend program\n```\n\n```\n$ lfortran --no-color f12b.f90 -o l && ./l\nfree(): invalid pointer\nAborted\n$ gfortran f12b.f90 && ./a.out\n           3\n```\n\nWhen the function is in a module, the crash is the same. With an `integer :: c(3)` or a character-array component, the program segfaults instead. With `type(w), allocatable :: s`, LFortran prints `3`.\n\nReproduces on main (e9affe9b).\n\nFound while working on lfortran/lfortran#13570"
+  }
+ ]
+}

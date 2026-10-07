@@ -1,0 +1,66 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 29793157,
+ "url": "https://stackoverflow.com/questions/29793157/how-does-memory-gets-allocated-for-string-literal-in-c-and-do-we-need-to-free-it",
+ "title": "How does memory gets allocated for string literal in c and do we need to free it?",
+ "tags": [
+  "c",
+  "string"
+ ],
+ "score": 0,
+ "view_count": 120,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 29793198,
+ "created_utc": "2015-04-22T09:25:55Z",
+ "last_activity_utc": "2022-01-25T15:01:54Z",
+ "license": null,
+ "author_user_id": 4675426,
+ "author_display_name": "Karthick",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/29793157/how-does-memory-gets-allocated-for-string-literal-in-c-and-do-we-need-to-free-it",
+ "body_html": "<p>How does memory gets allocated for a string literal in C and do we need to free it?\nE.g.:</p>\n<pre><code>char *k=&quot;hello world&quot;;\n</code></pre>\n<p>Where does this string get stored and how does it get de-allocated?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 29793198,
+   "parent_id": 29793157,
+   "author_user_id": 2173917,
+   "author_display_name": "Sourav Ghosh",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/29793198",
+   "score": 1,
+   "created_utc": "2015-04-22T09:27:34Z",
+   "last_edit_utc": "2022-01-25T15:01:54Z",
+   "last_activity_utc": "2022-01-25T15:01:54Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<blockquote>\n<p>where does this string get stored</p>\n</blockquote>\n<p>Usually in read-only memory, you cannot modify it. In <code>gcc</code>, on most systems, they are located in the <code>.TEXT</code> section.</p>\n<blockquote>\n<p>how does it get de-allocated</p>\n</blockquote>\n<p>upon program termination.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 47715318,
+   "parent_id": 29793157,
+   "parent_type": "question",
+   "author_user_id": 3194340,
+   "author_display_name": "n0p",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/29793157/#comment47715318_29793157",
+   "score": 0,
+   "created_utc": "2015-04-22T09:39:04Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "possible duplicate of <a href=\"http://stackoverflow.com/q/1704407/3194340\">stackoverflow.com/q/1704407/3194340</a>"
+  }
+ ]
+}

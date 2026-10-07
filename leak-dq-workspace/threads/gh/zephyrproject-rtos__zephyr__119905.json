@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/zephyrproject-rtos/zephyr/issues/119905",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "posix: rwlock: PTHREAD_RWLOCK_INITIALIZER fails with EINVAL and lacks lazy-init synchronization",
+ "author_login": "harshitnub077",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:17Z",
+ "final_url": "https://github.com/zephyrproject-rtos/zephyr/issues/119905",
+ "repo": "zephyrproject-rtos/zephyr",
+ "repo_language": "C",
+ "number": 119905,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-22T08:39:48Z",
+ "updated_at": "2026-10-02T14:39:00Z",
+ "closed_at": null,
+ "labels": [
+  "priority: low",
+  "area: POSIX"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-thread"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "harshitnub077",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-22T08:39:48Z",
+   "updated_utc": "2026-10-02T14:39:00Z",
+   "permalink": "https://github.com/zephyrproject-rtos/zephyr/issues/119905",
+   "body_markdown": "### Describe the bug\n\nStatically declared read-write locks initialized with `PTHREAD_RWLOCK_INITIALIZER` (`-1`) are unusable at runtime on Zephyr:\n\n1. **Acquisition functions bypass lazy allocation**: `pthread_rwlock_rdlock()`, `pthread_rwlock_wrlock()`, and their `try*` and `timed*` variants in `subsys/portability/posix/options/rwlock.c` call `get_posix_rwlock(*rwlock)` directly rather than routing through `to_posix_rwlock()`. For an unassociated static rwlock (`*rwlock == -1`), `get_posix_rwlock(-1)` checks bit index `0x7fffffff`, bounds-checks out of range, and returns `NULL`. Every acquisition call unconditionally returns `EINVAL`.\n2. **Missing primitive initialization**: `to_posix_rwlock()` allocates a bit from `posix_rwlock_bitarray`, but does not initialize the underlying synchronization members (`sys_sem_init(&rwl->wr_sem, 1, 1)`, `sys_sem_init(&rwl->reader_active, 1, 1)`, `atomic_set(&rwl->rd_count, 0)`, and `rwl->wr_owner = NULL`). These initializations were placed inside `pthread_rwlock_init()`. Any slot returned by `to_posix_rwlock()` has zero-count semaphores and immediately deadlocks upon acquisition.\n3. **Concurrency race on lazy binding**: `to_posix_rwlock()` calls `sys_bitarray_alloc()` without holding `posix_rwlock_lock`. If two threads concurrently take an unassociated static rwlock, both allocate separate slots. One thread overwrites `*rwlock`, permanently leaking the other slot and causing threads to operate on disjoint rwlock instances.\n\nThis should follow the double-checked locking pattern established in `to_posix_mutex()` (`subsys/portability/posix/options/mutex.c`) and `to_posix_cond()` (`subsys/portability/posix/options/cond.c`).\n\n\n### Regression\n\n- [ ] This is a regression.\n\n### Steps to reproduce\n\n```\n#include <zephyr/ztest.h>\n#include <zephyr/posix/pthread.h>\n\nstatic pthread_rwlock_t static_rwlock = PTHREAD_RWLOCK_INITIALIZER;\n\nZTEST(posix_rw_locks, test_static_initializer)\n{\n    /* Returns EINVAL (22) instead of 0 */\n    zassert_ok(pthread_rwlock_rdlock(&static_rwlock),\n               \"pthread_rwlock_rdlock failed on static initializer\");\n    zassert_ok(pthread_rwlock_unlock(&static_rwlock),\n               \"pthread_rwlock_unlock failed on static initializer\");\n}\n```\n\n### Relevant log output\n\n```shell\nAssertion failed at zephyr/tests/subsys/portability/posix/rwlocks/src/main.c:xx:\npthread_rwlock_rdlock(&static_rwlock) (22 == 0): pthread_rwlock_rdlock failed on static initializer\nFAIL - test_static_initializer\n```\n\n### Impact\n\nFunctional Limitation – Some features not working as expected, but system usable.\n\n### Environment\n\n- OS: Linux / macOS\n- Toolchain: Zephyr SDK 0.17.x\n- Commit SHA: main (0388ef0c424)\n\n\n### Additional Context\n\nRelated upstream commits & references:\n- Commit c250c330c6b (\"posix: re-introduce PTHREAD_RWLOCK_INITIALIZER\") re-introduced the standard macro for external libraries, but runtime association was omitted.\n- Commit 2cfaa251d69 (\"posix: mutex: remove global lock from the acquisition fast path\") and Issue #119672 / commit 78a38b5b048 (\"posix: cond: serialize lazy initialization of static condvars\") resolve the identical pattern for mutexes and condition variables.\n"
+  }
+ ]
+}

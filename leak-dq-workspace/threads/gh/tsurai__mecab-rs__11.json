@@ -1,0 +1,111 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/tsurai/mecab-rs/issues/11",
+ "passes": [
+  "main"
+ ],
+ "title": "There is a memory leak？",
+ "author_login": "zurmokeeper",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:24Z",
+ "final_url": "https://github.com/tsurai/mecab-rs/issues/11",
+ "repo": "tsurai/mecab-rs",
+ "repo_language": "Rust",
+ "number": 11,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-12-10T01:22:22Z",
+ "updated_at": "2024-12-12T05:08:40Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 6,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "zurmokeeper",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-12-10T01:22:22Z",
+   "updated_utc": "2024-12-12T05:08:40Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11",
+   "body_markdown": "### I wrote a node.js rust addon and the rust code uses mecab-rs to call mecab.   mecab-rs is the latest version。\r\n\r\n### Then I see the memory of my node.js application as shown above, the part corresponding to the beginning of the peak is indeed increasing in the number of requests, but after the number of requests come down the memory usage does not drop to the previous state, it will drop, but it is still a very high position.\r\n\r\n@tsurai @DoumanAsh \r\n\r\n\r\n![image](https://github.com/user-attachments/assets/68f95ed6-aba3-43be-999b-dcb4e6a8780b)\r\n\r\n\r\n\r\n![image](https://github.com/user-attachments/assets/6277fa01-f21f-417f-a66c-4176986cc867)\r\n\r\n\r\nmy code is as follows\r\n\r\n\r\n```\r\n#![deny(clippy::all)]\r\n\r\n#[macro_use]\r\nextern crate napi_derive;\r\nextern crate mecab;\r\n\r\nuse mecab::Tagger;\r\nuse std::vec::Vec;\r\n\r\n#[cfg(target_pointer_width = \"32\")]\r\ntype CLong = i32;\r\n\r\n#[cfg(target_pointer_width = \"64\")]\r\ntype CLong = i64;\r\n\r\n#[napi(object)]\r\npub struct NodeInfo {\r\n  pub id: u32,\r\n  pub surface: String,\r\n  pub feature: String,\r\n  pub len: u16,\r\n  pub rc_attr: u16,\r\n  pub lc_attr: u16,\r\n  pub posid: u16,\r\n  pub char_type: u8,\r\n  pub stat: u8,\r\n  pub isbest: i32,\r\n  pub alpha: f64,\r\n  pub beta: f64,\r\n  pub prob: f64,\r\n  #[napi(ts_type = \"number\")]\r\n  pub cost: CLong,\r\n}\r\n\r\n#[napi]\r\npub fn parse_as_node(input: String) -> Vec<NodeInfo> {\r\n  let mut tagger = Tagger::new(\"\");\r\n  let my_input: &str = input.as_str(); \r\n\r\n  let mut result = Vec::new();\r\n  for node in tagger.parse_to_node(my_input).iter_next() {\r\n      let node_info = NodeInfo {\r\n        id: node.id,\r\n        surface: (node.surface)[..(node.length as usize)].to_string(),\r\n        feature: node.feature.to_string(),\r\n        len: node.length,\r\n        rc_attr: node.rcattr,\r\n        lc_attr: node.lcattr,\r\n        posid: node.posid,\r\n        char_type: node.char_type,\r\n        stat: node.stat,\r\n        isbest: if node.isbest { 1 } else { 0 },\r\n        alpha: node.alpha as f64,\r\n        beta: node.beta as f64,  \r\n        prob: node.prob as f64,\r\n        cost: node.cost,\r\n    };\r\n    result.push(node_info);\r\n  }\r\n  result\r\n}\r\n\r\nThen the method parse_as_node is called directly\r\n\r\n```\r\n\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2529996765,
+   "author_login": "DoumanAsh",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-12-10T01:32:55Z",
+   "updated_utc": "2024-12-10T01:32:55Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11#issuecomment-2529996765",
+   "body_markdown": "It is a bit difficult to say without checking code under valgrind\r\nCan you write simple Rust program with your example and run it under valgrind?\r\n\r\nI do not really use mecab myself nowadays though so I'm not sure if there can be any isuses"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2530257629,
+   "author_login": "zurmokeeper",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-12-10T04:12:45Z",
+   "updated_utc": "2024-12-10T04:12:45Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11#issuecomment-2530257629",
+   "body_markdown": "> valgrind\r\n\r\nThanks for the reply, I'll give it a try"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2537635980,
+   "author_login": "zurmokeeper",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-12-12T02:28:56Z",
+   "updated_utc": "2024-12-12T02:28:56Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11#issuecomment-2537635980",
+   "body_markdown": "@DoumanAsh \r\n\r\nIt may not be a memory leak, I just realized that this memory indicator is `WSS`, not `RES`, I went in to the pod in k8s , and used the `top` command to see that the `node's RES memory` is reclaimed normally.\r\n\r\nI guess it's a `Mecab` problem. I looked at the mecab source code and found that it uses `mmap`, and I also observed that the `memory cache` of my pod is very high. I suspect that node.js is calling mecab via mecab-rs, and mecab is mapping files and other data directly into memory, but this part of the memory doesn't belong to mecab-rs, so I don't think it's a memory leak. belongs to `node's RES`.\r\n\r\nSo the memory of the pod is very high, but actually node.js uses very little, I don't know what you think about this?\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2537665941,
+   "author_login": "DoumanAsh",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-12-12T02:38:41Z",
+   "updated_utc": "2024-12-12T02:38:41Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11#issuecomment-2537665941",
+   "body_markdown": "As far as I remember it needs mmap to efficiently load model rather than using RAM so it makes sense\r\nYou should avoid creating multiple instances of the same Mecab instances and prefer to cache it"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2537760333,
+   "author_login": "zurmokeeper",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-12-12T03:59:37Z",
+   "updated_utc": "2024-12-12T03:59:37Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11#issuecomment-2537760333",
+   "body_markdown": "@DoumanAsh \r\n\r\nJust one more question, I used to call mecab as a child process, it is reasonable to say that mecab is also using mmap at this time, why the memory cache is not as big as the current one, I have changed to rust addon to call mecab-rs.\r\n\r\nAfter changing to rust addon to call mecab-rs, the memory cache went from 400M to 8-900M, is mecab's mmap recovery so slow?\r\n\r\nNow I create a mecab instance every time I call it, and I'm worried that if I don't create a new mecab instance every time, I'm not going to have a memory leak.\r\n\r\n```\r\nimpl Drop for Tagger {\r\n    fn drop(&mut self) {\r\n        unsafe {\r\n            mecab_destroy(self.inner);\r\n            self.free_input();\r\n        }\r\n    }\r\n}\r\n```\r\n\r\nAfter all, there is memory release code in the rust code."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2537826899,
+   "author_login": "DoumanAsh",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-12-12T05:08:14Z",
+   "updated_utc": "2024-12-12T05:08:40Z",
+   "permalink": "https://github.com/tsurai/mecab-rs/issues/11#issuecomment-2537826899",
+   "body_markdown": "You should remember that it is OS who is responsible for actual management of resources\r\nIf it is done by child process, it is possible OS would keep it tied to parent process even if child process dies (in case you'll use it again)\r\n\r\nI cannot really tell what's going on as I would need to review mecab code, but as long as there is no obvious memory leaks you should not have issues I think"
+  }
+ ]
+}

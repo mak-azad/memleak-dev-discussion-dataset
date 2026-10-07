@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/microsoft/CNTK/issues/3778",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "CNTK and GPU memory leaking",
+ "author_login": "yelandgit",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:19Z",
+ "final_url": "https://github.com/microsoft/CNTK/issues/3778",
+ "repo": "microsoft/CNTK",
+ "repo_language": "C++",
+ "number": 3778,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2019-11-30T03:31:30Z",
+ "updated_at": "2019-12-02T22:27:22Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "yelandgit",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-11-30T03:31:30Z",
+   "updated_utc": "2019-12-02T22:27:22Z",
+   "permalink": "https://github.com/microsoft/CNTK/issues/3778",
+   "body_markdown": "I am trying to work with autoencoder. I build first one. I extract encoder, and calculate new data for next autoencoder.\r\n\r\n`z1 = C.Function.load(\"./NTIMIT/ae-1240-2000-1240.dnn\")    # gpu = 191 Mb`\r\n`z1e = GetEncoder(None, z1, C.sigmoid)                                # gpu = 275 Mb`\r\n`dset = z1e.eval(dataset)                                                         # gpu =  3931 Mb`\r\n`tset = z1e.eval(testset)                                                           # gpu = 3931 Mb`\r\n\r\nWhat do I see? I see 4Gb GPU memory in use when I've recieved my dset/tset. I don't understand why it happened. Why 4 Gb? My data set has much smaller size. Why GPU memory still in use after calculation? Why CNTK doesn't release used GPU memory?\r\n\r\nAgain, why 4 Gb? My data set sizes:\r\ndataset = 600 Mb\r\ntestset = 200 Mb\r\ndset = 990 Mb\r\ntset = 330 Mb\r\n\r\nThe 1st autoencoder is 1240+2000+1240 (20 Mb)\r\nThe 2nd autoencoder is 2000+2000+2000 (32 Mb)\r\n\r\nWhen I create new autoencoder and train one, I got 8Gb GPU memory in use (old 4Gb + new 4Gb). Plus at the end I didn't save network because \"RuntimeError: CUDA failure 2: out of memory\".  Same error I got at first training step with minibatch size 30% from whole dataset. After reducing minibatch size to 10% I could make something without ability to save result\r\n\r\nThis is serious GPU memory leak in CNTK\r\n\r\nRTX 2080 Ti 11Gb\r\nCUDA 10.1.243\r\nCNTK 2.7\r\npython 3.6.8\r\nLinux Mint 19.2 Tina\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 560328794,
+   "author_login": "haixpham",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-12-02T10:14:55Z",
+   "updated_utc": "2019-12-02T10:14:55Z",
+   "permalink": "https://github.com/microsoft/CNTK/issues/3778#issuecomment-560328794",
+   "body_markdown": "Can you please elaborate:\r\n- How many parameters are there in your network?\r\n- How many samples in each batch, and their size?\r\n\r\nI have used CNTK extensively for large GAN-type networks and see no problem."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 560755672,
+   "author_login": "yelandgit",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-12-02T22:27:22Z",
+   "updated_utc": "2019-12-02T22:27:22Z",
+   "permalink": "https://github.com/microsoft/CNTK/issues/3778#issuecomment-560755672",
+   "body_markdown": "All answers for your questions in my previous post.\r\n\r\nHow I see today my problem is not released GPU memory after eval(). Do you see the code and comments in my 1st post? Do you see how used GPU memory is changed after each step? And see data amount bottom. The data set has 600 Mb + network has 20 Mb, but for evaluation allocated GPU memory is 4 Gb. Plus after evaluation GPU memory is not released. What the fu... dge?"
+  }
+ ]
+}

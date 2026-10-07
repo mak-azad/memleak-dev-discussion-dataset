@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/htacg/tidy-html5/issues/1086",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer exception",
+ "author_login": "antonfries",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:40Z",
+ "final_url": "https://github.com/htacg/tidy-html5/issues/1086",
+ "repo": "htacg/tidy-html5",
+ "repo_language": "C",
+ "number": 1086,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-05-09T13:36:25Z",
+ "updated_at": "2023-05-09T13:37:55Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "antonfries",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-05-09T13:36:25Z",
+   "updated_utc": "2023-05-09T13:37:55Z",
+   "permalink": "https://github.com/htacg/tidy-html5/issues/1086",
+   "body_markdown": ".tidyrc content:\r\n```\r\nshow-warnings: yes\r\nmarkup: no\r\nmute-id: yes\r\nmute:\r\n    INSERTING_TAG\r\n    MISSING_DOCTYPE\r\n    PROPRIETARY_ELEMENT\r\n    MISSING_TITLE_ELEMENT\r\n    MISSING_ATTRIBUTE\r\n    MISMATCHED_ATTRIBUTE_WARN\r\n    PROPRIETARY_ATTRIBUTE\r\n    TAG_NOT_ALLOWED_IN\r\n    TRIM_EMPTY_ELEMENT\r\n    DISCARDING_UNEXPECTED\r\n```\r\nExecution:\r\n```\r\n15:33 $ HTML_TIDY=.tidyrc tidy -q sample.html\r\nInfo: messages of type \"INSERTING_TAG\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"MISSING_DOCTYPE\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"PROPRIETARY_ELEMENT\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"MISSING_TITLE_ELEMENT\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"MISSING_ATTRIBUTE\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"MISMATCHED_ATTRIBUTE_WARN\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"PROPRIETARY_ATTRIBUTE\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"TAG_NOT_ALLOWED_IN\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"TRIM_EMPTY_ELEMENT\" will not be output (STRING_MUTING_TYPE)\r\nInfo: messages of type \"DISCARDING_UNEXPECTED\" will not be output (STRING_MUTING_TYPE)\r\nfree(): invalid pointer\r\nAborted\r\n```\r\n\r\nTried it with make install \"HTML Tidy for Linux version 5.9.20\" and regular apt-\"5.6.0\"\r\n\r\nThis only happens if there are more than 9 mute rules"
+  }
+ ]
+}

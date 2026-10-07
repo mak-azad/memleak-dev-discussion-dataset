@@ -1,0 +1,69 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 56329377,
+ "url": "https://stackoverflow.com/questions/56329377/reset-cuda-context-after-exception",
+ "title": "Reset Cuda Context after exception",
+ "tags": [
+  "c++",
+  "exception",
+  "cuda",
+  "reset",
+  "cuda-context"
+ ],
+ "score": 4,
+ "view_count": 5244,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2019-05-27T16:08:49Z",
+ "last_activity_utc": "2020-04-30T17:46:33Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 11191988,
+ "author_display_name": "Autruche",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/56329377/reset-cuda-context-after-exception",
+ "body_html": "<p>I have a working app which uses Cuda / C++, but sometimes, because of memory leaks,  throws exception. I need to be able to reset the GPU on live, my app is a server so it has to stay available.</p>\n\n<p>I tried something like this, but it doesnt seems to work:</p>\n\n<pre><code>try\n{\n    // do process using GPU\n}\ncatch (std::exception &amp;e)\n{\n    // catching exception from cuda only\n\n    cudaSetDevice(0);\n    CUDA_RETURN_(cudaDeviceReset());\n}\n</code></pre>\n\n<p>My idea is to reset the device each times I get an exception from the GPU, but I cannot manage to make it working. :(\nBtw, for some reasons, I cannot fix every problems of my Cuda code, I need a temporary solution. Thanks !</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 56330491,
+   "parent_id": 56329377,
+   "author_user_id": 1695960,
+   "author_display_name": "Robert Crovella",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/56330491",
+   "score": 10,
+   "created_utc": "2019-05-27T17:51:45Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2019-05-27T17:51:45Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>The only method to restore proper device functionality after a non-recoverable (\"sticky\") CUDA error is to <strong>terminate the host process</strong> that initiated  (i.e. issued the CUDA runtime API calls that led to) the error.</p>\n\n<p>Therefore, for a single-process application, the only method is to terminate the application.</p>\n\n<p>It should be possible to design a multi-process application, where the initial (\"parent\")  process makes <em>no usage of CUDA whatsoever</em>, and spawns a child process that uses the GPU.  When the child process encounters an unrecoverable CUDA error, it must terminate.</p>\n\n<p>The parent process can, optionally, monitor the child process. If it determines that the child process has terminated, it can re-spawn the process and restore CUDA functional behavior.</p>\n\n<p>Sticky vs. non-sticky errors are covered elsewhere, such as <a href=\"https://stackoverflow.com/questions/31642520/states-of-memory-data-after-cuda-exceptions/31642573#31642573\">here</a>.</p>\n\n<p>An example of a proper multi-process app that uses e.g. <code>fork()</code> to spawn a child process that uses CUDA is available in the CUDA sample code <code>simpleIPC</code>.  Here is a rough example assembled from the <code>simpleIPC</code> example (for linux):</p>\n\n<pre><code>$ cat t477.cu\n/*\n * Copyright 1993-2015 NVIDIA Corporation.  All rights reserved.\n *\n * Please refer to the NVIDIA end user license agreement (EULA) associated\n * with this source code for terms and conditions that govern your use of\n * this software. Any use, reproduction, disclosure, or distribution of\n * this software and related documentation outside the terms of the EULA\n * is strictly prohibited.\n *\n */\n\n// Includes\n#include &lt;stdio.h&gt;\n#include &lt;assert.h&gt;\n\n// CUDA runtime includes\n#include &lt;cuda_runtime_api.h&gt;\n\n// CUDA utilities and system includes\n#include &lt;helper_cuda.h&gt;\n\n#define MAX_DEVICES          1\n#define PROCESSES_PER_DEVICE 1\n#define DATA_BUF_SIZE        4096\n\n#ifdef __linux\n#include &lt;unistd.h&gt;\n#include &lt;sched.h&gt;\n#include &lt;sys/mman.h&gt;\n#include &lt;sys/wait.h&gt;\n#include &lt;linux/version.h&gt;\n\ntypedef struct ipcDevices_st\n{\n    int count;\n    int results[MAX_DEVICES];\n} ipcDevices_t;\n\n\n// CUDA Kernel\n__global__ void simpleKernel(int *dst, int *src, int num)\n{\n    // Dummy kernel\n    int idx = blockIdx.x * blockDim.x + threadIdx.x;\n    dst[idx] = src[idx] / num;\n}\n\n\nvoid runTest(int index, ipcDevices_t* s_devices)\n{\n    if (s_devices-&gt;results[0] == 0){\n        simpleKernel&lt;&lt;&lt;1,1&gt;&gt;&gt;(NULL, NULL, 1);  // make a fault\n        cudaDeviceSynchronize();\n        s_devices-&gt;results[0] = 1;}\n    else {\n        int *d, *s;\n        int n = 1;\n        cudaMalloc(&amp;d, n*sizeof(int));\n        cudaMalloc(&amp;s, n*sizeof(int));\n        simpleKernel&lt;&lt;&lt;1,1&gt;&gt;&gt;(d, s, n);\n        cudaError_t err = cudaDeviceSynchronize();\n        if (err != cudaSuccess)\n          s_devices-&gt;results[0] = 0;\n        else\n          s_devices-&gt;results[0] = 2;}\n    cudaDeviceReset();\n}\n#endif\n\nint main(int argc, char **argv)\n{\n\n    ipcDevices_t *s_devices = (ipcDevices_t *) mmap(NULL, sizeof(*s_devices),\n                                                    PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);\n    assert(MAP_FAILED != s_devices);\n\n    // We can't initialize CUDA before fork() so we need to spawn a new process\n    s_devices-&gt;count = 1;\n    s_devices-&gt;results[0] = 0;\n\n    printf(\"\\nSpawning child process\\n\");\n    int index = 0;\n\n    pid_t pid = fork();\n\n    printf(\"&gt; Process %3d\\n\", pid);\n    if (pid == 0) { // child process\n    // launch our test\n      runTest(index, s_devices);\n    }\n    // Cleanup and shutdown\n    else { // parent process\n            int status;\n            waitpid(pid, &amp;status, 0);\n            if (s_devices-&gt;results[0] &lt; 2) {\n              printf(\"first process launch reported error: %d\\n\", s_devices-&gt;results[0]);\n              printf(\"respawn\\n\");\n              pid_t newpid = fork();\n              if (newpid == 0) { // child process\n                    // launch our test\n                 runTest(index, s_devices);\n                  }\n    // Cleanup and shutdown\n              else { // parent process\n                int status;\n                waitpid(newpid, &amp;status, 0);\n                if (s_devices-&gt;results[0] &lt; 2)\n                  printf(\"second process launch reported error: %d\\n\", s_devices-&gt;results[0]);\n                else\n                  printf(\"second process launch successful\\n\");\n                }\n\n            }\n\n    }\n\n    printf(\"\\nShutting down...\\n\");\n\n    exit(EXIT_SUCCESS);\n\n}\n$ nvcc -I/usr/local/cuda/samples/common/inc t477.cu -o t477\n$ ./t477\n\nSpawning child process\n&gt; Process 10841\n&gt; Process   0\n\nShutting down...\nfirst process launch reported error: 1\nrespawn\n\nShutting down...\nsecond process launch successful\n\nShutting down...\n$\n</code></pre>\n\n<p>For windows, the only changes need should be to use a windows IPC mechanism for host interprocess communication.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 99300820,
+   "parent_id": 56329377,
+   "parent_type": "question",
+   "author_user_id": 1593077,
+   "author_display_name": "einpoklum",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/56329377/#comment99300820_56329377",
+   "score": 0,
+   "created_utc": "2019-05-28T18:15:52Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Please clarify whether the memory leaks are on the GPU or not, and whether the exceptions are thrown by the CUDA runtime API or not. Also, why would memory leaks cause exceptions? At most you should encounter failures to allocate more memory."
+  }
+ ]
+}

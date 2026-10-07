@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/slaclab/virtual-accelerator-digital-twin/issues/8",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "OOM issues",
+ "author_login": "bhardwaj-gopika",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:32Z",
+ "final_url": "https://github.com/slaclab/virtual-accelerator-digital-twin/issues/8",
+ "repo": "slaclab/virtual-accelerator-digital-twin",
+ "repo_language": "Python",
+ "number": 8,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-24T21:36:51Z",
+ "updated_at": "2026-08-24T21:36:51Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "bhardwaj-gopika",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-24T21:36:51Z",
+   "updated_utc": "2026-08-24T21:36:51Z",
+   "permalink": "https://github.com/slaclab/virtual-accelerator-digital-twin/issues/8",
+   "body_markdown": "# Memory leak in virtual-accelerator-digital-twin (RSS growth ~180 MB/hr → OOM)\n\n## Summary\n\nThe virtual accelerator digital twin pod (`cu_hxr_staged` model) experiences monotonic RSS growth of ~180 MB/hr when running with `REMOTE_INPUTS=true`. With a 6Gi memory limit, the pod OOMs and restarts after ~24 hours of continuous operation.\n\n## Environment\n\n- **Pod:** `virtual-accelerator` in `virtual-accelerator` namespace (dev vcluster)\n- **Model:** `cu_hxr_staged` (ML surrogate + physics model via lume-bmad/pytao)\n- **Image:** `ghcr.io/slaclab/virtual-accelerator-digital-twin`\n- **Observed:** RSS starts at ~1 GB after model load, reaches 6 Gi limit within 24-30 hours\n\n## Root Causes Identified\n\nWe identified **5 independent sources** of memory growth:\n\n---\n\n### 1. Redundant Tao commands in `lume-bmad` (primary — ~180 MB/hr)\n\n**Package:** `lume-bmad` (`lume_bmad/model.py`)\n\nThree redundant Tao commands execute every simulation cycle, causing Fortran heap fragmentation that glibc never returns to the OS:\n\n| Bug | Location | Issue |\n|-----|----------|-------|\n| A | `initial_particles.setter` | `self.simulator.cmd(f\"set beam comb_ds_save = {self.comb_ds_save}\")` called every cycle. This is static config — should only be set once at `__init__`. Each call forces Tao to reallocate ~3M doubles (0.1m resolution x 300 save points x 1000 particles x 10 coords). |\n| B | `initial_particles.setter` | `self.update_state()` called here, then called again immediately in `_set()`. Reads all 116 Tao variables twice per cycle for no reason. |\n| C | `_set()` | `self._refresh_dynamic_action_variables()` called in the setter AND again in `_set()`. Duplicates `tao_global()` + `bunch_comb(\"s\")` commands. |\n\n**Result:** ~12 Tao commands per cycle instead of ~5. Each redundant command allocates/frees Fortran arrays, fragmenting the process heap. glibc's `malloc` cannot return these fragmented pages to the OS.\n\n**Fix:** Delete the 3 redundant lines.\n\n---\n\n### 2. Snapshot queue backlog in `lume-pva` Runner (~2+ GB over hours)\n\n**Package:** `lume-pva` (`lume_pva/runner.py`)\n\nWhen `REMOTE_INPUTS=true`, `runner.take_snapshot()` is called in a loop to fetch live PV values. Without rate limiting, it runs at ~53 Hz — far faster than the model can consume items from the queue. Each queued item holds a `p4p.Value` (C++ `PVStructure`, ~2 KB). Over hours, 100k+ items accumulate.\n\n**Fix:** Throttle `take_snapshot()` to the runner's update rate (0.1s) and wait for queue to drain (`qsize <= 1`) before producing the next item.\n\n---\n\n### 3. glibc arena fragmentation (~90 MB/hr)\n\n**Package:** glibc (system allocator)\n\nBy default, glibc creates up to `8 x CPU_cores` independent memory arenas. `malloc_trim(0)` only reclaims from arena 0. Freed blocks in secondary arenas are never returned to the OS.\n\n**Fix:** Set `MALLOC_ARENA_MAX=2` before Python starts (must be in environment at process launch, not set from Python). Additionally, call `malloc_trim(0)` after each simulation cycle to compact the heap.\n\n---\n\n### 4. HDF5 internal metadata cache (~11 MB/hr)\n\n**Package:** `h5py` / `libhdf5`\n\nEvery cycle, `set beam_init position_file` opens and closes an HDF5 file via Tao. libhdf5 accumulates metadata cache entries (~6.2 KB per open/close) in an internal free list that is never purged automatically.\n\n**Fix:** Call `h5py.h5.garbage_collect()` after `set beam_init position_file` each cycle.\n\n---\n\n### 5. StagedModel missing per-cycle cleanup (~20-40 MB/hr)\n\n**Package:** `lume` (`lume/staged_model.py`)\n\n`StagedModel._set()` runs all N stages sequentially but never performs any heap cleanup afterward. Each stage can leak through glibc arenas and h5py caches.\n\n**Fix:** Add `gc.collect()` + `malloc_trim(0)` + `h5py.h5.garbage_collect()` at the end of `StagedModel._set()`.\n\n---\n\n### 6. Transparent Huge Pages (THP) — unbounded RSS on some hosts\n\n**Package:** Linux kernel (host-level)\n\nWhen the host has THP set to `always`, glibc heap allocations from Fortran/libtao get promoted to 2 MB huge pages. These pages are never demoted or returned to the OS after being freed.\n\n**Fix:** Call `prctl(PR_SET_THP_DISABLE, 1)` at process startup via ctypes.\n\n---\n\n## Reproduction\n\n```bash\n# Demonstrates the leak (no fixes): RSS grows, queue unbounded\nMALLOC_ARENA_MAX=2 python scripts/reproduce_leak.py --mode leak --duration 600\n\n# Demonstrates the fix: RSS stable, queue at 2\nMALLOC_ARENA_MAX=2 python scripts/reproduce_leak.py --mode fixed --duration 600\n```\n\n**Leak mode results (10 min):**\n\n| Metric | Start | End |\n|--------|-------|-----|\n| Queue | 0 | 32,023 (never drained) |\n| RSS | 1030 MB | 1100 MB (+70 MB) |\n| Snapshot rate | 53 cycles/s | 53 cycles/s (unthrottled) |\n\n**Fixed mode results (10 min):**\n\n| Metric | Start | End |\n|--------|-------|-----|\n| Queue | 2 | 2 (stable) |\n| RSS | 1037 MB | 1054 MB (flat, +/- 15 MB oscillation) |\n| Snapshot rate | 1.6 cycles/s | 1.6 cycles/s (throttled) |\n\n## Current Mitigations (applied in container image)\n\n| Layer | Fix | Delivery |\n|-------|-----|----------|\n| lume-bmad | Remove 3 redundant Tao commands + add malloc_trim + h5py GC | Vendored patch via Dockerfile COPY |\n| lume (staged_model) | Add gc + malloc_trim + h5py GC at end of `_set()` | Vendored patch via Dockerfile COPY |\n| System allocator | Replace glibc with tcmalloc via `LD_PRELOAD` | Dockerfile |\n| Environment | `MALLOC_ARENA_MAX=1` | Dockerfile ENV + entrypoint.sh |\n| run.py | Snapshot throttle, queue drain, THP disable, periodic gc/malloc_trim | Application code |\n| Observability | Prometheus metrics (`va_rss_bytes`, `va_snapshot_duration_seconds`, `va_py_heap_mb`) | Application code |\n\n## Upstream PRs Needed\n\n1. **`lume-bmad`** — Remove redundant `comb_ds_save` / `update_state()` / `_refresh_dynamic_action_variables()` calls. This is a 3-line deletion that fixes the primary leak.\n2. **`lume` (staged_model)** — Add gc/malloc_trim/h5py cleanup at end of `StagedModel._set()`.\n3. **Discussion:** Should `lume-bmad` call `h5py.h5.garbage_collect()` internally after any HDF5 file operation, or should this be the caller's responsibility?\n"
+  }
+ ]
+}

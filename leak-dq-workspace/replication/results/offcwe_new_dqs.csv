@@ -1,0 +1,5 @@
+dq,question,threads
+RK,"What kind of resource is held (memory, fd, socket, handle, JNI ref, GPU object, thread), and which call releases it?",64
+R6,"Is the growth in RSS / task-manager memory leaked memory, or freed memory the allocator has not returned (fragmentation, arenas, caches)?",40
+D5,"Is the block accessed after it was released (use after free, dangling reference)?",19
+H1,Was the heap already corrupted before the failing free/malloc (earlier overflow)?,10

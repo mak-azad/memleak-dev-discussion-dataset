@@ -1,0 +1,113 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Tree and bush textures misaligned.",
+ "author_login": "jyetcv",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:31Z",
+ "final_url": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167",
+ "repo": "ofpisnotdead-com/CWR-CE",
+ "repo_language": "C++",
+ "number": 167,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-26T14:36:50Z",
+ "updated_at": "2026-07-30T16:31:10Z",
+ "closed_at": null,
+ "labels": [
+  "enhancement"
+ ],
+ "comments_reported": 6,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jyetcv",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-26T14:36:50Z",
+   "updated_utc": "2026-07-30T16:31:10Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167",
+   "body_markdown": "I have noticed floating pieces of textures around bushes and trees. I am guessing this is some offset issue, maybe due to the difference in how these are calculated in the new renderer. Maybe a clamping or off by one error?\n\n<img width=\"1024\" height=\"768\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/18307156-ebeb-4ba8-acde-8d0ac0cc7c64\" />\n\nAbove is Remastered where the error is prominent.\n\n<img width=\"1280\" height=\"960\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/0e9f063d-622d-46a3-9bcf-7aa061d50f47\" />\n\nAbove is Operation Flashpoint: Cold War Crisis 1.46, same scene.\n\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5110405420,
+   "author_login": "jyetcv",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-28T22:37:32Z",
+   "updated_utc": "2026-07-29T00:30:05Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167#issuecomment-5110405420",
+   "body_markdown": "Upon further inspection, this is an issue introduced in 1.99."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5110500832,
+   "author_login": "simi",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-28T22:49:58Z",
+   "updated_utc": "2026-07-28T22:49:58Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167#issuecomment-5110500832",
+   "body_markdown": "@jyetcv good, thanks for confirming. Definitely still worth to fix IMHO."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5121290937,
+   "author_login": "lowercase-t",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-29T17:26:56Z",
+   "updated_utc": "2026-07-29T17:27:15Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167#issuecomment-5121290937",
+   "body_markdown": "This is not a regression introduced in 1.99, the bug is present in Direct3D on 1.46 and 1.96 as well, and I suspect it was always present in OFP:\n1.46 D3D:\n<img width=\"1280\" height=\"960\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/7082c629-11e3-43ff-a0ab-5cc2e1aab402\" />\n1.96 D3D:\n<img width=\"1280\" height=\"960\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/55a656c5-3a8e-465a-a031-975f2d637149\" />\n\nWhat's interesting is that it doesn't seem to be a problem when running the old old old Glide API:\n1.46 Glide:\n<img width=\"1280\" height=\"1024\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/7c0681aa-c1ba-4653-95af-04cb45bb92e4\" />\n\nTest mission:\n```\nversion=11;\nclass Mission\n{\n        addOns[]={};\n        randomSeed=6937091;\n        class Intel\n        {\n        };\n        class Groups\n        {\n                items=1;\n                class Item0\n                {\n                        side=\"WEST\";\n                        class Vehicles\n                        {\n                                items=1;\n                                class Item0\n                                {\n                                        position[]={4944.869629,159.029999,6911.407715};\n                                        azimut=330.000000;\n                                        id=0;\n                                        side=\"WEST\";\n                                        vehicle=\"SoldierWB\";\n                                        player=\"PLAYER COMMANDER\";\n                                        leader=1;\n                                        skill=0.600000;\n                                        markers[]={};\n                                };\n                        };\n                };\n        };\n};\nclass Intro\n{\n        addOns[]={};\n        randomSeed=1559555;\n        class Intel\n        {\n        };\n};\nclass OutroWin\n{\n        addOns[]={};\n        randomSeed=9168899;\n        class Intel\n        {\n        };\n};\nclass OutroLoose\n{\n        addOns[]={};\n        randomSeed=7091715;\n        class Intel\n        {\n        };\n};\n```\n\nIf I remember correctly (and it's been 30 years so don't trust me), Glide addressed textures the same way as OpenGL does... But DirectX had a 0.5 pixel offset. It might be a red herring, but having the pixels from bottom of the texture leak to the top by 0.5 might cause this one line of opaque pixels."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5122133681,
+   "author_login": "jyetcv",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-29T18:45:56Z",
+   "updated_utc": "2026-07-29T18:45:56Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167#issuecomment-5122133681",
+   "body_markdown": "Interesting. When I run either 1.46 and 1.96 in regular Direct3D mode, I do not see the texture offset. But when I run them in Direct3D HW T&L, then I do see it.\nBut in 1.99 I always see the issue regardless if Hardware T&L is enabled or disabled."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5122545000,
+   "author_login": "lowercase-t",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-29T19:27:41Z",
+   "updated_utc": "2026-07-29T19:27:41Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167#issuecomment-5122545000",
+   "body_markdown": "I just re-tested and I can confirm that; in the previous comment I only tried with HW T&L enabled. I get the same results as you."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5133570957,
+   "author_login": "simi",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-30T16:31:10Z",
+   "updated_utc": "2026-07-30T16:31:10Z",
+   "permalink": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167#issuecomment-5133570957",
+   "body_markdown": "@lowercase-t 0.5 drift should be handled properly (I was aware of that one during OpenGL porting). 🙏 "
+  }
+ ]
+}

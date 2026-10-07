@@ -1,0 +1,234 @@
+# Memory leaks in dprove
+
+- URL: https://github.com/berkeley-abc/abc/issues/124
+- Repo: berkeley-abc/abc (language: C)
+- State: open; created 2021-04-20T06:33:58Z; status ok; passes main
+
+## Issue body
+
+reporter (NONE) · muchang · 2021-04-20T06:33:58Z · https://github.com/berkeley-abc/abc/issues/124
+
+Hi,
+I compiled ABC with AddressSanitizer and observed that dprove may have potential memory leaks on the following cases:
+[memleaks.zip](https://github.com/berkeley-abc/abc/files/6341116/memleaks.zip)
+One is simple and another one is more complex. 
+
+I built ABC with AddressSanitizer by adding `-fsanitize=address` to both `LDFLAGS` and `CFLAGS` in the makefile. The following message will be reported while running ABC on the simple case:
+```
+Warning: The new network has no primary inputs. It is recommended
+to add a dummy PI to make sure all commands work correctly.
+The network has no latches. Running CEC.
+SATISFIABLE    Time =     0.00 sec
+
+=================================================================
+==26480==ERROR: LeakSanitizer: detected memory leaks
+
+Indirect leak of 80056 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af07189 in Abc_AigAlloc src/base/abc/abcAig.c:136
+
+Indirect leak of 73712 byte(s) in 2 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb7670f in Mem_FixedEntryFetch src/misc/mem/mem.c:182
+
+Indirect leak of 32776 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb777a3 in Mem_StepStart src/misc/mem/mem.c:487
+
+Indirect leak of 5632 byte(s) in 11 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb76220 in Mem_FixedStart src/misc/mem/mem.c:121
+
+Indirect leak of 4096 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488baa66cb in Extra_MmFlexEntryFetch src/misc/extra/extraUtilMemory.c:435
+
+Indirect leak of 1688 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb15c93 in Nm_ManCreate src/misc/nm/nmApi.c:57
+
+Indirect leak of 1688 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb15c74 in Nm_ManCreate src/misc/nm/nmApi.c:56
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3eee in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe3eee in Abc_NtkAlloc src/base/abc/abcNtk.c:63
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af072b7 in Vec_VecAlloc src/misc/vec/vecVec.h:153
+    #2 0x56488af072b7 in Abc_AigAlloc src/base/abc/abcAig.c:139
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe402a in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe402a in Abc_NtkAlloc src/base/abc/abcNtk.c:65
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3e50 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe3e50 in Abc_NtkAlloc src/base/abc/abcNtk.c:62
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3db2 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe3db2 in Abc_NtkAlloc src/base/abc/abcNtk.c:61
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3f8c in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe3f8c in Abc_NtkAlloc src/base/abc/abcNtk.c:64
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe4204 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe4204 in Abc_NtkAlloc src/base/abc/abcNtk.c:68
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af073f1 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488af073f1 in Abc_AigAlloc src/base/abc/abcAig.c:141
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af0748e in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488af0748e in Abc_AigAlloc src/base/abc/abcAig.c:142
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af07354 in Vec_VecAlloc src/misc/vec/vecVec.h:153
+    #2 0x56488af07354 in Abc_AigAlloc src/base/abc/abcAig.c:140
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af0721a in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488af0721a in Abc_AigAlloc src/base/abc/abcAig.c:138
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe4166 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe4166 in Abc_NtkAlloc src/base/abc/abcNtk.c:67
+
+Indirect leak of 800 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe40c8 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe40c8 in Abc_NtkAlloc src/base/abc/abcNtk.c:66
+
+Indirect leak of 616 byte(s) in 11 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb760a9 in Mem_FixedStart src/misc/mem/mem.c:104
+
+Indirect leak of 512 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488baa6321 in Extra_MmFlexStart src/misc/extra/extraUtilMemory.c:358
+
+Indirect leak of 456 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3cf3 in Abc_NtkAlloc src/base/abc/abcNtk.c:56
+
+Indirect leak of 120 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe4784 in Vec_PtrAlloc src/misc/vec/vecPtr.h:93
+    #2 0x56488afe4784 in Vec_PtrStart src/misc/vec/vecPtr.h:121
+    #3 0x56488afe4784 in Abc_NtkAlloc src/base/abc/abcNtk.c:94
+
+Indirect leak of 104 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af070b9 in Abc_AigAlloc src/base/abc/abcAig.c:132
+
+Indirect leak of 98 byte(s) in 2 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bade350 in Extra_UtilStrsav src/misc/extra/extraUtilUtil.c:185
+
+Indirect leak of 80 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb776d5 in Mem_StepStart src/misc/mem/mem.c:482
+
+Indirect leak of 56 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488baa6229 in Extra_MmFlexStart src/misc/extra/extraUtilMemory.c:348
+
+Indirect leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb77697 in Mem_StepStart src/misc/mem/mem.c:478
+
+Indirect leak of 40 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488bb15b91 in Nm_ManCreate src/misc/nm/nmApi.c:49
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe4759 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe4759 in Vec_PtrStart src/misc/vec/vecPtr.h:121
+    #3 0x56488afe4759 in Abc_NtkAlloc src/base/abc/abcNtk.c:94
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe410a in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe410a in Abc_NtkAlloc src/base/abc/abcNtk.c:67
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af07433 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488af07433 in Abc_AigAlloc src/base/abc/abcAig.c:142
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af07396 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488af07396 in Abc_AigAlloc src/base/abc/abcAig.c:141
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe406c in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe406c in Abc_NtkAlloc src/base/abc/abcNtk.c:66
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3e92 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe3e92 in Abc_NtkAlloc src/base/abc/abcNtk.c:63
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af072f9 in Vec_VecAlloc src/misc/vec/vecVec.h:148
+    #2 0x56488af072f9 in Abc_AigAlloc src/base/abc/abcAig.c:140
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af0725c in Vec_VecAlloc src/misc/vec/vecVec.h:148
+    #2 0x56488af0725c in Abc_AigAlloc src/base/abc/abcAig.c:139
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3fce in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe3fce in Abc_NtkAlloc src/base/abc/abcNtk.c:65
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488af071bf in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488af071bf in Abc_AigAlloc src/base/abc/abcAig.c:138
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe41a8 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe41a8 in Abc_NtkAlloc src/base/abc/abcNtk.c:68
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3f30 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe3f30 in Abc_NtkAlloc src/base/abc/abcNtk.c:64
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3df4 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe3df4 in Abc_NtkAlloc src/base/abc/abcNtk.c:62
+
+Indirect leak of 16 byte(s) in 1 object(s) allocated from:
+    #0 0x7f00cd46fb40 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xdeb40)
+    #1 0x56488afe3d56 in Vec_PtrAlloc src/misc/vec/vecPtr.h:88
+    #2 0x56488afe3d56 in Abc_NtkAlloc src/base/abc/abcNtk.c:61
+
+SUMMARY: AddressSanitizer: 212402 byte(s) leaked in 66 allocation(s).
+```
+Commit: 75981f7feebc4065980f99551654ac101edb4afa

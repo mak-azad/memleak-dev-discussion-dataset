@@ -1,0 +1,70 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 30374655,
+ "url": "https://stackoverflow.com/questions/30374655/using-address-sanitizer-with-opencv",
+ "title": "using address sanitizer with OpenCV",
+ "tags": [
+  "c++",
+  "opencv",
+  "clang++",
+  "sanitizer",
+  "address-sanitizer"
+ ],
+ "score": 14,
+ "view_count": 2171,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2015-05-21T13:05:25Z",
+ "last_activity_utc": "2022-02-10T15:08:19Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1024122,
+ "author_display_name": "Pluc",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/30374655/using-address-sanitizer-with-opencv",
+ "body_html": "<p>I'm trying to use Google's <a href=\"https://code.google.com/p/address-sanitizer/\" rel=\"noreferrer\">Address Sanitizer</a> with a CUDA project, more precisely with OpenCV cuda functions. However I got an 'out of memory' error on the first cuda call.</p>\n\n<pre><code>OpenCV Error: Gpu API call (out of memory) in getDevice, file opencv-2.4.11/src/opencv-2.4.11/modules/dynamicuda/include/opencv2/dynamicuda/dynamicuda.hpp, line 664\nterminate called after throwing an instance of 'cv::Exception'\n  what():  opencv-2.4.11/src/opencv-2.4.11/modules/dynamicuda/include/opencv2/dynamicuda/dynamicuda.hpp:664: error: (-217) out of memory in function getDevice\n</code></pre>\n\n<p>It can be reproduced with</p>\n\n<pre><code>#include &lt;opencv2/gpu/gpu.hpp&gt;\nint main()\n{\n  cv::gpu::printCudaDeviceInfo(cv::gpu::getDevice());\n  return 0;\n}\n</code></pre>\n\n<p>compiled with</p>\n\n<pre><code>clang++ -fsanitize=address -lstdc++ -lopencv_gpu -lopencv_core -o sanitizer sanitizer.cpp &amp;&amp; LD_LIBRARY_PATH=/usr/local/lib ./sanitizer\n</code></pre>\n\n<p>I've got the same result with gcc.\nI've also tried blacklisting cuda functions without result.</p>\n\n<p>Now using cuda without opencv:</p>\n\n<pre><code>#include &lt;cuda_runtime.h&gt;\nint main()\n{\n  int count = -1;\n  cudaGetDevice(&amp;count);\n  cout &lt;&lt; \"Device count: \" &lt;&lt; count &lt;&lt; endl;\n  return 0;\n}\nclang++ -O1 -g -fsanitize=address -fsanitize-blacklist=asan.blacklist -stdlib=libstdc++ -lstdc++ -I/opt/cuda/include -L/opt/cuda/lib64 -lcudart  -o sanitizer sanitizer.cpp &amp;&amp; ./sanitizer\n</code></pre>\n\n<p>The sanitizer stops on a memory leak:</p>\n\n<pre><code>=================================================================\n==25344==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 136 byte(s) in 1 object(s) allocated from:\n    #0 0x4bc4a2  (/home/pluc/work/tests/sanitizer+0x4bc4a2)\n    #1 0x7f71f0fa69ba  (&lt;unknown module&gt;)\n\nSUMMARY: AddressSanitizer: 136 byte(s) leaked in 1 allocation(s).\n</code></pre>\n\n<p>My question is how can I use the address sanitizer to <em>sanitize</em> my software without getting stuck with this? How can I at least properly blacklist all cuda related calls?</p>\n\n<p>I didn't find anything relevant on <em>a famous web search engine</em>. It's like people don't use cuda or asan or both. Do guys just have a build with cuda completly disabled? </p>\n\n<p>I'm guessing asan is having a hard time with cuda memory management but I'm looking for a way to use this tool for the rest of my codebase at least.</p>\n",
+ "passes": [
+  "main",
+  "offcwe"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 67110966,
+   "parent_id": 30374655,
+   "parent_type": "question",
+   "author_user_id": 1043187,
+   "author_display_name": "BenC",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/30374655/#comment67110966_30374655",
+   "score": 2,
+   "created_utc": "2016-10-07T09:00:18Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Related issue on GitHub: <a href=\"https://github.com/google/sanitizers/issues/629\" rel=\"nofollow noreferrer\">github.com/google/sanitizers/issues/629</a>"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 71067564,
+   "parent_id": 30374655,
+   "author_user_id": 3292745,
+   "author_display_name": "Anders Wind",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/71067564",
+   "score": 1,
+   "created_utc": "2022-02-10T15:08:19Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2022-02-10T15:08:19Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>For people looking here: The solution I have found (based on the related github issue mentioned by @BenC) is to run <code>export ASAN_OPTIONS=protect_shadow_gap=0</code>.</p>\n<p>I have not succeeded in finding a way to change the behavior when compiling yet.</p>\n"
+  }
+ ]
+}

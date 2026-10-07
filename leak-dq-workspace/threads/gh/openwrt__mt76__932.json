@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/openwrt/mt76/issues/932",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "possible memleak detected by kmemleak",
+ "author_login": "ptpt52",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:38Z",
+ "final_url": "https://github.com/openwrt/mt76/issues/932",
+ "repo": "openwrt/mt76",
+ "repo_language": "C",
+ "number": 932,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-11-18T02:17:13Z",
+ "updated_at": "2024-11-18T02:17:13Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "KERNEL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ptpt52",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-11-18T02:17:13Z",
+   "updated_utc": "2024-11-18T02:17:13Z",
+   "permalink": "https://github.com/openwrt/mt76/issues/932",
+   "body_markdown": "mt7915 (mt7981)\r\nenable kernel options:\r\n```diff\r\ndiff --git a/target/linux/mediatek/filogic/config-6.6 b/target/linux/mediatek/filogic/config-6.6\r\nindex 9fe080bbbbc..be27783ed1a 100644\r\n--- a/target/linux/mediatek/filogic/config-6.6\r\n+++ b/target/linux/mediatek/filogic/config-6.6\r\n@@ -141,6 +141,10 @@ CONFIG_CRYPTO_SM4_ARM64_CE_GCM=y\r\n CONFIG_CRYPTO_ZSTD=y\r\n CONFIG_DCACHE_WORD_ACCESS=y\r\n CONFIG_DEBUG_INFO=y\r\n+CONFIG_DEBUG_KMEMLEAK=y\r\n+CONFIG_DEBUG_KMEMLEAK_AUTO_SCAN=y\r\n+# CONFIG_DEBUG_KMEMLEAK_DEFAULT_OFF is not set\r\n+CONFIG_DEBUG_KMEMLEAK_MEM_POOL_SIZE=16000\r\n CONFIG_DEBUG_MISC=y\r\n CONFIG_DIMLIB=y\r\n CONFIG_DMADEVICES=y\r\n@@ -225,6 +229,7 @@ CONFIG_IRQ_TIME_ACCOUNTING=y\r\n CONFIG_IRQ_WORK=y\r\n CONFIG_JBD2=y\r\n CONFIG_JUMP_LABEL=y\r\n+CONFIG_KALLSYMS=y\r\n CONFIG_LEDS_PWM=y\r\n CONFIG_LEDS_SMARTRG_LED=y\r\n CONFIG_LIBFDT=y\r\n@@ -460,6 +465,9 @@ CONFIG_SPI_MT65XX=y\r\n # CONFIG_SPI_MTK_NOR is not set\r\n CONFIG_SPI_MTK_SNFI=y\r\n CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU=y\r\n+CONFIG_STACKDEPOT=y\r\n+CONFIG_STACKDEPOT_ALWAYS_INIT=y\r\n+CONFIG_STACKTRACE=y\r\n CONFIG_SWIOTLB=y\r\n CONFIG_SWPHY=y\r\n CONFIG_SYSCTL_EXCEPTION_TRACE=y\r\n```\r\nlog:\r\n```\r\nunreferenced object 0xffffff800ab2e780 (size 128):\r\n  comm \"mt76-tx phy0\", pid 1489, jiffies 4294981471 (age 1169.570s)\r\n  hex dump (first 32 bytes):\r\n    2c 05 00 12 08 84 00 d1 28 00 00 00 02 78 00 20  ,.......(....x. \r\n    00 00 00 00 02 00 00 00 00 00 00 00 00 04 28 00  ..............(.\r\n  backtrace:\r\n    [<00000000e8ddd2ed>] __kmem_cache_alloc_node+0x1c0/0x2c0\r\n    [<00000000b1f94e8f>] __kmalloc+0x80/0xd0\r\n    [<000000002345fba3>] mt76_dma_cleanup+0x608/0x8a4 [mt76]\r\n    [<000000008e536771>] mt76_tx_check_agg_ssn+0xa0/0x114 [mt76]\r\n    [<0000000005904cb2>] __mt76_tx_complete_skb+0x9a0/0xaf8 [mt76]\r\n    [<0000000049793883>] mt76_tx_worker+0xb4/0x1dc [mt76]\r\n    [<000000009a7fb220>] __mt76_worker_fn+0x8c/0xdc [mt76]\r\n    [<00000000584182c8>] kthread+0xd8/0xdc\r\n    [<0000000028c29abf>] ret_from_fork+0x10/0x20\r\nunreferenced object 0xffffff800ab2e380 (size 128):\r\n  comm \"mt76-tx phy0\", pid 1489, jiffies 4294981471 (age 1169.570s)\r\n  hex dump (first 32 bytes):\r\n    2c 05 00 12 08 84 00 d1 28 00 00 00 02 78 00 20  ,.......(....x. \r\n    00 00 00 00 02 00 00 00 00 00 00 00 00 04 28 00  ..............(.\r\n  backtrace:\r\n    [<00000000e8ddd2ed>] __kmem_cache_alloc_node+0x1c0/0x2c0\r\n    [<00000000b1f94e8f>] __kmalloc+0x80/0xd0\r\n    [<000000002345fba3>] mt76_dma_cleanup+0x608/0x8a4 [mt76]\r\n    [<000000008e536771>] mt76_tx_check_agg_ssn+0xa0/0x114 [mt76]\r\n    [<0000000005904cb2>] __mt76_tx_complete_skb+0x9a0/0xaf8 [mt76]\r\n    [<0000000049793883>] mt76_tx_worker+0xb4/0x1dc [mt76]\r\n    [<000000009a7fb220>] __mt76_worker_fn+0x8c/0xdc [mt76]\r\n    [<00000000584182c8>] kthread+0xd8/0xdc\r\n    [<0000000028c29abf>] ret_from_fork+0x10/0x20\r\n```"
+  }
+ ]
+}

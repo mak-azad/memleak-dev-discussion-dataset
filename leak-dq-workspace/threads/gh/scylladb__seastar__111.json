@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/scylladb/seastar/issues/111",
+ "passes": [
+  "main"
+ ],
+ "title": "allocator_test fails - alloc-dealloc-mismatch",
+ "author_login": "npmadhu",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:53Z",
+ "final_url": "https://github.com/scylladb/seastar/issues/111",
+ "repo": "scylladb/seastar",
+ "repo_language": "C++",
+ "number": 111,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2016-01-23T06:04:36Z",
+ "updated_at": "2016-01-23T06:06:54Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "npmadhu",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-01-23T06:04:36Z",
+   "updated_utc": "2016-01-23T06:06:54Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/111",
+   "body_markdown": "allocator_test fails - the problem is that new uses posix_memalign to allocate - the unique_ptr uses std::delete - solution is to use a custom deleter for unique_ptr.\n\nAddressSanitizer output\n==2551==ERROR: AddressSanitizer: alloc-dealloc-mismatch (malloc vs operator delete []) on 0x60900000d780\n#0 0x7fa1424d502a in operator delete[](void*) (/usr/lib/x86_64-linux-gnu/libasan.so.2+0x9a02a)\n\n```\n#1 0x41375c in std::default_delete<char []>::operator()(char*) const (/home/seamaster/seastar/build/debug/tests/allocator_test_g+0x41375c)\n#2 0x40f7d4 in std::unique_ptr<char [], std::default_delete<char []> >::~unique_ptr() (/home/seamaster/seastar/build/debug/tests/allocator_test_g+0x40f7d4)\n```\n\nfix - diff attached.\n[allocator_test.txt](https://github.com/scylladb/seastar/files/101726/allocator_test.txt)\n"
+  }
+ ]
+}

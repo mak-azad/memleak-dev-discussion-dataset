@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/nasa/cFS/issues/1104",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[SECURITY] CFE_TBL_LoadCmd() file descriptor leak causes denial of service via resource exhaustion",
+ "author_login": "xmin-02",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:46Z",
+ "final_url": "https://github.com/nasa/cFS/issues/1104",
+ "repo": "nasa/cFS",
+ "repo_language": "C",
+ "number": 1104,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-25T16:39:13Z",
+ "updated_at": "2026-08-27T14:34:29Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "xmin-02",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-25T16:39:13Z",
+   "updated_utc": "2026-08-27T14:34:29Z",
+   "permalink": "https://github.com/nasa/cFS/issues/1104",
+   "body_markdown": "**Checklist (Please check before submitting)**\n\n- [x] I reviewed the [Contributing Guide](https://github.com/nasa/cFS/blob/main/CONTRIBUTING.md).\n- [x] I performed a cursory search to see if the bug report is relevant, not redundant, nor in conflict with other tickets.\n\n**Describe the bug**\n\nCFE_TBL_LoadCmd(), the command handler for loading table configuration files, opens a file descriptor via CFE_TBL_TxnOpenTableLoadFile() but fails to close it before returning. Each successful TBL_LOAD command leaks exactly one file descriptor. An authenticated attacker can repeatedly send well-formed TBL_LOAD commands to exhaust the system's open file descriptor limit (typically 256 on Linux), preventing subsequent file operations and causing denial of service.\n\nThe vulnerability is in `cfe/modules/tbl/fsw/src/cfe_tbl_task_cmds.c`, function `CFE_TBL_LoadCmd()` (lines 392-477). At line 418, the function opens a file:\n\n```c\nStatus = CFE_TBL_TxnOpenTableLoadFile(&Txn, LoadFilename, &FileDescriptor, &Header);\n```\n\nAt line 443, it reads from the file:\n\n```c\nStatus = CFE_TBL_LoadContentFromFile(&Txn, FileDescriptor, Header.Tbl.Offset, Header.Tbl.NumBytes);\n```\n\nThen at line 452, it calls `CFE_TBL_TxnFinish()`, which only unlocks the registry and does NOT close the file descriptor:\n\n```c\nCFE_TBL_TxnFinish(&Txn);\n```\n\nThe function returns at line 476 without ever calling `OS_close(FileDescriptor)`, leaving the descriptor open indefinitely.\n\n**To Reproduce**\n\nSteps to reproduce the behavior:\n\n1. Build a `native_std` deployment with SBN table service enabled.\n2. Start `core-cpu1`.\n3. Send 256+ TBL_LOAD commands with valid table files (e.g., via cmd_send or SBN).\n4. After OS_MAX_NUM_OPEN_FILES commands, all subsequent file operations fail.\n5. Monitor /proc/[core-cpu1-pid]/fd (Linux) to confirm FD count grows: initial 4 → final 34 after 30 load attempts.\n\nThe leak is exact: **N TBL_LOAD commands = N leaked file descriptors** (verified by standalone reproduction: 30 open() calls → 30 unclosed fds).\n\n**Expected behavior**\n\nThe file descriptor must be closed before CFE_TBL_LoadCmd() returns. All other similar code paths in cfe_tbl_load.c close the descriptor explicitly:\n\n```c\n// cfe_tbl_load.c:685-687 (correct pattern)\n/* Done with the file now -- must always close the file regardless of what happened */\nOS_close(FileDescriptor);\n```\n\nCFE_TBL_LoadCmd() has identical file operations but lacks the close call.\n\n**Code snips**\n\n- `cfe/modules/tbl/fsw/src/cfe_tbl_task_cmds.c:418` — opens file descriptor\n- `cfe/modules/tbl/fsw/src/cfe_tbl_task_cmds.c:443` — reads from file\n- `cfe/modules/tbl/fsw/src/cfe_tbl_task_cmds.c:452` — CFE_TBL_TxnFinish() called (does NOT close fd)\n- `cfe/modules/tbl/fsw/src/cfe_tbl_task_cmds.c:476` — returns WITHOUT OS_close()\n- `cfe/modules/tbl/fsw/src/cfe_tbl_transaction.c:233-241` — CFE_TBL_TxnFinish() source (only unlocks registry, no fd handling)\n- `cfe/modules/tbl/fsw/src/cfe_tbl_load.c:685-687` — correct pattern in other code path (has OS_close)\n\n**System observed on:**\n\n- Hardware: x86-64 (generic)\n- OS: Ubuntu 22.04 (Linux 5.x)\n- Versions: cFE 7.0 (`dev1`), OSAL/PSP from same bundle, built for `pc-linux` PSP\n- Verified with AddressSanitizer and FD monitoring\n\n**Additional context**\n\nSeverity (self-assessed): CVSS 3.1 base 7.5 (High), vector `AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H`. The leak is triggered by any authenticated sender of TBL_LOAD commands (network reachable via SBN) and causes guaranteed denial of service when the FD limit is exhausted. Attack Vector is Network because SBN TCP is accessible remotely; no local access required.\n\nThe vulnerability is distinct from UDP-based table-loading issues. This is a resource-exhaustion (DoS) vector in the command handler path, not a protocol parsing or validation issue. A cursory search of nasa/cFS and nasa/cFE issues did not find this specific fd-leak case (existing TBL tickets address validation logic and transaction semantics, not resource cleanup).\n\n**Fix is straightforward:** Add `OS_close(FileDescriptor);` before the return at line 476, following the pattern from cfe_tbl_load.c.\n\nAttached:\n- [real_fd_leak_demo.c](https://github.com/user-attachments/files/31428741/real_fd_leak_demo.c) — standalone C program that reproduces the exact leak pattern (30 open() → 30 leaked fds)\n- [EVIDENCE.md](https://github.com/user-attachments/files/31428740/EVIDENCE.md) — detailed static code analysis and design comparison with correct code paths\n- [test_fd_leak.c](https://github.com/user-attachments/files/31428739/test_fd_leak.c) — dynamic simulation of CFE_TBL_LoadCmd behavior\n- [real_fd_leak_demo_output.txt](https://github.com/user-attachments/files/31428738/real_fd_leak_demo_output.txt) — execution output showing FD leak progression\n\n**Reporter Info**\n\n- Name: xmin\n- Organization: YongKK team"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5413637196,
+   "author_login": "dzbaker",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-08-25T16:41:40Z",
+   "updated_utc": "2026-08-25T16:41:40Z",
+   "permalink": "https://github.com/nasa/cFS/issues/1104#issuecomment-5413637196",
+   "body_markdown": "Tagging @ddstewar for awareness."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5415765354,
+   "author_login": "xmin-02",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-25T19:41:20Z",
+   "updated_utc": "2026-08-25T19:41:20Z",
+   "permalink": "https://github.com/nasa/cFS/issues/1104#issuecomment-5415765354",
+   "body_markdown": "This issue should have been reported to nasa/cFE since it's a cFE core module issue.\nI've reported it to the correct repository here: https://github.com/nasa/cFE/issues/2811\n\nApologies for the confusion!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5415790526,
+   "author_login": "ddstewar",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-08-25T19:43:28Z",
+   "updated_utc": "2026-08-25T19:43:28Z",
+   "permalink": "https://github.com/nasa/cFS/issues/1104#issuecomment-5415790526",
+   "body_markdown": "Issues can be transferred. No need to create multiple in the future. I'll be able to give this time tomorrow."
+  }
+ ]
+}

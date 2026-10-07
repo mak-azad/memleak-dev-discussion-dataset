@@ -1,0 +1,89 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/att/ast/issues/422",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "ksh93: file descriptor leak",
+ "author_login": "McDutchie",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:53Z",
+ "final_url": "https://github.com/att/ast/issues/422",
+ "repo": "att/ast",
+ "repo_language": "C",
+ "number": 422,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-02-22T23:51:06Z",
+ "updated_at": "2019-06-27T00:56:03Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 4,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "McDutchie",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-02-22T23:51:06Z",
+   "updated_utc": "2019-06-27T00:56:03Z",
+   "permalink": "https://github.com/att/ast/issues/422",
+   "body_markdown": "Reproducing this [report from the ast-developers list](http://narkive.com/an8Y04rb.1) here as it does not appear to be fixed in current git.\r\n\r\nThere is a file descriptor leak related to process substitution in ksh. This test script by Jeff Frontz shows the list of open files grows by one on every iteration. Executing the same script on bash or zsh does not show any growth of open files.\r\n\r\n````\r\n#! /bin/ksh\r\n\r\nfdUser() {\r\n\t:\r\n}\r\n\r\nwhile true\r\ndo\r\n\tfdUser <(\r\n\t\techo \" -e\"\r\n\t)\r\n\r\n\tif [ -d /proc ]\r\n\tthen\r\n\t\tls /proc/$$/fd\r\n\telse\r\n\t\tlsof -p $$ | wc -l\r\n\tfi\r\n\tsleep 1\r\ndone\r\n````\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 504812052,
+   "author_login": "krader1961",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-06-24T01:57:35Z",
+   "updated_utc": "2019-06-24T01:57:35Z",
+   "permalink": "https://github.com/att/ast/issues/422#issuecomment-504812052",
+   "body_markdown": "Note that this bug exists in the ksh93u+ release as well as the current git master branch; i.e., we haven't inadvertently fixed this."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 505710708,
+   "author_login": "krader1961",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-06-26T04:14:55Z",
+   "updated_utc": "2019-06-26T04:14:55Z",
+   "permalink": "https://github.com/att/ast/issues/422#issuecomment-505710708",
+   "body_markdown": "LGTM modulo possibly reverting some `if ()` blocks to their earlier single-line form but that is entirely optional."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 505790309,
+   "author_login": "siteshwar",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-06-26T09:09:08Z",
+   "updated_utc": "2019-06-26T09:09:08Z",
+   "permalink": "https://github.com/att/ast/issues/422#issuecomment-505790309",
+   "body_markdown": "@krader1961 Was this comment meant for #1338 ?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 506096822,
+   "author_login": "krader1961",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-06-27T00:56:03Z",
+   "updated_utc": "2019-06-27T00:56:03Z",
+   "permalink": "https://github.com/att/ast/issues/422#issuecomment-506096822",
+   "body_markdown": "> Was this comment meant for #1338 ?\r\n\r\nOops, yes."
+  }
+ ]
+}

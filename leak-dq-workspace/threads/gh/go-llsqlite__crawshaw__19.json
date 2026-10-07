@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/go-llsqlite/crawshaw/issues/19",
+ "passes": [
+  "main"
+ ],
+ "title": "Possible memory leak of `Snapshot.schema` on the error paths of `(*Conn).GetSnapshot`",
+ "author_login": "OvOhao",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:56Z",
+ "final_url": "https://github.com/go-llsqlite/crawshaw/issues/19",
+ "repo": "go-llsqlite/crawshaw",
+ "repo_language": "C",
+ "number": 19,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-28T02:02:59Z",
+ "updated_at": "2026-08-28T02:02:59Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "OvOhao",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-28T02:02:59Z",
+   "updated_utc": "2026-08-28T02:02:59Z",
+   "permalink": "https://github.com/go-llsqlite/crawshaw/issues/19",
+   "body_markdown": "# Possible memory leak of `Snapshot.schema` on the error paths of `(*Conn).GetSnapshot`\n\nI found a possible memory leak on the error paths of `(*Conn).GetSnapshot`. The schema name is\nallocated with `C.CString` **before** the two operations that can fail, and both failure returns\nexit without freeing it. The finalizer that would normally release it is registered only after\nthose returns, and `Free()`'s own `s.ptr == nil` guard would short-circuit in any case, because\n`sqlite3_snapshot_get` leaves `s.ptr` nil on failure. The failing conditions are the ones the\nfunction's own doc comment enumerates (non-WAL schema, open transaction, no committed WAL\ntransaction yet), and the documented remedy for the last of these is to retry — so a retry loop\nleaks once per attempt.\n\nFile: `snapshot.go`\n\nFunction: `github.com/go-llsqlite/crawshaw.(*Conn).GetSnapshot` (`snapshot.go:83-107`)\n\n```go\nfunc (conn *Conn) GetSnapshot(schema string) (*Snapshot, func(), error) {\n\tvar s Snapshot\n\tif schema == \"\" || schema == \"main\" {\n\t\ts.schema = cmain\n\t} else {\n\t\ts.schema = C.CString(schema)\n\t}\n\n\tendRead, err := conn.disableAutoCommitMode()\n\tif err != nil {\n\t\treturn nil, nil, err\n\t}\n\n\tres := C.sqlite3_snapshot_get(conn.conn, s.schema, &s.ptr)\n\tif res != 0 {\n\t\tendRead()\n\t\treturn nil, nil, reserr(\"Conn.CreateSnapshot\", \"\", \"\", res)\n\t}\n\n\truntime.SetFinalizer(&s, func(s *Snapshot) {\n\t\ts.Free()\n\t})\n\n\treturn &s, endRead, nil\n}\n```\n\nThe intended release, `snapshot.go:120-129` — note both the `s.ptr` guard and the `cmain` sentinel\ncheck:\n\n```go\nfunc (s *Snapshot) Free() {\n\tif s.ptr == nil {\n\t\treturn\n\t}\n\tC.sqlite3_snapshot_free(s.ptr)\n\tif s.schema != cmain {\n\t\tC.free(unsafe.Pointer(s.schema))\n\t}\n\ts.ptr = nil\n}\n```\n\n1. Application code calls `conn.GetSnapshot(schema)` with a schema name other than `\"\"` or\n   `\"main\"` — e.g. the name of an `ATTACH`ed database.\n2. Because the name is not the `main` sentinel, line 88 takes the `C.CString` branch:\n   `malloc(len(schema)+1)` plus a copy of the Go string. `s.schema` now holds the only reference.\n   `s` is a local `Snapshot` value; no finalizer is attached yet and `s.ptr` is still nil.\n3. Line 91 calls `conn.disableAutoCommitMode()`, which can fail (open transaction, non-WAL schema,\n   SQL error). Line 96 calls `C.sqlite3_snapshot_get`, which fails whenever SQLite's documented\n   preconditions are unmet — precisely the three conditions listed in this function's own doc\n   comment at lines 69-80.\n4. Lines 93 and 99 return without touching `s.schema`. `s` goes out of scope and the `malloc` block\n   becomes unreachable from Go. Both failure returns pass `nil` for the `*Snapshot` and the\n   `endRead` closure, so the caller receives no handle and cannot free anything either.\n5. The safety net at line 102 has not run yet, so no finalizer exists on these paths — and even if\n   one did, `Free()`'s first statement (line 121, `if s.ptr == nil { return }`) would return early,\n   because `sqlite3_snapshot_get` leaves `s.ptr` nil on failure. One `malloc` block of\n   `len(schema)+1` bytes leaks per failed call.\n\nThe `main`/`\"\"` branch is not affected: line 86 assigns the shared `cmain` sentinel\n(`blob.go:29`) and allocates nothing. `Free()`'s `s.schema != cmain` test at line 125 shows the\nauthors already distinguish the two cases correctly on the success path.\n\nGo trigger (if applicable):\n\n```go\nconn, _ := sqlite.OpenConn(\"file:test.db\", 0)\ndefer conn.Close()\n\n// A non-\"main\" schema name is required so that snapshot.go:88 allocates.\nsqlite.Exec(conn, \"ATTACH DATABASE 'file:other.db' AS other;\", nil)\n\n// \"other\" is not in WAL mode / has no committed WAL transaction, so\n// sqlite3_snapshot_get fails and snapshot.go:99 returns without freeing.\nfor i := 0; i < 1_000_000; i++ {\n\t_, _, err := conn.GetSnapshot(\"other\")\n\tif err == nil {\n\t\tpanic(\"expected failure for this trigger\")\n\t}\n\t// len(\"other\")+1 bytes leaked per iteration\n}\n```\n\nAny condition that makes `disableAutoCommitMode` or `sqlite3_snapshot_get` fail works. The leak is\nsynchronous and needs no GC step — and the finalizer that might have helped is never registered on\nthese paths.\n\nSuggested fix: release on both failure paths with the same `!= cmain` guard used at line 125 — for\nexample by hoisting a cleanup that runs only when the function returns an error:\n\n```go\n\tvar s Snapshot\n\tallocated := false\n\tif schema == \"\" || schema == \"main\" {\n\t\ts.schema = cmain\n\t} else {\n\t\ts.schema = C.CString(schema)\n\t\tallocated = true\n\t}\n\tok := false\n\tdefer func() {\n\t\tif !ok && allocated {\n\t\t\tC.free(unsafe.Pointer(s.schema))\n\t\t}\n\t}()\n\t...\n\tok = true\n\treturn &s, endRead, nil\n```\n"
+  }
+ ]
+}

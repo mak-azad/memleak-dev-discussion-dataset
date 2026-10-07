@@ -1,0 +1,44 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lfortran/lfortran/issues/13969",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak: nullify of a class(*) pointer array drops its 16-byte class wrapper without freeing it",
+ "author_login": "certik",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:15Z",
+ "final_url": "https://github.com/lfortran/lfortran/issues/13969",
+ "repo": "lfortran/lfortran",
+ "repo_language": "C++",
+ "number": 13969,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-10-03T21:11:41Z",
+ "updated_at": "2026-10-03T21:21:51Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "llvm",
+  "arrays",
+  "OOP"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "certik",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-03T21:11:41Z",
+   "updated_utc": "2026-10-03T21:21:51Z",
+   "permalink": "https://github.com/lfortran/lfortran/issues/13969",
+   "body_markdown": "`nullify` on a `class(*), pointer :: up(:)` array pointer discards the 16-byte class wrapper that the preceding pointer association allocated, without freeing it. Each `up => u; nullify(up)` cycle leaks 16 bytes.\n\n## Reproducer\n\n```fortran\nprogram nullify_leak\nimplicit none\nclass(*), allocatable, target :: u(:)\nclass(*), pointer :: up(:)\ninteger :: i\nallocate(u, source=[1,2,3,4,5,6])\ndo i = 1, 3\n    up => u\n    nullify(up)\nend do\nup => u\nprint *, \"ok\"\nend program\n```\n\n## LFortran\n\n```\n$ lfortran nullify_leak.f90 -o a_lf && valgrind --leak-check=full ./a_lf\n ok\nHEAP SUMMARY:\n    in use at exit: 48 bytes in 3 blocks\n  total heap usage: 7 allocs, 4 frees, 4,200 bytes allocated\n\n48 bytes in 3 blocks are definitely lost in loss record 1 of 1\n   at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n   by 0x486F3C3: default_alloc (lfortran_intrinsics.c:300)\n   by 0x4880A70: _lfortran_malloc_alloc (lfortran_intrinsics.c:5649)\n   by 0x109C1C: main (in a_lf)\n\nLEAK SUMMARY:\n   definitely lost: 48 bytes in 3 blocks\nERROR SUMMARY: 1 errors from 1 contexts\n```\n\n3 nullifies leak 3 x 16 bytes; the final association (not nullified) is freed correctly.\n\n## GFortran\n\n```\n$ gfortran nullify_leak.f90 -o a_gf && valgrind --leak-check=full ./a_gf\n ok\n   definitely lost: 0 bytes in 0 blocks\nERROR SUMMARY: 0 errors from 0 contexts\n```\n\nReproduces on main (76cf7af).\n\nFound while working on #13606."
+  }
+ ]
+}

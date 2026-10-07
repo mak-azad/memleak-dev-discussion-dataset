@@ -1,0 +1,99 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/boostorg/cobalt/issues/7",
+ "passes": [
+  "main"
+ ],
+ "title": "Multiple `mismatched-new-delete` warnings with gcc 11.3 and -Wall",
+ "author_login": "jsaf0",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:19Z",
+ "final_url": "https://github.com/boostorg/cobalt/issues/7",
+ "repo": "boostorg/cobalt",
+ "repo_language": "C++",
+ "number": 7,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-06-29T19:19:47Z",
+ "updated_at": "2025-04-23T11:37:13Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 5,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jsaf0",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-29T19:19:47Z",
+   "updated_utc": "2025-04-23T11:37:13Z",
+   "permalink": "https://github.com/boostorg/cobalt/issues/7",
+   "body_markdown": "When building latest master (`53fded2`) with gcc 11.3 (Ubuntu 22.04) and `-Wall`, the compiler complains about mismatched new-delete warnings. See snippet below:\r\n\r\n```\r\n/home/jfp/async/test/async_for.cpp: In function ‘boost::async::generator<int> test_data_gen()’:\r\n/home/jfp/async/test/async_for.cpp:30:1: warning: ‘static void boost::async::promise_memory_resource_base::operator delete(void*, std::size_t)’ called on pointer returned from a mismatched allocation function [-Wmismatched-new-delete]\r\n   30 | }\r\n```\r\n\r\nIs this warning safe to ignore?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1614236699,
+   "author_login": "jsaf0",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-30T07:18:54Z",
+   "updated_utc": "2023-06-30T07:18:54Z",
+   "permalink": "https://github.com/boostorg/cobalt/issues/7#issuecomment-1614236699",
+   "body_markdown": "FYI, gcc 13.0.1 does not give the same warnings."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1614291953,
+   "author_login": "klemens-morgenstern",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-30T08:09:23Z",
+   "updated_utc": "2023-06-30T08:09:23Z",
+   "permalink": "https://github.com/boostorg/cobalt/issues/7#issuecomment-1614291953",
+   "body_markdown": "From what I remember yes, but you might want to run the tests with the address sanitizer before using it in prod.\r\n\r\nIf this is an error (be it in the compiler), I can just remove the alloc-optimizations on that version."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1614462691,
+   "author_login": "jsaf0",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-30T10:31:42Z",
+   "updated_utc": "2023-06-30T10:31:42Z",
+   "permalink": "https://github.com/boostorg/cobalt/issues/7#issuecomment-1614462691",
+   "body_markdown": "No errors from building and running the unit tests with address sanitizer enabled - both on gcc 11.3.0 and gcc 13.0.1. So assume it's safe to ignore for now.\r\n\r\nMy previous comment from before that gcc 13.0.1 doesn't complain about mismatched-new-delete was not correct. When building in \"debug mode\" with CMake, it still spits out all these warnings. So it would definitely be nice to find a fix in order to avoid disabling this warning for all code."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1691280524,
+   "author_login": "klemens-morgenstern",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-08-24T08:53:27Z",
+   "updated_utc": "2023-08-24T08:53:27Z",
+   "permalink": "https://github.com/boostorg/cobalt/issues/7#issuecomment-1691280524",
+   "body_markdown": "I am pinning this because it'll come up again. This is safe, the gcc warnign is a false positive. It machtes the new & delete function signatures, and they don't match for coroutine allocations. "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2821383820,
+   "author_login": "MarekNiemiec",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-04-22T13:43:59Z",
+   "updated_utc": "2025-04-23T11:37:12Z",
+   "permalink": "https://github.com/boostorg/cobalt/issues/7#issuecomment-2821383820",
+   "body_markdown": "I was able to reproduce -Wmismatched-new-delete via something like this:\n`awaitable<std::tuple<_,_,Config>>`\nWhere Config is\n```c++\nstruct Config{\n...\nstd::array<Param,10>\n...\n}\n````\nWhere Param is another struct(and another quite complex with some strings and another 2 structs inside.\nProblem is only reproducible on our ci/cd\nCommenting line with `std::array<Param,10> solves issue.\nIf I add Param param[10] issue.\nIf I change and add 10 separate Param structs no issue.\nIf I do std::array<int,10> no issue.\n\nI can summarize it with problem appears if there is array/std::array with struct inside.\nStruct itself is not a problem as I can do 10 structs inside(instead of array 10 elements).\n\nWe have gcc 14.2.\nboost.asio 1.87\nVisible only with -O2 -DNDEBUG\n\nJust to remmind error:\n```\n[with Executor = boost::asio::any_io_executor]' called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\n<some not important data here>\n/include/boost/asio/detail/memory.hpp:79:33: note: returned from 'void* aligned_alloc(size_t, size_t)'\n   79 |   void* ptr = std::aligned_alloc(align, size);\n```\n"
+  }
+ ]
+}

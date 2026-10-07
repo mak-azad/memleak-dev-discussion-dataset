@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 27589846,
+ "url": "https://stackoverflow.com/questions/27589846/dynamic-arrays-using-realloc-without-memory-leaks",
+ "title": "Dynamic arrays: using realloc() without memory leaks",
+ "tags": [
+  "c",
+  "realloc",
+  "cppcheck"
+ ],
+ "score": 8,
+ "view_count": 7245,
+ "answer_count": 2,
+ "is_answered": true,
+ "accepted_answer_id": 27589881,
+ "created_utc": "2014-12-21T13:33:09Z",
+ "last_activity_utc": "2020-11-09T05:48:52Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 1501424,
+ "author_display_name": "Cecylia",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/27589846/dynamic-arrays-using-realloc-without-memory-leaks",
+ "body_html": "<p>I use realloc to resize the memory allocated:</p>\n\n<pre><code>char **get_channel_name(void)   \n{\n    char **result;\n    int n;\n\n    result = (char **) 0;\n    for (elem = snd_mixer_first_elem(handle), n = 0; elem; elem = snd_mixer_elem_next(elem)) {\n        if (!snd_mixer_selem_is_active(elem))\n            continue;\n        if (snd_mixer_selem_has_playback_volume(elem) &amp;&amp;\n            snd_mixer_selem_has_playback_switch(elem) &amp;&amp;\n            snd_mixer_selem_has_capture_switch(elem)) {\n            if (result == (char **) 0)\n                result = (char **) malloc(sizeof(char *));\n            else\n                result = (char **) realloc(result, sizeof(char *) * (n + 1)); /* nulled but not freed upon failure */\n            result[n++] = strdup(snd_mixer_selem_get_name(elem));\n        }\n    }\n\n    if (result == (char **) 0)\n        return NULL;\n\n    result = (char **) realloc(result, sizeof(char *) * (n + 1)); /* nulled but not freed upon failure */\n    result[n] = NULL;\n\n    return result;\n}\n</code></pre>\n\n<p>When I check code with cppcheck tool static C/C++ code analysis, printed the following warings:</p>\n\n<pre><code>Common realloc mistake: 'result' nulled but not freed upon failure\n</code></pre>\n\n<p>How can I fix these 2 possible memory leaks?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 27589881,
+   "parent_id": 27589846,
+   "author_user_id": 694576,
+   "author_display_name": "alk",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/27589881",
+   "score": 16,
+   "created_utc": "2014-12-21T13:37:53Z",
+   "last_edit_utc": "2020-11-09T05:48:52Z",
+   "last_activity_utc": "2020-11-09T05:48:52Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>If <code>realloc()</code> fails it returns <code>NULL</code>.</p>\n<p>So if you do (and assuming <code>realloc()</code> would fail)</p>\n<pre><code>result = realloc(result, ...);\n</code></pre>\n<p><code>result</code> will be assigned <code>NULL</code> and what it pointed to is not <code>free()</code>ed and the address to be <code>free()</code>ed is lost.</p>\n<p>To fix this do:</p>\n<pre><code>{\n  void * tmp = realloc(result, ...);\n  if (NULL == tmp)\n  {\n    /* Handle error case, propably freeing what result is pointing to. */\n  }\n  else\n  {\n    result = tmp;\n  }\n}\n</code></pre>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 27589889,
+   "parent_id": 27589846,
+   "author_user_id": 335858,
+   "author_display_name": "Sergey Kalinichenko",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/27589889",
+   "score": 3,
+   "created_utc": "2014-12-21T13:39:04Z",
+   "last_edit_utc": "2014-12-21T13:44:36Z",
+   "last_activity_utc": "2014-12-21T13:44:36Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>The trick to fixing the \"nulled but not freed upon failure\" error is to store the value returned by <code>realloc</code> into a separate pointer, and check it for <code>NULL</code> before reassigning the old pointer:</p>\n\n<pre><code>char **tmp = (char **) realloc(result, sizeof(char *) * (n + 1));\nif (tmp) {\n    result = tmp;\n} else {\n    ... // Handle reallocation error\n}\n</code></pre>\n\n<p>Now that the assignment of <code>result</code> is protected by <code>NULL</code> check, you have the old value to work with: you could <code>free</code> it if you want, or you could continue using it if you need to. The original code, on the other hand, does not give you the same option.</p>\n\n<p><strong>Note:</strong> When you pass <code>NULL</code> pointer to <code>realloc</code>, it behaves like <code>malloc</code>. That's why you can drop the conditional in the first use of <code>realloc</code> - replace this</p>\n\n<pre><code>if (result == (char **) 0)\n    result = (char **) malloc(sizeof(char *));\nelse\n    result = (char **) realloc(result, sizeof(char *) * (n + 1));\n</code></pre>\n\n<p>with this:</p>\n\n<pre><code>char** tmep = (char **) realloc(result, sizeof(char *) * (n + 1));\n... // check temp and assign result here\n</code></pre>\n\n<p>Don't forget to set <code>n</code> to zero - currently, it's used uninitialized, which is undefined behavior.</p>\n"
+  }
+ ]
+}

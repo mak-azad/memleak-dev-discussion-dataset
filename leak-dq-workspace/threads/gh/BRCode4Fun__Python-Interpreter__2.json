@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leaks",
+ "author_login": "sten-code",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:14Z",
+ "final_url": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2",
+ "repo": "BRCode4Fun/Python-Interpreter",
+ "repo_language": "C++",
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-02-26T22:42:40Z",
+ "updated_at": "2026-06-03T13:28:05Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "sten-code",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-02-26T22:42:40Z",
+   "updated_utc": "2026-06-03T13:28:05Z",
+   "permalink": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2",
+   "body_markdown": "You probably already know this, but in the case that you don't. This program is full of memory leaks. I've looked through this code. Everytime you do a heap allocation you don't delete it anywhere. If you do a simple while loop:\n```py\nwhile True:\n    print(\"Hello, World!\")\n```\nThis will eventually crash, because inside the visit nodes you return `new PyNone()` and never clean them up. Inside the while loop visit you evaluate the condition, but never delete the condition object."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2795203812,
+   "author_login": "tonisidneimc",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-04-10T21:26:25Z",
+   "updated_utc": "2025-04-10T21:26:25Z",
+   "permalink": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2#issuecomment-2795203812",
+   "body_markdown": "I’ve just seen the data leak issue you reported two months ago, and I want to prioritize fixing it in the next release. While I’ve been preparing some new features, I recognize that this memory leak is more critical and will focus on resolving it first. I’ve been working alone on the project recently, so I apologize for the delay. Do you have any suggestions on how to approach this problem directly?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2795593042,
+   "author_login": "sten-code",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-04-11T01:28:25Z",
+   "updated_utc": "2025-04-11T01:29:22Z",
+   "permalink": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2#issuecomment-2795593042",
+   "body_markdown": "Fixing this would be really hard and time consuming, because these allocations happen everywhere throughout the project. \n\nI would recommend using `shared_ptr` and/or `unique_ptr`. It's basically a wrapper around a raw pointer, but it will clean itself up when no references exist to itself anymore. Use `unique_ptr` wherever you can because it's faster than `shared_ptr`.\n\nIf you don't want to use smart pointers, you could probably delete the memory from the destructors.\n\nFeel free to ask anything if you need any help."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4612821761,
+   "author_login": "tonisidneimc",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-06-03T13:28:05Z",
+   "updated_utc": "2026-06-03T13:28:05Z",
+   "permalink": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2#issuecomment-4612821761",
+   "body_markdown": "@sten-code  Thanks for the suggestions. They helped me work toward a fix.\n\nI didn’t move every PyObject to shared_ptr, but I did tighten ownership: unique_ptr for scopes, manual refcounts on bindings, singletons for None/bools, and a small GC that deletes temporaries when their refcount hits zero. The while loop now releases the previous condition before re-evaluating it.\n\nYour example (while True: print(\"Hello, World!\")) should no longer grow memory without bound on current main. It’s still a simple refcount sweep, not full cycle GC, but the cases you reported are covered.\n\nIf anything still leaks on your build, tell me the commit and I’ll check. Thanks again.\n\n\n"
+  }
+ ]
+}

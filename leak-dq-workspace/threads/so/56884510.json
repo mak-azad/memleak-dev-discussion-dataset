@@ -1,0 +1,68 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 56884510,
+ "url": "https://stackoverflow.com/questions/56884510/kernel-oops-96000021-1-smp",
+ "title": "Kernel Oops 96000021 [#1] SMP",
+ "tags": [
+  "c",
+  "linux-kernel",
+  "kernel-module",
+  "petalinux"
+ ],
+ "score": 0,
+ "view_count": 1924,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2019-07-04T09:13:39Z",
+ "last_activity_utc": "2019-12-05T10:56:48Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 11236403,
+ "author_display_name": "Andrea",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/56884510/kernel-oops-96000021-1-smp",
+ "body_html": "<p>I'm writing a driver for petalinux, but I've some problems with an v4l2 ioctl function, in particolar with <code>ioctl(fd, VIDIOC_STREAMON, &amp;type)</code>. When I call streamon it sometimes goes correctly other times I get this error:</p>\n\n<pre><code>[  899.083253]Unable to handle kernel NULL pointer dereference at virtual address 0000000000000001\n[  899.092044] Mem abort info:\n[  899.094832]   ESR = 0x96000021\n[  899.097875]   Exception class = DABT (current EL), IL = 32 bits\n[  899.103787]   SET = 0, FnV = 0\n[  899.106833]   EA = 0, S1PTW = 0\n[  899.109967] Data abort info:\n[  899.112836]   ISV = 0, ISS = 0x00000021\n[  899.116661]   CM = 0, WnR = 0\n[  899.119622] user pgtable: 4k pages, 39-bit VAs, pgdp = (____ptrval____)\n[  899.126228] [0000000000000001] pgd=0000000000000000, pud=0000000000000000\n[  899.133018] Internal error: Oops: 96000021 [#1] SMP\n[  899.137881] Modules linked in: video(O) al5d(O) al5e(O) allegro(O) xlnx_vcu_clk xlnx_vcu xilinx_hdmi_rx(O) xilinx_vphy(O) xlnx_vcu_core mali(O) uio_pdrv_genirq [last unloaded: video]\n[  899.154143] CPU: 0 PID: 2322 Comm: test Tainted: G        W  O      4.19.0-xilinx-v2019.1 #1\n[  899.162568] Hardware name: ZynqMP ZCU106 RevA (DT)\n[  899.167345] pstate: a0000005 (NzCv daif -PAN -UAO)\n[  899.172125] pc : __ll_sc___cmpxchg_case_acq_8+0x4/0x20\n[  899.177251] lr : mutex_lock_interruptible+0x18/0x40\n[  899.182118] sp : ffffff8010c73bb0\n[  899.185416] x29: ffffff8010c73bb0 x28: ffffffc87af98000\n[  899.190720] x27: ffffff8008769108 x26: ffffff8000c9b1f8\n[  899.196024] x25: 0000007fc63db5c4 x24: 0000000000000001\n[  899.201319] x23: 0000000000000000 x22: ffffff8009138648\n[  899.206615] x21: 0000000000000012 x20: 0000000040045612\n[  899.211910] x19: ffffffc879d60800 x18: 0000000000000000\n[  899.217205] x17: 0000000000000000 x16: 0000000000000000\n[  899.222501] x15: 0000000000000000 x14: 0000000000000000\n[  899.227796] x13: 0000000000000000 x12: 0000000000000000\n[  899.233091] x11: 0000000000000000 x10: 0000000000000000\n[  899.238387] x9 : 0000000000000000 x8 : 0000000000000000\n[  899.243682] x7 : 0000000000000000 x6 : ffffffc87b942080\n[  899.248977] x5 : 00000000ffffffff x4 : ffffff800876cea0\n[  899.254281] x3 : 0000000000000001 x2 : ffffffc87ac2f400\n[  899.259577] x1 : 0000000000000000 x0 : 0000000000000001\n[  899.264873] Process test (pid: 2322, stack limit = 0x(____ptrval____))\n[  899.271383] Call trace:\n[  899.273817]  __ll_sc___cmpxchg_case_acq_8+0x4/0x20\n[  899.278600]  __video_do_ioctl+0x124/0x498\n[  899.282600]  video_usercopy+0x144/0x518\n[  899.286420]  video_ioctl2+0x14/0x1c\n[  899.289894]  v4l2_ioctl+0x3c/0x58\n[  899.293202]  do_vfs_ioctl+0xb8/0x8a0\n[  899.296768]  ksys_ioctl+0x44/0x90\n[  899.300067]  __arm64_sys_ioctl+0x1c/0x28\n[  899.303975]  el0_svc_common+0x84/0xd8\n[  899.307627]  el0_svc_handler+0x68/0x80\n[  899.311360]  el0_svc+0x8/0xc\n[  899.314226] Code: 35ffff91 aa1003e0 d65f03c0 f9800011 (c85ffc10)\n[  899.320310] ---[ end trace da93a42a8cf31bfc ]---\nSegmentation fault\n</code></pre>\n\n<p>I tried to call VIDIOC_STREAMON four times:</p>\n\n<ul>\n<li>first: error</li>\n<li>second: ok</li>\n<li>third: ok</li>\n<li>fourth: error</li>\n</ul>\n\n<p>If I test again I get a different result. Is the error related to something in my driver or to the kernel ?</p>\n\n<p>This is my streamon function, but I get the error also when all the code inside vidioc_streamon is commented</p>\n\n<pre><code>static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type t){\n    int ret = -1;\n\n    if( t == V4L2_BUF_TYPE_VIDEO_CAPTURE )\n        skel-&gt;ready_for_capture = 1;\n\n    switch( t ){\n        case V4L2_BUF_TYPE_VIDEO_OUTPUT:    skel-&gt;ready_for_output = 0;\n                                            if (!skel-&gt;ready_for_capture) {\n                                                ret = allocate_buffers(skel);\n                                                if (ret &lt; 0)\n                                                    return ret;\n                                                skel-&gt;ready_for_capture = 1;\n                                            }\n                                            return 0;\n        case V4L2_BUF_TYPE_VIDEO_CAPTURE:   if( !skel-&gt;ready_for_capture ){\n                                                printk(KERN_ERR \"Streamon, capture not ready\");\n                                                return -EIO;\n                                            }\n                                            printk(KERN_INFO \"Streamon, capture ready\");\n                                            printk(KERN_INFO \"\");\n                                            return 0;\n        default:                            printk(KERN_INFO \"INVALID BUF_TYPE\");\n                                            return -EINVAL;\n    }\n\n    return -EINVAL;\n}\n</code></pre>\n\n<p>During the loading of the module I get this warning</p>\n\n<pre><code>[   29.165507] ------------[ cut here ]------------\n[   29.173531] refcount_t: increment on 0; use-after-free.\n[   29.178787] WARNING: CPU: 3 PID: 2295 at lib/refcount.c:153 refcount_inc_checked+0x40/0x48\n[   29.187038] Modules linked in: video(O+) al5d(O) al5e(O) allegro(O) xlnx_vcu_clk xlnx_vcu xilinx_hdmi_rx(O) xilinx_vphy(O) xlnx_vcu_core mali(O) uio_pdrv_genirq [last unloaded: video]\n[   29.203388] CPU: 3 PID: 2295 Comm: insmod Tainted: G           O      4.19.0-xilinx-v2019.1 #1\n[   29.211987] Hardware name: ZynqMP ZCU106 RevA (DT)\n[   29.216764] pstate: 60000005 (nZCv daif -PAN -UAO)\n[   29.221538] pc : refcount_inc_checked+0x40/0x48\n[   29.226052] lr : refcount_inc_checked+0x40/0x48\n[   29.230564] sp : ffffff8010f7b8f0\n[   29.233863] x29: ffffff8010f7b8f0 x28: ffffffc87aebb1b8\n[   29.239167] x27: ffffff800920fc18 x26: ffffffc87aebb000\n[   29.244471] x25: 0000000000000001 x24: ffffff8008d9c6d8\n[   29.249775] x23: 0000000000000000 x22: ffffff8008bfc7c8\n[   29.255079] x21: ffffff800918dc28 x20: ffffff8009138648\n[   29.260374] x19: 0000000000000001 x18: 0000000000000010\n[   29.265669] x17: 0000000000000000 x16: 0000000000000000\n[   29.270965] x15: ffffffffffffffff x14: ffffff8009138648\n[   29.276269] x13: ffffff80891d6f0f x12: ffffff80091d6f17\n[   29.281564] x11: ffffff800914a000 x10: ffffff8010f7b5d0\n[   29.286859] x9 : ffffff8009138648 x8 : ffffff8008569d70\n[   29.292163] x7 : 2d657375203b3020 x6 : 0000000000000189\n[   29.297458] x5 : 0000000000000001 x4 : 0000000000000000\n[   29.302754] x3 : 0000000000000000 x2 : ffffffffffffffff\n[   29.308049] x1 : c29b4d7389105500 x0 : 0000000000000000\n[   29.313345] Call trace:\n[   29.315778]  refcount_inc_checked+0x40/0x48\n[   29.319947]  __video_register_device+0x5f8/0xf00\n[   29.324561]  video_probe+0x394/0x550 [video]\n[   29.328818]  platform_drv_probe+0x50/0xa0\n[   29.332818]  really_probe+0x1c8/0x280\n[   29.336463]  driver_probe_device+0x54/0xe8\n[   29.340544]  __driver_attach+0xe4/0xe8\n[   29.344276]  bus_for_each_dev+0x70/0xc0\n[   29.348096]  driver_attach+0x20/0x28\n[   29.351655]  bus_add_driver+0x1dc/0x208\n[   29.355475]  driver_register+0x60/0x110\n[   29.359295]  __platform_driver_register+0x44/0x50\n[   29.363986]  video_init+0x28/0x1000 [video]\n[   29.368159]  do_one_initcall+0x74/0x178\n[   29.371987]  do_init_module+0x54/0x1c8\n[   29.375719]  load_module+0x1b5c/0x20e0\n[   29.379451]  __se_sys_finit_module+0xb8/0xc8\n[   29.383705]  __arm64_sys_finit_module+0x18/0x20\n[   29.388220]  el0_svc_common+0x84/0xd8\n[   29.391874]  el0_svc_handler+0x68/0x80\n[   29.395606]  el0_svc+0x8/0xc\n[   29.398470] ---[ end trace 6a49c9f1f8cce610 ]---\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 100319047,
+   "parent_id": 56884510,
+   "parent_type": "question",
+   "author_user_id": 3440745,
+   "author_display_name": "Tsyvarev",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/56884510/#comment100319047_56884510",
+   "score": 0,
+   "created_utc": "2019-07-04T10:29:12Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "&quot;Is the error related to something in my driver or to the kernel?&quot; - The error message just says that &quot;Unable to handle kernel NULL pointer dereference&quot; occured. Like any other error message, it doesn&#39;t contain information whether your driver is <b>responsible</b> for the error or not. Assuming the error doesn&#39;t hit without loading of your driver, the driver could be perfectly be a reason. We need to see its code (in form of <a href=\"https://stackoverflow.com/help/minimal-reproducible-example\">minimal reproducible example</a>) for make a conclusion. Without the code your question has a little sense."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 100323200,
+   "parent_id": 56884510,
+   "parent_type": "question",
+   "author_user_id": 11236403,
+   "author_display_name": "Andrea",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/56884510/#comment100323200_56884510",
+   "score": 0,
+   "created_utc": "2019-07-04T12:37:43Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Using the previous version of petalinux (kernel 4.14) I didn&#39;t get errors, with the new one (with kernel 4.19) I get that problem"
+  }
+ ]
+}

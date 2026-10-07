@@ -1,0 +1,52 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 65847255,
+ "url": "https://stackoverflow.com/questions/65847255/asan-not-properly-intercepting-alloc-free-in-stdostringstreams-str-when-overr",
+ "title": "ASAN not properly intercepting alloc/free in std::ostringstream's str when overriding new/delete?",
+ "tags": [
+  "c++",
+  "new-operator",
+  "clang++",
+  "delete-operator",
+  "address-sanitizer"
+ ],
+ "score": 2,
+ "view_count": 1020,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2021-01-22T14:42:22Z",
+ "last_activity_utc": "2021-01-22T15:37:00Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 81614,
+ "author_display_name": "Jyaif",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/65847255/asan-not-properly-intercepting-alloc-free-in-stdostringstreams-str-when-overr",
+ "body_html": "<p>When running my program with ASAN, I'm getting an error when using std::ostringstream. Something special with the program is that it's overriding the <code>new</code> and <code>delete</code> operators.</p>\n<p>The following code is a simplified repro case:</p>\n<pre class=\"lang-cpp prettyprint-override\"><code>#include &lt;sstream&gt;\n\nchar big_chunk[1000000];\nchar* alloc = big_chunk;\n\nvoid *operator new(std::size_t sz)  {\n   char* a = alloc;\n   alloc += ((sz +7)&amp;~7);\n   return a;\n}\n\nvoid operator delete(void *p) noexcept {\n}\n\nvoid operator delete(void* p, std::size_t) noexcept {\n}\n\nint main() {\n  std::ostringstream stream;\n  stream &lt;&lt; &quot;a long string that will need allocation&quot;;\n  stream.str();\n  return 0;\n}\n</code></pre>\n<p>When compiling and running this code with:</p>\n<pre><code>clang++ --std=c++17 main.cpp -fsanitize=address -O0 -g &amp;&amp; ./a.out\n</code></pre>\n<p>I'm getting the following error:</p>\n<pre><code>=================================================================\n==17820==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x0001081fc380 in thread T0\n    #0 0x108392c0d in wrap__ZdlPv+0x7d (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x55c0d)\n    #1 0x1081f11dc in main main.cpp:21\n    #2 0x7fff20354620 in start+0x0 (libdyld.dylib:x86_64+0x15620)\n\n0x0001081fc380 is located 0 bytes inside of global variable 'big_chunk' defined in 'main.cpp:3:6' (0x1081fc380) of size 1000000\nSUMMARY: AddressSanitizer: bad-free (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x55c0d) in wrap__ZdlPv+0x7d\n==17820==ABORTING\nAbort trap: 6\n</code></pre>\n<p>(main.cpp:21 corresponds to the <code>stream.str();</code> line)</p>\n<p>Is the error caused by my code, or is it caused by a problem in ASAN?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 65848051,
+   "parent_id": 65847255,
+   "author_user_id": 10159412,
+   "author_display_name": "Jeroen Lammertink",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/65848051",
+   "score": 4,
+   "created_utc": "2021-01-22T15:30:45Z",
+   "last_edit_utc": "2021-01-22T15:37:00Z",
+   "last_activity_utc": "2021-01-22T15:37:00Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>I added some print statements to your program:</p>\n<pre><code>\n    #include &lt;sstream&gt;\n    #include &lt;iostream&gt;\n    \n    char big_chunk[1000000];\n    char* alloc = big_chunk;\n    \n    void* operator new(std::size_t sz) {\n        char* a = alloc;\n        alloc += ((sz + 7) &amp; ~7);\n        std::cout &lt;&lt; '+' &lt;&lt; static_cast&lt;void*&gt;(a) &lt;&lt; std::endl;\n        return a;\n    }\n    \n    void operator delete(void* p) noexcept {\n        std::cout &lt;&lt; '-' &lt;&lt; p &lt;&lt; std::endl;\n    }\n    \n    void operator delete(void* p, std::size_t) noexcept {\n        std::cout &lt;&lt; '-' &lt;&lt; p &lt;&lt; std::endl;\n    }\n    \n    int main() {\n        std::ostringstream stream;\n        stream &lt;&lt; &quot;a long string that causes allocation&quot;;\n        stream.str();\n        return 0;\n    }\n\n</code></pre>\n<p>And when I run it without sanitize it outputs:</p>\n<pre><code>clang++ --std=c++17 main.cpp -O0 -g &amp;&amp; ./a.out\n+0x6021f0\n+0x6023f8\n-0x6023f8\n-0x6021f0\n</code></pre>\n<p>Which looks fine. When I remove these statements again and build it with sanitizer, clang says:</p>\n<pre><code>/tmp/main-96c773.o: In function `operator delete(void*)':\nmain.cpp:15: multiple definition of `operator delete(void*)'\n/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux/libclang_rt.asan_cxx-x86_64.a(asan_new_delete.cpp.o):asan_new_delete.cpp:(.text._ZdlPv+0x0): first defined here\n/tmp/main-96c773.o: In function `operator new(unsigned long)':\nmain.cpp:8: multiple definition of `operator new(unsigned long)'\n/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux/libclang_rt.asan_cxx-x86_64.a(asan_new_delete.cpp.o):asan_new_delete.cpp:(.text._Znwm+0x0): first defined here\nclang: error: linker command failed with exit code 1 (use -v to see invocation)\n</code></pre>\n<p>From this I deduce that the sanitizer itself also defined placement new and delete. I used  <code>clang version 6.0.0-1ubuntu2</code>. Possibly your version mixed up your definition of placement new and delete with the sanitizer version, resulting in this error. But your program is fine.</p>\n"
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/BennyQBD/3DEngineCpp/issues/45",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer: ",
+ "author_login": "ynsbalci",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:33Z",
+ "final_url": "https://github.com/BennyQBD/3DEngineCpp/issues/45",
+ "repo": "BennyQBD/3DEngineCpp",
+ "repo_language": "C",
+ "number": 45,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-08-17T06:35:00Z",
+ "updated_at": "2022-09-15T20:34:16Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ynsbalci",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-08-17T06:35:00Z",
+   "updated_utc": "2022-09-15T20:34:16Z",
+   "permalink": "https://github.com/BennyQBD/3DEngineCpp/issues/45",
+   "body_markdown": "hi!\r\nI've compiled the project in linux mint for codeblocks, but I get a pointer error. In \"stb_image.c\" the free() funcions is giving an error. what can i do?\r\nthanks have a good day.\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 510378109,
+   "author_login": "shivamprasad99",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-07-11T08:06:35Z",
+   "updated_utc": "2019-07-11T08:06:35Z",
+   "permalink": "https://github.com/BennyQBD/3DEngineCpp/issues/45#issuecomment-510378109",
+   "body_markdown": "I am also getting same error:\r\nfree(): invalid pointer\r\nAborted (core dumped)\r\non building from the terminal in Ubuntu 18.04 \r\nWhat should I do?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1116327898,
+   "author_login": "Phobos03",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-05-03T16:54:10Z",
+   "updated_utc": "2022-05-03T16:54:10Z",
+   "permalink": "https://github.com/BennyQBD/3DEngineCpp/issues/45#issuecomment-1116327898",
+   "body_markdown": "Hello, I know that this is old repo, but I also have the same issue like shivamprasad99 with free(): invalid pointer\r\nAborted (core dumped). Maybe someone resolve this issue already?  "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1200987724,
+   "author_login": "gedeschaines",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-08-01T10:03:08Z",
+   "updated_utc": "2022-08-01T10:03:08Z",
+   "permalink": "https://github.com/BennyQBD/3DEngineCpp/issues/45#issuecomment-1200987724",
+   "body_markdown": "**Fixes to prevent Policy warnings from syntax errors in CMake code files.**\r\n\r\n1. File: ./cmake/FindGLEW.cmake\r\n````\r\n    insert: SET(PROGRAMFILESX86 \"PROGRAMFILES(X86)\")\r\n    before: SET( GLEW_SEARCH_PATHS\r\n    and\r\n    change: \"$ENV{PROGRAMFILES(X86)}/GLEW\"   # WINDOWS\r\n        to: \"$ENV{${PROGRAMFILESX86}}/GLEW\"     # WINDOWS\r\n````\r\n\r\n2. File: ./cmake/FindSDL2.cmake\r\n````\r\n    insert: SET(PROGRAMFILESX86 \"PROGRAMFILES(X86)\")\r\n    before: SET( SDL2_SEARCH_PATHS\r\n    and\r\n    change: \"$ENV{PROGRAMFILES(X86)}/SDL2\"     # WINDOWS\r\n        to: \"$ENV{${PROGRAMFILESX86}}/SDL2\"   # WINDOWS\r\n````\r\n\r\n3. File: ./cmake/FindASSIMP.cmake\r\n````\r\n    insert: SET(PROGRAMFILESX86 \"PROGRAMFILES(X86)\")\r\n    before: SET( ASSIMP_SEARCH_PATHS\r\n    and\r\n    change: \"$ENV{PROGRAMFILES(X86)}/ASSIMP\"\t# WINDOWS\r\n        to: \"$ENV{${PROGRAMFILESX86}}/ASSIMP\"\t# WINDOWS\r\n````\r\n     \r\n**Fixes to prevent program execution abort on free(): invalid pointer.**\r\n\r\n1. File: ./src/rendering/texture.h, line 60\r\n````\r\n    from: void operator=(Texture texture);\r\n      to: Texture& operator=(Texture other) noexcept;\r\n````\r\n\r\n2. File: ./src/rendering/texture.cpp, lines 207-213\r\n\r\n    replace:\r\n````\r\n    void Texture::operator=(Texture texture)\r\n    {\r\n        char* temp[sizeof(Texture)/sizeof(char)];\r\n        memcpy(temp, this, sizeof(Texture));\r\n\tmemcpy(this, &texture, sizeof(Texture));\r\n        memcpy(&texture, temp, sizeof(Texture));\r\n    }\r\n````\r\n\r\n      with:\r\n````\r\n    Texture& Texture::operator=(Texture other) noexcept\r\n    {\r\n        //Implemented using move assignment.\r\n    \r\n        //Guard self assignment\r\n        if (this == &other)\r\n            return *this;\r\n    \r\n        if(m_textureData && m_textureData->RemoveReference())\r\n\t{\r\n            if(m_fileName.length() > 0)\r\n                s_resourceMap.erase(m_fileName);\r\n\t    \r\n\t        delete m_textureData;\r\n\t}\r\n\tm_fileName = other.m_fileName;\r\n        m_textureData = other.m_textureData;\r\n        m_textureData->AddReference();\r\n        return *this;\r\n    }\r\n````\r\n"
+  }
+ ]
+}

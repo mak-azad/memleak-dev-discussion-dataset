@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/openbmc/linux/issues/189",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "kmemleak detected in fsi master",
+ "author_login": "shenki",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:40Z",
+ "final_url": "https://github.com/openbmc/linux/issues/189",
+ "repo": "openbmc/linux",
+ "repo_language": "C",
+ "number": 189,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-04-07T22:24:21Z",
+ "updated_at": "2020-04-07T22:35:49Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "KERNEL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "shenki",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-04-07T22:24:21Z",
+   "updated_utc": "2020-04-07T22:35:49Z",
+   "permalink": "https://github.com/openbmc/linux/issues/189",
+   "body_markdown": "Running 5.4.28-00243-g757f8a4d828d on tacoma (ast2600)\r\n\r\n```\r\nunreferenced object 0xb4c76080 (size 64):\r\n  comm \"openpower-proc-\", pid 834, jiffies 4294958303 (age 48632.290s)\r\n  hex dump (first 32 bytes):\r\n    73 6c 61 76 65 40 30 30 3a 30 30 00 63 61 74 69  slave@00:00.cati\r\n    6f 6e 5f 69 64 00 ff ff ff ff ff ff ff ff ff ff  on_id...........\r\n  backtrace:\r\n    [<f784ec53>] __kmalloc_track_caller+0x108/0x234\r\n    [<7171ff6a>] kvasprintf+0x64/0xcc\r\n    [<4b2c151e>] kvasprintf_const+0x70/0x84\r\n    [<2366eb74>] kobject_set_name_vargs+0x34/0xa8\r\n    [<da392fbd>] dev_set_name+0x40/0x5c\r\n    [<95e3591d>] fsi_master_scan+0x15c/0x7e0\r\n    [<9729cf80>] fsi_master_rescan+0x3c/0x54\r\n    [<baaabd03>] master_rescan_store+0x1c/0x28\r\n    [<e0dce244>] dev_attr_store+0x24/0x30\r\n    [<87b299fc>] sysfs_kf_write+0x48/0x54\r\n    [<89c19ac5>] kernfs_fop_write+0x124/0x24c\r\n    [<e753a67b>] __vfs_write+0x4c/0x1dc\r\n    [<71e0cd50>] vfs_write+0xbc/0x18c\r\n    [<7e334600>] ksys_write+0x74/0xec\r\n    [<233bb279>] sys_write+0x18/0x1c\r\n    [<3ffa8e8f>] ret_fast_syscall+0x0/0x54\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 610653889,
+   "author_login": "mdmillerii",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-04-07T22:35:49Z",
+   "updated_utc": "2020-04-07T22:35:49Z",
+   "permalink": "https://github.com/openbmc/linux/issues/189#issuecomment-610653889",
+   "body_markdown": "This is dev_set_name. \r\n\r\nWas there a trigger?   Is the driver trying to set the name after the device was added?"
+  }
+ ]
+}

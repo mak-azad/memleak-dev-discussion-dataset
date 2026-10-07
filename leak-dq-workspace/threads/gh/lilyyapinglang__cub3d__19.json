@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lilyyapinglang/cub3d/issues/19",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "memory leak",
+ "author_login": "lilyyapinglang",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:53Z",
+ "final_url": "https://github.com/lilyyapinglang/cub3d/issues/19",
+ "repo": "lilyyapinglang/cub3d",
+ "repo_language": "C",
+ "number": 19,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-18T15:09:30Z",
+ "updated_at": "2026-07-18T16:34:58Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UNINIT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "lilyyapinglang",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-18T15:09:30Z",
+   "updated_utc": "2026-07-18T16:34:58Z",
+   "permalink": "https://github.com/lilyyapinglang/cub3d/issues/19",
+   "body_markdown": "```\nNO ./texture/north64.xpm\nSO ./texture/south64.xpm\nWE ./texture/west64.xpm\nEA ./texture/east64.xpm\n\nFD ./texture/east64.xpm\n\nF 220,100,0\nC 225,30,0\n        1111111111111111111111111\n        1000000000110000000000001\n        1011000001110000000000001\n        1001000000000000000000001\n111111111011000001110000000000001\n100000000011000001110111111111111\n11110111111111011100000010001\n11110111111111011101010010001\n11000000110101011100000010001\n10000000000000001100000010001\n10000000000000001101010010001\n11000001110101011111011110N0111\n11110111 1110101 101111010001\n11111111 1111111 111111111111\n```\n\n\n```\n cub3d-github git:(main) ✗ valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./cub3d ./maps/test_complex.cub\n==892023== Memcheck, a memory error detector\n==892023== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.\n==892023== Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info\n==892023== Command: ./cub3d ./maps/test_complex.cub\n==892023== \n0 \n==892023== Conditional jump or move depends on uninitialised value(s)\n==892023==    at 0x4017C5: parse_textures (process_cub_file.c:43)\n==892023==    by 0x401125: line_treatement (parse_input.c:40)\n==892023==    by 0x4011DA: dispatch_lines (parse_input.c:61)\n==892023==    by 0x4013B3: parse_file (parse_input.c:90)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023==  Uninitialised value was created by a stack allocation\n==892023==    at 0x400CD3: main (main.c:109)\n==892023== \n==892023== Conditional jump or move depends on uninitialised value(s)\n==892023==    at 0x4842DF6: free (vg_replace_malloc.c:990)\n==892023==    by 0x4017EF: parse_textures (process_cub_file.c:44)\n==892023==    by 0x401125: line_treatement (parse_input.c:40)\n==892023==    by 0x4011DA: dispatch_lines (parse_input.c:61)\n==892023==    by 0x4013B3: parse_file (parse_input.c:90)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023==  Uninitialised value was created by a stack allocation\n==892023==    at 0x400CD3: main (main.c:109)\n==892023== \n==892023== Invalid free() / delete / delete[] / realloc()\n==892023==    at 0x4842E43: free (vg_replace_malloc.c:990)\n==892023==    by 0x4017EF: parse_textures (process_cub_file.c:44)\n==892023==    by 0x401125: line_treatement (parse_input.c:40)\n==892023==    by 0x4011DA: dispatch_lines (parse_input.c:61)\n==892023==    by 0x4013B3: parse_file (parse_input.c:90)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023==  Address 0x40163d8 is in the Text segment of /usr/lib64/ld-linux-x86-64.so.2\n==892023==    at 0x40163D8: handle_intel.constprop.0 (dl-cacheinfo.h:286)\n==892023== \n 1 \n 3 \n 2 \nError\nInvalid character in map\n ==892023== \n==892023== HEAP SUMMARY:\n==892023==     in use at exit: 1,662 bytes in 47 blocks\n==892023==   total heap usage: 218 allocs, 175 frees, 20,258 bytes allocated\n==892023== \n==892023== 26 bytes in 1 blocks are indirectly lost in loss record 1 of 6\n==892023==    at 0x483FB26: malloc (vg_replace_malloc.c:447)\n==892023==    by 0x40448C: ft_calloc (in /home/ylang/code/cub3d-github/cub3d)\n==892023==    by 0x402296: ft_line (utils.c:50)\n==892023==    by 0x4024D9: get_next_line (utils.c:112)\n==892023==    by 0x40102F: read_file (parse_input.c:25)\n==892023==    by 0x401396: parse_file (parse_input.c:88)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023== \n==892023== 90 bytes in 4 blocks are definitely lost in loss record 2 of 6\n==892023==    at 0x483FB26: malloc (vg_replace_malloc.c:447)\n==892023==    by 0x4044E3: ft_strdup (in /home/ylang/code/cub3d-github/cub3d)\n==892023==    by 0x401777: parse_textures (process_cub_file.c:40)\n==892023==    by 0x401125: line_treatement (parse_input.c:40)\n==892023==    by 0x4011DA: dispatch_lines (parse_input.c:61)\n==892023==    by 0x4013B3: parse_file (parse_input.c:90)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023== \n==892023== 590 bytes in 22 blocks are indirectly lost in loss record 3 of 6\n==892023==    at 0x483FB26: malloc (vg_replace_malloc.c:447)\n==892023==    by 0x40448C: ft_calloc (in /home/ylang/code/cub3d-github/cub3d)\n==892023==    by 0x402296: ft_line (utils.c:50)\n==892023==    by 0x4024D9: get_next_line (utils.c:112)\n==892023==    by 0x401069: read_file (parse_input.c:30)\n==892023==    by 0x401396: parse_file (parse_input.c:88)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023== \n==892023== 612 bytes in 18 blocks are indirectly lost in loss record 4 of 6\n==892023==    at 0x483FB26: malloc (vg_replace_malloc.c:447)\n==892023==    by 0x40448C: ft_calloc (in /home/ylang/code/cub3d-github/cub3d)\n==892023==    by 0x401A8E: pad_line (generate_map.c:24)\n==892023==    by 0x401BB6: create_map (generate_map.c:48)\n==892023==    by 0x4013D6: parse_file (parse_input.c:95)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023== \n==892023== 764 (152 direct, 612 indirect) bytes in 1 blocks are definitely lost in loss record 5 of 6\n==892023==    at 0x483FB26: malloc (vg_replace_malloc.c:447)\n==892023==    by 0x40448C: ft_calloc (in /home/ylang/code/cub3d-github/cub3d)\n==892023==    by 0x401B3A: create_map (generate_map.c:42)\n==892023==    by 0x4013D6: parse_file (parse_input.c:95)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023== \n==892023== 808 (192 direct, 616 indirect) bytes in 1 blocks are definitely lost in loss record 6 of 6\n==892023==    at 0x483FB26: malloc (vg_replace_malloc.c:447)\n==892023==    by 0x40448C: ft_calloc (in /home/ylang/code/cub3d-github/cub3d)\n==892023==    by 0x401302: parse_file (parse_input.c:81)\n==892023==    by 0x400D1E: main (main.c:114)\n==892023== \n==892023== LEAK SUMMARY:\n==892023==    definitely lost: 434 bytes in 6 blocks\n==892023==    indirectly lost: 1,228 bytes in 41 blocks\n==892023==      possibly lost: 0 bytes in 0 blocks\n==892023==    still reachable: 0 bytes in 0 blocks\n==892023==         suppressed: 0 bytes in 0 blocks\n==892023== \n==892023== For lists of detected and suppressed errors, rerun with: -s\n==892023== ERROR SUMMARY: 15 errors from 6 contexts (suppressed: 0 from 0)\n➜  cub3d-github git:(main) ✗ \n```"
+  }
+ ]
+}

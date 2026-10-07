@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/RafaelVVolkmer/libmemalloc/issues/2",
+ "passes": [
+  "main"
+ ],
+ "title": "Valgrind Reports Memory Leak on GC Stack Scanning",
+ "author_login": "RafaelVVolkmer",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:38Z",
+ "final_url": "https://github.com/RafaelVVolkmer/libmemalloc/issues/2",
+ "repo": "RafaelVVolkmer/libmemalloc",
+ "repo_language": null,
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-08-23T22:54:58Z",
+ "updated_at": "2025-08-23T22:55:13Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "RafaelVVolkmer",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-08-23T22:54:58Z",
+   "updated_utc": "2025-08-23T22:55:13Z",
+   "permalink": "https://github.com/RafaelVVolkmer/libmemalloc/issues/2",
+   "body_markdown": "## Description\n\nWhen running applications that use the `libmemalloc` **Garbage Collector (GC)** under **Valgrind**, the tool consistently reports **memory leaks** and **invalid memory access warnings**.\n\nThis happens because the GC attempts to **scan the stack of a running thread** while executing inside the GC’s own thread.  \nValgrind interprets this as accessing **invalid or out-of-bounds memory regions**, since the GC is walking through another thread’s stack frame without proper suspension.\n\n---\n\n## Steps to Reproduce\n\n1. Build any multithreaded application with `libmemalloc` GC enabled.  \n2. Run the application with Valgrind:\n3. Observe Valgrind logs, which typically include:\n- \"Invalid read of size X\"\n- Memory leak reports even though GC should have reclaimed memory\n\n---\n\n## Root Cause\n\n- The GC does not suspend other threads before scanning their stacks.\n- As a result, it tries to traverse the memory of a live stack from another thread.\n- Valgrind correctly flags this as an invalid memory access and a potential memory leak.\n\n---\n\n##  Expected Behavior\n\n1. The GC should safely scan memory without causing Valgrind to detect invalid access.\n2. hread stacks must only be scanned if:\n3. They are safely suspended, or The scan is performed by the owning thread.\n\n---\n\n##  Impact\n\nHigh —  Developers running apps with Valgrind may see false positives that obscure real issues.\nHigh —  Risk of unsafe memory accesses in multithreaded environments if the GC continues scanning live stacks.\nLow — Reduces trust in the GC’s correctness when analyzed with Valgrind.\n\n---\n\n##Environment\n\n- `Libmemalloc version:` latest\n- `Platform:` Linux (tested with Valgrind 3.21.0)\n- `Application type:` multithreaded app using GC\n\n---\n\n _Reported by [Rafael V. Volkmer](mailto:rafael.v.volkmer@gmail.com)_\n"
+  }
+ ]
+}

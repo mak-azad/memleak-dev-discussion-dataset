@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/flexpaper/pdf2json/issues/20",
+ "passes": [
+  "main"
+ ],
+ "title": "Alloc_dealloc_mismatch in function CSStyle",
+ "author_login": "fouzhe",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:56Z",
+ "final_url": "https://github.com/flexpaper/pdf2json/issues/20",
+ "repo": "flexpaper/pdf2json",
+ "repo_language": "C++",
+ "number": 20,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-07-23T11:09:27Z",
+ "updated_at": "2018-07-23T11:09:27Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "fouzhe",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-07-23T11:09:27Z",
+   "updated_utc": "2018-07-23T11:09:27Z",
+   "permalink": "https://github.com/flexpaper/pdf2json/issues/20",
+   "body_markdown": "I use **Clang 6.0 and AddressSanitizer**  to build **pdf2json v0.69**, this [file](https://github.com/fouzhe/security/blob/master/pdf2json/alloc_dealloc_mismatch_CSStyle.pdf) can cause alloc-dealloc-mismatch with the following command:\r\n\r\n\r\n\r\n```shell\r\n./pdf2json alloc_dealloc_mismatch_CSStyle.pdf 1.json\r\n```\r\n\r\n\r\n\r\nThis is the ASAN information:\r\n\r\n```shell\r\n=================================================================\r\n==28963==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x603000017230\r\n    #0 0x517bd0 in operator delete(void*) /home/fouzhe/llvm/llvm/projects/compiler-rt/lib/asan/asan_new_delete.cc:149\r\n    #1 0x537741 in XmlFontAccu::CSStyle(int, int) /home/fouzhe/my_fuzz/pdf2json/src/XmlFonts.cc:392:4\r\n    #2 0x523af4 in HtmlPage::dumpAsXML(_IO_FILE*, int, int, int) /home/fouzhe/my_fuzz/pdf2json/src/ImgOutputDev.cc:618:35\r\n    #3 0x52a724 in HtmlPage::dump(_IO_FILE*, int, int, int) /home/fouzhe/my_fuzz/pdf2json/src/ImgOutputDev.cc:712:14\r\n    #4 0x52a724 in ImgOutputDev::endPage() /home/fouzhe/my_fuzz/pdf2json/src/ImgOutputDev.cc:1036\r\n    #5 0x78c975 in Gfx::~Gfx() /home/fouzhe/my_fuzz/pdf2json/xpdf/Gfx.cc:530:10\r\n    #6 0x60aa91 in Page::displaySlice(OutputDev*, double, double, int, int, int, int, int, int, int, Links*, int, Catalog*, int (*)(void*), void*) /home/fouzhe/my_fuzz/pdf2json/xpdf/Page.cc:359:3\r\n    #7 0x609810 in Page::display(OutputDev*, double, double, int, int, int, Links*, int, Catalog*, int (*)(void*), void*) /home/fouzhe/my_fuzz/pdf2json/xpdf/Page.cc:265:3\r\n    #8 0x60feb5 in PDFDoc::displayPage(OutputDev*, int, double, double, int, int, int, int, int (*)(void*), void*) /home/fouzhe/my_fuzz/pdf2json/xpdf/PDFDoc.cc:319:27\r\n    #9 0x60feb5 in PDFDoc::displayPages(OutputDev*, int, int, double, double, int, int, int, int, int (*)(void*), void*) /home/fouzhe/my_fuzz/pdf2json/xpdf/PDFDoc.cc:332\r\n    #10 0x53c946 in main /home/fouzhe/my_fuzz/pdf2json/src/pdf2json.cc:275:10\r\n    #11 0x7f619da1082f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2082f)\r\n    #12 0x41b198 in _start (/home/fouzhe/my_fuzz/pdf2json/src/pdf2json+0x41b198)\r\n\r\n0x603000017230 is located 0 bytes inside of 20-byte region [0x603000017230,0x603000017244)\r\nallocated by thread T0 here:\r\n    #0 0x517008 in operator new[](unsigned long) /home/fouzhe/llvm/llvm/projects/compiler-rt/lib/asan/asan_new_delete.cc:95\r\n    #1 0x53749b in XmlFontAccu::CSStyle(int, int) /home/fouzhe/my_fuzz/pdf2json/src/XmlFonts.cc:363:19\r\n    #2 0x523af4 in HtmlPage::dumpAsXML(_IO_FILE*, int, int, int) /home/fouzhe/my_fuzz/pdf2json/src/ImgOutputDev.cc:618:35\r\n\r\nSUMMARY: AddressSanitizer: alloc-dealloc-mismatch /home/fouzhe/llvm/llvm/projects/compiler-rt/lib/asan/asan_new_delete.cc:149 in operator delete(void*)\r\n==28963==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0\r\n==28963==ABORTING\r\n```\r\n\r\n\r\n\r\n# "
+  }
+ ]
+}

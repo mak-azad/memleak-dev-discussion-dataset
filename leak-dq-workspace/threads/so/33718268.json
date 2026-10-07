@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 33718268,
+ "url": "https://stackoverflow.com/questions/33718268/c-free-crashes-on-reassigned-pointer-of-pointer",
+ "title": "C++ - free crashes on reassigned pointer of pointer",
+ "tags": [
+  "c++",
+  "pointers"
+ ],
+ "score": 0,
+ "view_count": 115,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 33719171,
+ "created_utc": "2015-11-15T09:39:29Z",
+ "last_activity_utc": "2015-11-15T11:31:20Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 5563931,
+ "author_display_name": "swdmnd",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/33718268/c-free-crashes-on-reassigned-pointer-of-pointer",
+ "body_html": "<p>It's my first time being here and I am new with coding.\nI am trying to make a Matrix class,</p>\n\n<pre><code>//Matrix.hpp\n#ifndef __MATRIX_H__\n#define __MATRIX_H__\nclass Matrix{\nprivate:\n    unsigned int m_row, m_column;\n    unsigned int** matrix;\n\npublic:\n    Matrix(unsigned int row, unsigned int column);\n    ~Matrix();\n\n    void transposeMatrix();\n\n    void fill(unsigned int x);\n    void fill_x(unsigned int row, unsigned int column, unsigned int x);\n    void setMatrix(unsigned int** mat);\n\n    bool isValid(unsigned int row, unsigned int column);\n\n    unsigned int getRowNum();\n    unsigned int getColumnNum();\n    unsigned int get_x(unsigned int row, unsigned int column);\n    unsigned int** getMatrix();\n\n};\n#endif\n</code></pre>\n\n<p>in Matrix.cpp file:</p>\n\n<pre><code>#include &lt;cstdlib&gt;\n#include &lt;cstdbool&gt;\n#include \"Matrix.hpp\"\n\nbool Matrix::fail = false;\n\nMatrix::Matrix(unsigned int row, unsigned int column){\n    m_row=row;\n    m_column=column;\n\n    matrix = new unsigned int*[row];\n    for(int i=0; i&lt;row; i++){\n        matrix[i]=new unsigned int[column];\n        for(int j=0; j&lt;column; j++){\n            matrix[i][j]=0;\n        }\n    }\n}\n\nMatrix::~Matrix(){\n    for(int i=0; i &lt; m_row; i++){\n        free(matrix[i]);\n        matrix[i]=NULL;\n    }\n    free(matrix);\n    matrix=NULL;\n}\n\nvoid Matrix::transposeMatrix(){\n    Matrix tmp_matrix(m_column, m_row);\n    for(int i=0; i &lt; m_row; i++){\n        for(int j=0; j&lt; m_column; j++){\n            tmp_matrix.fill_x(j, i, this-&gt;get_x(i, j));\n        }\n    }\n\n    this-&gt;setMatrix(tmp_matrix.getMatrix());\n    unsigned int tmp = m_row;\n    m_row = m_column;\n    m_column = tmp;\n}\n\nvoid Matrix::setMatrix(unsigned int** mat){\n    for(int i=0; i &lt; m_row; i++){\n        free(matrix[i]);\n        matrix[i]=NULL;\n    }\n    free(matrix);\n    matrix=NULL;\n    matrix=mat;\n}\n\nunsigned int** Matrix::getMatrix(){\n    return matrix;\n}\n\nvoid Matrix::fill(unsigned int x){\n    for(int i=0; i&lt;m_row; i++){\n        for(int j=0; j&lt;m_column; j++){\n            matrix[i][j]=x;\n        }\n    }\n}\n\nvoid Matrix::fill_x(unsigned int row, unsigned int column, unsigned int x){\n    if(row&gt;= m_row||column&gt;=m_column) return;\n    matrix[row][column]=x;\n}\n\nbool Matrix::isMatch(unsigned int x, unsigned int y){\n    if (x==y) return true;\n    return false;\n}\n\nbool Matrix::isValid(unsigned int row, unsigned int column){\n    if(row&lt;m_row&amp;&amp;column&lt;m_column) return true;\n    return false;\n}\n\nunsigned int Matrix::get_x(unsigned int row, unsigned int column){\n    if(isValid(row, column)) return matrix[row][column];\n    throw \"Invalid matrix index exception.\";\n}\n\nunsigned int Matrix::getRowNum(){\n    return m_row;\n}\n\nunsigned int Matrix::getColumnNum(){\n    return m_column;\n}\n</code></pre>\n\n<p>But if I run this program, the program always crashes if destructor is called after transpose function is called.\nIs the problem caused by the <code>unsigned int** matrix</code> which has been freed? Can't I reassign the freed pointer to another pointer and then free it again?</p>\n\n<p><strong>Update:</strong> now I have changed all free() to delete[]. But it still doesn't work. In main.cpp:</p>\n\n<pre><code>#include &lt;iostream&gt;\n#include \"Matrix.cpp\"\n\nint main(){\n    Matrix c(2,3);\n    c.fill(30);\n    c.transposeMatrix();\n    try{\n        for(int i=0; i&lt;c.getRowNum(); i++){\n            for(int j=0; j&lt;c.getColumnNum(); j++){\n                cout&lt;&lt;c.get_x(i, j)&lt;&lt;\" \";\n            }\n            cout&lt;&lt;endl;\n        }\n    } catch (const char* e){\n        cout&lt;&lt;e;\n    }\n}\n</code></pre>\n\n<p>The output is</p>\n\n<pre><code>[some random number] 0\n[some random number] 0\n30 30\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 55206977,
+   "parent_id": 33718268,
+   "parent_type": "question",
+   "author_user_id": 493106,
+   "author_display_name": "xaxxon",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/33718268/#comment55206977_33718268",
+   "score": 0,
+   "created_utc": "2015-11-15T09:51:50Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "you can assign a pointer to a memory address that you&#39;ve allocated and then free it.  You can take that same pointer and assign a different memory address that you&#39;ve allocated and free that."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 55207053,
+   "parent_id": 33718268,
+   "parent_type": "question",
+   "author_user_id": 2835523,
+   "author_display_name": "A. Binzxxxxxx",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/33718268/#comment55207053_33718268",
+   "score": 0,
+   "created_utc": "2015-11-15T09:58:25Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "You should do &quot;if(ptr !=0) {free()…}&quot; and you should use delete[] if allocating with new[]"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 33719171,
+   "parent_id": 33718268,
+   "author_user_id": 5563931,
+   "author_display_name": "swdmnd",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/33719171",
+   "score": 0,
+   "created_utc": "2015-11-15T11:31:20Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2015-11-15T11:31:20Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Well, the problem lies on the destructor is being called on tmp_matrix when transpose function end, thus deleting its matrix pointer which is also being pointed by the real matrix container.</p>\n\n<p>It's been fixed. Thanks all. Even though being down voted is a little discouraging. But maybe it really is a stupid question.</p>\n"
+  }
+ ]
+}

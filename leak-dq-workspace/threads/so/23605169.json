@@ -1,0 +1,52 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 23605169,
+ "url": "https://stackoverflow.com/questions/23605169/calling-the-main-in-c-by-jni-in-android",
+ "title": "Calling the Main in c by jni in android",
+ "tags": [
+  "java",
+  "android",
+  "c++",
+  "c",
+  "java-native-interface"
+ ],
+ "score": 3,
+ "view_count": 1377,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 23605263,
+ "created_utc": "2014-05-12T09:15:13Z",
+ "last_activity_utc": "2014-05-12T09:20:14Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 3423247,
+ "author_display_name": "Mohammad Alshaar",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/23605169/calling-the-main-in-c-by-jni-in-android",
+ "body_html": "<p>I want to call main:</p>\n\n<pre><code>int main(int argc, char *argv[])\n</code></pre>\n\n<p>I tried this link: <a href=\"https://stackoverflow.com/questions/22546444/how-to-use-jni-to-call-a-main-function-that-takes-an-array-of-character-pointe/22546607#22546607\">How to use JNI to call a &quot;main&quot; function that takes an array of character pointers?</a></p>\n\n<pre><code>JNIEXPORT jint JNICALL Java_package_Class_lameMain(JNIEnv *env, jclass class,  jobjectArray jargv)\n{    //jargv is a Java array of Java strings\n     int argc = env-&gt;GetArrayLength(jargv);\n     typedef char *pchar;\n     pchar *argv = new pchar[argc];\n     int i;\n     for(i=0; i&lt;argc; i++)\n     {\n         jstring js = env-&gt;GetObjectArrayElement(jargv, i); //A Java string\n         const char *pjc = env-&gt;GetStringUTFChars(js); //A pointer to a Java-managed char buffer\n         size_t jslen = strlen(pjc);\n         argv[i] = new char[jslen+1]; //Extra char for the terminating null\n         strcpy(argv[i], pjc); //Copy to *our* buffer. We could omit that, but IMHO this is cleaner. Also, const correctness.\n         env-&gt;ReleaseStringUTFChars(js, pjc);\n     }\n\n     //Call main\n     main(argc, argv);\n\n    //Now free the array\n    for(i=0;i&lt;argc;i++)\n       delete [] argv[i];\n   delete [] argv;   \n }   \n</code></pre>\n\n<p>but it doesn't work because I'm programming on C not C++. after I make some changes there is a problem in \"GetArrayLength\" this error:</p>\n\n<pre><code>error: request for member 'GetArrayLength' in something not a structure or union\n</code></pre>\n\n<p>I also tried this link: <a href=\"https://stackoverflow.com/questions/22752801/how-to-call-the-main-function-in-c-file-by-jni-in-android\">How to call the main function in C file by JNI in Android?</a> </p>\n\n<pre><code> JNIEXPORT return_type JNICALL Java_full_package_name_classname_functionname(JNIEnv *env, jobject object, Jobject stringArray){\n// your argc\nint size = env-&gt;GetArrayLength(stringArray);\nchar **argv = new char*[size];\nfor (int i=0; i &lt; size; ++i) \n{\n    jstring string = env-&gt;GetObjectArrayElement(stringArrays, i);\n    const char* cString = env-&gt;GetStringUTFChars(string, 0);\n    argv[i] = strdup(cString);\n    env-&gt;ReleaseStringUTFChars(string, myarray);\n    env-&gt;DeleteLocalRef(string);\n}\n// you will need to modify main so it does properly cleanup\nmain(argc, argv);\n// clean up\nfor(int i = 0; i &lt; size; ++i)\n    free(argv[i]);\ndelete [] argv;\n}\n</code></pre>\n\n<p>the error was: expected ';' or ',' befor Java_package_Class_lameMain</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 23605263,
+   "parent_id": 23605169,
+   "author_user_id": 721079,
+   "author_display_name": "Alexander",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/23605263",
+   "score": 1,
+   "created_utc": "2014-05-12T09:20:14Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2014-05-12T09:20:14Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Do like this with repdect to your functions:</p>\n\n<pre><code>JNIEXPORT void JNICALL Java_ClassName_MethodName\n  (JNIEnv *env, jobject obj, jstring javaString)\n{\n\n    const char *nativeString = (*env)-&gt;GetStringUTFChars(env, javaString, 0);\n\n    (*env)-&gt;ReleaseStringUTFChars(env, javaString, nativeString);\n}\n</code></pre>\n\n<p>The thing is to use <code>*env</code></p>\n\n<p>See C-example here\n<a href=\"http://en.wikipedia.org/wiki/Java_Native_Interface\" rel=\"nofollow\">http://en.wikipedia.org/wiki/Java_Native_Interface</a></p>\n"
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/pnggroup/libpng/issues/220",
+ "passes": [
+  "main"
+ ],
+ "title": "Direct-leak (7520)",
+ "author_login": "dlemstra",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:44Z",
+ "final_url": "https://github.com/pnggroup/libpng/issues/220",
+ "repo": "pnggroup/libpng",
+ "repo_language": "C",
+ "number": 220,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-04-13T20:57:23Z",
+ "updated_at": "2023-12-28T05:13:05Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dlemstra",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-04-13T20:57:23Z",
+   "updated_utc": "2023-12-28T05:13:05Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/220",
+   "body_markdown": "The @ImageMagick project is using https://github.com/google/oss-fuzz to find bugs in our own library and in libraries that we use. The fuzzer found an issue and we think this is an issue that should be resolved in the library that we use. This issue is posted under the url https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=7520 that is not publicly visible yet but added as a link for future reference. Below are the details of the issue that can be reproduced using the following technique: https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md\r\n\r\nStacktrace:\r\n```\r\n==1==ERROR: LeakSanitizer: detected memory leaks\r\n--\r\n  |  \r\n  | Direct leak of 12 byte(s) in 1 object(s) allocated from:\r\n  | #0 0x4ea798 in malloc _asan_rtl_\r\n  | #1 0xbccc7d in png_malloc_warn libpng/pngmem.c:217:23\r\n  | #2 0xbfc60a in png_handle_eXIf libpng/pngrutil.c:2065:25\r\n  | #3 0xbcd35c in png_read_info libpng/pngread.c:180:10\r\n  | #4 0xb09324 in ReadOnePNGImage imagemagick/coders/png.c:2536:3\r\n  | #5 0xaf1f65 in ReadPNGImage imagemagick/coders/png.c:4254:9\r\n  | #6 0x6cbb78 in ReadImage imagemagick/MagickCore/constitute.c:500:13\r\n  | #7 0x6669f5 in BlobToImage imagemagick/MagickCore/blob.c:469:13\r\n  | #8 0x5b28f2 in Magick::Image::read(Magick::Blob const&) imagemagick/Magick++/lib/Image.cpp:4015:12\r\n  | #9 0x526a1f in LLVMFuzzerTestOneInput imagemagick/Magick++/fuzz/encoder_fuzzer.cc:46:11\r\n  | #10 0x5506d1 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/libfuzzer/FuzzerLoop.cpp:517:13\r\n  | #11 0x52787a in fuzzer::RunOneTest(fuzzer::Fuzzer*, char const*, unsigned long) /src/libfuzzer/FuzzerDriver.cpp:280:6\r\n  | #12 0x53312b in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/libfuzzer/FuzzerDriver.cpp:703:9\r\n  | #13 0x526f1c in main /src/libfuzzer/FuzzerMain.cpp:20:10\r\n  | #14 0x7fa21121582f in __libc_start_main /build/glibc-Cl5G7W/glibc-2.23/csu/libc-start.c:291\r\n  |  \r\n  | SUMMARY: AddressSanitizer: 12 byte(s) leaked in 1 allocation(s).\r\n```\r\n\r\nLinks:\r\nhttps://github.com/glennrp/libpng/blob/916117d97058b37e7eef2558a71919a8a073a3d3/pngmem.c#L217\r\n\r\nCommit: 916117d97058b37e7eef2558a71919a8a073a3d3\r\nTestcase file: [clusterfuzz-testcase-minimized-encoder_png_fuzzer-5108894633295872.zip](https://github.com/glennrp/libpng/files/1908866/clusterfuzz-testcase-minimized-encoder_png_fuzzer-5108894633295872.zip)\r\n\r\nAnalysis:\r\nThe attached png file contains 2 exif chunks and the first the method exists here: https://github.com/glennrp/libpng/blob/916117d97058b37e7eef2558a71919a8a073a3d3/pngrutil.c#L2091-L2092 The second time the eXIf_buf is overwritten with the following malloc: https://github.com/glennrp/libpng/blob/916117d97058b37e7eef2558a71919a8a073a3d3/pngrutil.c#L2065-L2066\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 496660347,
+   "author_login": "alalek",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-05-28T19:42:49Z",
+   "updated_utc": "2019-05-28T19:42:49Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/220#issuecomment-496660347",
+   "body_markdown": "Confirmed.\r\nAnother one related oss-fuzz issue: https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=13314"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 496664166,
+   "author_login": "alalek",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-05-28T19:53:51Z",
+   "updated_utc": "2019-05-28T19:53:51Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/220#issuecomment-496664166",
+   "body_markdown": "BTW, buffer cleanup was in that place in 2017: https://github.com/glennrp/libpng/commit/71a56180e54de5ffa42b7e85835c272771393add#diff-6b2a2c08b86b9ca2566040b914e34576L2043"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1870828851,
+   "author_login": "jbowler",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-12-28T05:13:04Z",
+   "updated_utc": "2023-12-28T05:13:04Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/220#issuecomment-1870828851",
+   "body_markdown": "@ctruta the early exit on a CRC failure reported above has been corrected.  The test on png_crc_finish is reversed (to success) and the call to png_set_eXIf_1 is now protected by that.  info_ptr->eXIf_buf (which is really a local variable; it's just there because of setjmp on a png_error) should now be reliably freed.\r\n\r\nThe code is horrible (using a member of png_info to store a temporary allocation of memory and, indeed, using a temporary allocation in the first place) is something I consider a bug but it's not one that needs fixing here."
+  }
+ ]
+}

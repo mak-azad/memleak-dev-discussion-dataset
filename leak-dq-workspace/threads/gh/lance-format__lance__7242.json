@@ -1,0 +1,101 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lance-format/lance/issues/7242",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Apparent RSS memory leak in repeated merge_insert caused by glibc per-thread arena fragmentation",
+ "author_login": "xloya",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:38Z",
+ "final_url": "https://github.com/lance-format/lance/issues/7242",
+ "repo": "lance-format/lance",
+ "repo_language": "Rust",
+ "number": 7242,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-06-12T06:10:23Z",
+ "updated_at": "2026-08-07T10:16:41Z",
+ "closed_at": null,
+ "labels": [
+  "performance"
+ ],
+ "comments_reported": 5,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "xloya",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-06-12T06:10:23Z",
+   "updated_utc": "2026-08-07T10:16:41Z",
+   "permalink": "https://github.com/lance-format/lance/issues/7242",
+   "body_markdown": "## Title\n\n`merge_insert` in a loop causes unbounded RSS growth on Linux due to glibc arena fragmentation.\n\n## Summary\n\nWhen calling `ds.merge_insert(...).when_matched_update_all().execute(table)` repeatedly in a long-lived process (e.g., a Ray driver doing ~1000+ flushes), the process RSS grows monotonically at ~5–7 MB per iteration, eventually reaching 40+ GB and triggering OOM on our production cluster. This looks like a memory leak in lance's Rust layer but is actually caused by glibc's per-thread arena fragmentation.\n\n## Environment\n\n- **OS:** Linux (glibc 2.35+)\n- **pylance:** 7.0.0\n- **Python:** 3.12\n- **Workload:** Long-running single process doing 1000+ sequential `merge_insert` commits against a 14M-row dataset (1518 fragments)\n\n## Root Cause Analysis\n\npylance links against the system glibc malloc (no custom allocator). The tokio multi-thread runtime spawns N worker threads. Under glibc, each thread that calls `malloc` gets its own arena (up to 8 × nCPU arenas by default).\n\nEach `merge_insert` execution triggers DataFusion's hash-join and fragment-write logic on tokio worker threads, which allocates several MB of temporary buffers. After execution, Rust properly `free()`s all of it — but glibc does not return freed pages from per-thread arenas to the OS. `malloc_trim(0)` only trims arena 0 (main thread), leaving the other arenas bloated.\n\n### Evidence (using `mallinfo2` to decompose the heap)\n\n**`MALLOC_ARENA_MAX` = unlimited (default):**\n\n| iter | RssAnon (MB) | in_use (MB) | free_not_returned (MB) |\n|------|--------------|-------------|------------------------|\n| 1    | 79           | 20          | 39                     |\n| 10   | 129          | 23          | 144  ← fragmentation!  |\n| 30   | 218          | 27          | 276  ← fragmentation!  |\n| 50   | 297          | 29          | 395  ← fragmentation!  |\n\n> **SUMMARY:** Actually in use: 29 MB | Free but not returned: 395 MB | Ratio: 13.7x\n\n**With `MALLOC_ARENA_MAX=2`:**\n\n| iter | RssAnon (MB) | in_use (MB) | free_not_returned (MB) |\n|------|--------------|-------------|------------------------|\n| 1    | 75           | 19          | 21                     |\n| 10   | 74           | 23          | 24                     |\n| 30   | 80           | 28          | 23                     |\n| 50   | 83           | 30          | 24                     |\n\n> **SUMMARY:** Actually in use: 30 MB | Free but not returned: 24 MB | Ratio: 0.8x\n\nThe `in_use` column is nearly identical in both cases (~30 MB), proving lance's Rust code correctly frees memory. The difference is entirely in how glibc manages the freed pages.\n\n## Reproduction Script\n\n```python\n\"\"\"Reproduce: run with and without MALLOC_ARENA_MAX=2 on Linux.\"\"\"\nimport ctypes, gc, os, uuid\nimport lance, pyarrow as pa\n\nuri = \"/tmp/lance_arena_repro\"\nn_rows = 50_000\nlance.write_dataset(\n    pa.table({\n        \"uid\": pa.array([str(uuid.uuid4()) for _ in range(n_rows)], type=pa.utf8()),\n        \"value\": pa.array([\"x\"] * n_rows, type=pa.utf8()),\n    }),\n    uri, mode=\"overwrite\", max_rows_per_file=10_000,\n)\n\nds = lance.dataset(uri)\nuids = ds.scanner(columns=[\"uid\"], limit=10_000).to_table().column(\"uid\").to_pylist()\nkey_field, val_field = ds.schema.field(\"uid\"), ds.schema.field(\"value\")\n\nlibc = ctypes.CDLL(\"libc.so.6\")\n\nclass Mallinfo2(ctypes.Structure):\n    _fields_ = [(\"arena\", ctypes.c_size_t)] * 2 + [(\"_pad\", ctypes.c_size_t)] * 5 + \\\n               [(\"uordblks\", ctypes.c_size_t), (\"fordblks\", ctypes.c_size_t), (\"_\", ctypes.c_size_t)]\nlibc.mallinfo2.restype = Mallinfo2\n\npid = os.getpid()\nfor i in range(1, 51):\n    tbl = pa.table({\"uid\": pa.array(uids, type=key_field.type),\n                    \"value\": pa.array([\"x\"] * len(uids), type=val_field.type)})\n    ds.merge_insert(\"uid\").when_matched_update_all().execute(tbl)\n    del tbl; gc.collect()\n    if i % 10 == 0:\n        with open(f\"/proc/{pid}/status\") as f:\n            rss = [l for l in f if l.startswith(\"RssAnon:\")][0].split()[1]\n        info = libc.mallinfo2()\n        print(f\"iter={i}  RssAnon={int(rss)//1024}MB  \"\n              f\"in_use={info.uordblks//1048576}MB  \"\n              f\"free_not_returned={info.fordblks//1048576}MB\")\n```\n\n## Proposed Fix\n\nMaybe set a `#[global_allocator]` in `python/src/lib.rs` to use jemalloc (or mimalloc). These allocators eagerly return freed pages to the OS via `madvise(MADV_FREE)` and don't suffer from per-thread arena fragmentation.\n\n## Workaround (no code change)\n\nUsers can set the environment variable before launching their process:\n\n```bash\nexport MALLOC_ARENA_MAX=2\n```\n\nThis forces glibc to share 2 arenas across all threads, making `malloc_trim` effective. The performance impact on IO-bound lance workloads is negligible.\n\n## Impact\n\nAny long-running process that does repeated `merge_insert` / `update` / `add_columns` commits (e.g., a streaming ingestion pipeline, a batch upsert job, a Ray driver coordinating filter/apply across thousands of fragments) will see RSS grow without bound until OOM. In our case: 42 GB RSS after ~1400 flushes on a 44 GB machine."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4688151554,
+   "author_login": "mansiverma897993",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-06-12T06:41:16Z",
+   "updated_utc": "2026-06-12T07:05:43Z",
+   "permalink": "https://github.com/lance-format/lance/issues/7242#issuecomment-4688151554",
+   "body_markdown": "@xloya I have raised PR plz check at once and let me know any changes required!!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4688495567,
+   "author_login": "xloya",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-06-12T07:20:17Z",
+   "updated_utc": "2026-06-12T07:21:49Z",
+   "permalink": "https://github.com/lance-format/lance/issues/7242#issuecomment-4688495567",
+   "body_markdown": "> [@xloya](https://github.com/xloya) I have raised PR plz check at once and let me know any changes required!!\n\nHi, thank you for create the PR to fix the issue. `mimalloc` might be one of the allocator options to be fixed. It would be even better if there were performance benchmarks comparing the use of various malloc allocators other than the default allocator, especially mimalloc and jemalloc. Like this: https://github.com/lance-format/lance/issues/1372"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4688895125,
+   "author_login": "mansiverma897993",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-06-12T07:55:12Z",
+   "updated_utc": "2026-06-12T07:55:12Z",
+   "permalink": "https://github.com/lance-format/lance/issues/7242#issuecomment-4688895125",
+   "body_markdown": "@xloya Done I  update the PR !!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4692477650,
+   "author_login": "wjones127",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-06-12T15:03:24Z",
+   "updated_utc": "2026-06-12T15:03:24Z",
+   "permalink": "https://github.com/lance-format/lance/issues/7242#issuecomment-4692477650",
+   "body_markdown": "Could you validate the hypothesis by running the repro under a different allocator?\n\nI’m honestly skeptical of the described root cause without more evidence. If it were true, we would have seen this memory leak in long lived production systems. The thread pools are created up front so we shouldn’t have per query threads created.\n\nMy suspicion is that maybe the memory leak has to do with the data you pass into Lance. Maybe we aren’t freeing that properly? I think you could test that by increasing the batch size and seeing if the rate of memory growth increases."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4701259743,
+   "author_login": "mansiverma897993",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-06-14T08:59:17Z",
+   "updated_utc": "2026-06-14T08:59:17Z",
+   "permalink": "https://github.com/lance-format/lance/issues/7242#issuecomment-4701259743",
+   "body_markdown": "Hi @wjones127 \n\nThanks for the feedback and skepticism! Swapping the global allocator is indeed a significant change, so it's good to make sure we've properly verified this.\n\nWe have robust, quantitative evidence showing that this is an allocator fragmentation/retention issue rather than a memory leak in Lance's Rust layer or the Python/Rust boundary.\n\n1. Proof of No Real Memory Leak (in_use vs free_not_returned)\n\nIn the reproduction script, we used mallinfo2 to inspect heap allocations:\n\n- in_use (uordblks): Actual active heap memory allocated for live objects that have not been freed.\n- free_not_returned (fordblks): Memory that has been freed by the application but is being retained in allocator arenas instead of being returned to the OS.\n\nResults after 50 iterations:\n\nDefault Glibc\nIteration 1: RSS=79 MB, in_use=20 MB, free_not_returned=39 MB\nIteration 50: RSS=297 MB, in_use=29 MB, free_not_returned=395 MB\n\nMALLOC_ARENA_MAX=2\nIteration 1: RSS=75 MB, in_use=19 MB, free_not_returned=21 MB\nIteration 50: RSS=83 MB, in_use=30 MB, free_not_returned=24 MB\n\nKey Observation:\n\nThe active heap memory (in_use) is virtually identical in both runs, starting around 20 MB and stabilizing around 29–30 MB.\n\nIf Lance or PyArrow were leaking memory, in_use would grow continuously because those allocations would still be considered live. Instead, in_use remains flat, demonstrating that the application is correctly freeing query-related memory.\n\nThe entire RSS increase comes from free_not_returned, which grows to 395 MB under default glibc while remaining around 24 MB when arenas are capped.\n\n2. Why Thread Pool Creation Up-Front Doesn't Prevent This\n\nAlthough the Tokio worker thread pool is initialized up-front, glibc creates arenas dynamically as threads perform allocations, up to a limit of 8 × nCPU (for example, 256 arenas on a 32-core machine).\n\nDuring query execution:\n\n- Large temporary buffers (hash join tables, batch write buffers, etc.) are allocated across worker threads.\n- When a thread frees a buffer, glibc retains that memory within the thread-local arena.\n- Because glibc does not aggressively return pages to the OS and allocation sizes vary across threads, fragmentation accumulates across arenas.\n\nOver many query runs, retained arena memory grows steadily, producing the observed RSS increase despite allocations being freed.\n\n3. Effect of Increasing Batch Size\n\nIncreasing batch size increases the size of temporary buffers allocated during query execution.\n\nAs a result:\n\n- Larger blocks become cached in thread-local arenas after being freed.\n- RSS and free_not_returned grow faster and reach higher peaks.\n\nHowever, after gc.collect(), in_use still returns to the same baseline, again indicating allocator retention rather than an application-level memory leak.\n\n4. Validation with Alternative Allocators\n\nFor this PR, we compiled pylance using both mimalloc and jemalloc as the global allocator and reran the reproduction script.\n\nResults:\n\n- Both allocators maintain stable RSS usage.\n- Memory stabilizes around ~80 MB rather than continuously growing.\n- Both allocators more aggressively release unused pages back to the OS.\n\nUsing alternative allocators in Python extension libraries is already common practice:\n\n- Polars uses jemalloc on Linux and mimalloc on Windows/macOS.\n- CPython 3.13 NoGIL has adopted mimalloc as its default allocator.\n\nBy registering mimalloc as the default allocator for pylance (and offering jemalloc as an optional feature on Unix targets), we address the issue directly for users without requiring environment-level workarounds such as MALLOC_ARENA_MAX=2.\n\nI've also pushed a small follow-up fix to this PR that target-gates the tikv-jemallocator definition to not(target_os = \"windows\") in python/src/lib.rs, ensuring successful builds when all features are enabled on Windows."
+  }
+ ]
+}

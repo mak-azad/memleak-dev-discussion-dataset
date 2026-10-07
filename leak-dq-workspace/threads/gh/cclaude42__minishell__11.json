@@ -1,0 +1,52 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/cclaude42/minishell/issues/11",
+ "passes": [
+  "main"
+ ],
+ "title": "Issue: Memory leak detected in minishell on exit",
+ "author_login": "iaceene",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:05Z",
+ "final_url": "https://github.com/cclaude42/minishell/issues/11",
+ "repo": "cclaude42/minishell",
+ "repo_language": "C",
+ "number": 11,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-01-25T22:50:09Z",
+ "updated_at": "2026-04-06T12:37:17Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "iaceene",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-01-25T22:50:09Z",
+   "updated_utc": "2026-04-06T12:37:17Z",
+   "permalink": "https://github.com/cclaude42/minishell/issues/11",
+   "body_markdown": "When running the minishell project and exiting the shell, Valgrind reports that there are 2 bytes still in use in 1 block of memory. No memory errors or leaks are detected, but a small amount of memory remains allocated when the program exits.\n\nExpected Behavior:\nThe program should not leave any allocated memory when exiting. All memory should be properly freed to avoid memory leaks.\n\nSteps to Reproduce:\nClone the minishell repository:\n\ngit clone https://github.com/42Project/minishell.git\ncd minishell\nCompile the project:\n\nmake\nRun the shell with Valgrind to check for memory leaks:\n\n![Image](https://github.com/user-attachments/assets/d44faed7-00c6-4cb4-aa80-b4ab089f14d1)\n\nvalgrind --leak-check=full ./minishell\nIn the minishell prompt, enter the following commands:\n\necho \"the comment should be egnored!\" #hi\nexit\nObserve the output, which shows that there is still 2 bytes of memory in use on exit.\n\nEnvironment:\nOS: (specify OS version)\nValgrind version: 3.18.1\nCompiler: (specify compiler version, e.g., GCC, Clang)\nminishell repository: (commit hash or branch, e.g., cclaude)\nLogs:\n==483002== Memcheck, a memory error detector\n==483002== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.\n==483002== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info\n==483002== Command: ./minishell\n==483002== \n😎 minishell ▸ echo \"the comment should be egnored!\" #hi\nthe comment should be egnored! #hi\n😎 minishell ▸ exit\nexit 💚\n==483002== \n==483002== HEAP SUMMARY:\n==483002==     in use at exit: 2 bytes in 1 blocks\n==483002==   total heap usage: 283 allocs, 282 frees, 10,109 bytes allocated\n==483002== \n==483002== LEAK SUMMARY:\n==483002==    definitely lost: 0 bytes in 0 blocks\n==483002==    indirectly lost: 0 bytes in 0 blocks\n==483002==      possibly lost: 0 bytes in 0 blocks\n==483002==    still reachable: 2 bytes in 1 blocks\n==483002==         suppressed: 0 bytes in 0 blocks\n==483002== Reachable blocks (those to which a pointer was found) are not shown.\n==483002== To see them, rerun with: --leak-check=full --show-leak-kinds=all\n==483002== \n==483002== For lists of detected and suppressed errors, rerun with: -s\n==483002== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)\nAdditional Context:\nThe program does not report any memory errors or leaks directly, but Valgrind indicates that there is still 2 bytes of memory that are not freed upon exit.\nThis could potentially be an issue in the cleanup code or during the process of terminating the shell session.\nPossible Solution (if applicable):\nInvestigate the code responsible for freeing allocated memory when the program exits. Ensure that all dynamically allocated memory is freed properly to avoid any memory still being \"reachable\" when the program terminates."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4192279334,
+   "author_login": "yabuawad",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-04-06T12:37:16Z",
+   "updated_utc": "2026-04-06T12:37:16Z",
+   "permalink": "https://github.com/cclaude42/minishell/issues/11#issuecomment-4192279334",
+   "body_markdown": "\n\n\n> When running the minishell project and exiting the shell, Valgrind reports that there are 2 bytes still in use in 1 block of memory. No memory errors or leaks are detected, but a small amount of memory remains allocated when the program exits.\n> \n> Expected Behavior: The program should not leave any allocated memory when exiting. All memory should be properly freed to avoid memory leaks.\n> \n> Steps to Reproduce: Clone the minishell repository:\n> \n> git clone https://github.com/42Project/minishell.git cd minishell Compile the project:\n> \n> make Run the shell with Valgrind to check for memory leaks:\n> \n> ![Image](https://github.com/user-attachments/assets/d44faed7-00c6-4cb4-aa80-b4ab089f14d1)\n> \n> valgrind --leak-check=full ./minishell In the minishell prompt, enter the following commands:\n> \n> echo \"the comment should be egnored!\" #hi exit Observe the output, which shows that there is still 2 bytes of memory in use on exit.\n> \n> Environment: OS: (specify OS version) Valgrind version: 3.18.1 Compiler: (specify compiler version, e.g., GCC, Clang) minishell repository: (commit hash or branch, e.g., cclaude) Logs: ==483002== Memcheck, a memory error detector ==483002== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al. ==483002== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info ==483002== Command: ./minishell ==483002== 😎 minishell ▸ echo \"the comment should be egnored!\" #hi the comment should be egnored! #hi 😎 minishell ▸ exit exit 💚 ==483002== ==483002== HEAP SUMMARY: ==483002== in use at exit: 2 bytes in 1 blocks ==483002== total heap usage: 283 allocs, 282 frees, 10,109 bytes allocated ==483002== ==483002== LEAK SUMMARY: ==483002== definitely lost: 0 bytes in 0 blocks ==483002== indirectly lost: 0 bytes in 0 blocks ==483002== possibly lost: 0 bytes in 0 blocks ==483002== still reachable: 2 bytes in 1 blocks ==483002== suppressed: 0 bytes in 0 blocks ==483002== Reachable blocks (those to which a pointer was found) are not shown. ==483002== To see them, rerun with: --leak-check=full --show-leak-kinds=all ==483002== ==483002== For lists of detected and suppressed errors, rerun with: -s ==483002== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0) Additional Context: The program does not report any memory errors or leaks directly, but Valgrind indicates that there is still 2 bytes of memory that are not freed upon exit. This could potentially be an issue in the cleanup code or during the process of terminating the shell session. Possible Solution (if applicable): Investigate the code responsible for freeing allocated memory when the program exits. Ensure that all dynamically allocated memory is freed properly to avoid any memory still being \"reachable\" when the program terminates.\n\n\nif you use the flag --show-leak-kinds=all with valgrind you can spot the leak location :\n\n2 bytes in 1 blocks are still reachable in loss record 1 of 1\n==159338==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==159338==    by 0x407809: stock_trim (in /home/yabuawad/mini/minishell)\n==159338==    by 0x407BCB: get_next_line (in /home/yabuawad/mini/minishell)\n==159338==    by 0x40456D: parse (in /home/yabuawad/mini/minishell)\n==159338==    by 0x403D89: main (in /home/yabuawad/mini/minishell)\n\nif you look up the code inside the function get_next_line.c inside  \n\tif ((stock = stock_trim(stock)))\n\t\treturn (-1);\nstock_trim() returns a valid allocated string\nSo stock != NULL  when condition is true\nYou return -1 immediately\nand you never free stock\nyou fix it like this\nstock = stock_trim(stock);\nif (!stock)\n\treturn (-1);\n\n"
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/window-maker/dockapps/issues/60",
+ "passes": [
+  "main"
+ ],
+ "title": "wmclockmon-0.8.1",
+ "author_login": "svgol",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:06Z",
+ "final_url": "https://github.com/window-maker/dockapps/issues/60",
+ "repo": "window-maker/dockapps",
+ "repo_language": "C",
+ "number": 60,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-02-27T17:33:56Z",
+ "updated_at": "2024-02-28T02:36:31Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "svgol",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-02-27T17:33:56Z",
+   "updated_utc": "2024-02-28T02:36:31Z",
+   "permalink": "https://github.com/window-maker/dockapps/issues/60",
+   "body_markdown": "It is supplied with a configuration utility wmclockmon-config which crashes on pushing any of two buttons 'Save'.\r\nThe cause is it tries to free memory allocated in an external library, namely by gtk_entry_get_text().\r\nThe documentation of the function states that its return value\r\n\r\n> A pointer to the contents of the widget as a string. This string points to internally allocated storage in the widget and must not be freed, modified or stored.\r\n\r\nThe attached patch fixes the problem\r\n\r\n[fix_crashes_on_free.patch.tgz](https://github.com/window-maker/dockapps/files/14423790/fix_crashes_on_free.patch.tgz)\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1967406501,
+   "author_login": "d-torrance",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2024-02-27T19:03:32Z",
+   "updated_utc": "2024-02-27T19:03:32Z",
+   "permalink": "https://github.com/window-maker/dockapps/issues/60#issuecomment-1967406501",
+   "body_markdown": "Thanks!  Would you be able to send this patch to `wmaker-dev@googlegroups.com`?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1968082194,
+   "author_login": "svgol",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-02-28T02:36:30Z",
+   "updated_utc": "2024-02-28T02:36:30Z",
+   "permalink": "https://github.com/window-maker/dockapps/issues/60#issuecomment-1968082194",
+   "body_markdown": "Sent"
+  }
+ ]
+}

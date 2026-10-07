@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/RVCK-Project/rvck/issues/209",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "【Bug】 SG2042/openEuler 24.03 SP1和SP2 环境下 K8s 负载出现严重的 struct pid 内存泄露",
+ "author_login": "ffkk722",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:39Z",
+ "final_url": "https://github.com/RVCK-Project/rvck/issues/209",
+ "repo": "RVCK-Project/rvck",
+ "repo_language": "C",
+ "number": 209,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-02-02T03:33:00Z",
+ "updated_at": "2026-08-31T03:02:41Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "KERNEL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ffkk722",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-02T03:33:00Z",
+   "updated_utc": "2026-08-31T03:02:41Z",
+   "permalink": "https://github.com/RVCK-Project/rvck/issues/209",
+   "body_markdown": "一、Environment / 环境信息\n- Hardware / 硬件: Milk-V Pioneer (SG2042, RISC-V 64)\n- OS / 操作系统: openEuler 24.03 LTS SP2\n- Kernel / 内核: 6.6.0-98.0.0.103.oe2403sp2.riscv64\n- Workload / 负载: Kubernetes (K8s) Cluster - Master Node\n\n二、Symptom / 现象\n   在 Kubernetes 集群运行期间，观测到内核内存占用持续上升，最终导致 OOM 和系统死机。通过 kmemleak 分析，确认 struct pid 对象（128字节）正在大量泄露。\n  During the operation of the Kubernetes cluster, we observed a continuous increase in kernel memory usage, eventually leading to OOM and system hang. Using kmemleak, we identified that struct pid objects (128 bytes) are being leaked massively.\n\nKey Observations / 关键观察:\n\n- Frequency / 频率: The leak occurs linearly with the creation/destruction of containers (processes).\n- Refcount / 引用计数: The hex dump shows the struct pid has a refcount of 1 (01 00 00 00), indicating some component is holding a reference but never releasing it (put_pid).\n- Trace / 堆栈: The allocation backtrace points to the standard clone syscall (__riscv_sys_clone -> copy_process -> alloc_pid).\n\n三、Log Evidence / 日志证据\nkmemleak output (90+ similar entries found):\n\nunreferenced object 0xffffffe00358bf00 (size 128):\n  comm \"kube-controller\", pid 3789, jiffies 4295673747\n  hex dump (first 32 bytes):\n    01 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00  <-- Refcount = 1\n  backtrace:\n    __create_object+0x20/0xa0\n    kmemleak_alloc+0x40/0x78\n    kmem_cache_alloc+0x22e/0x4b0\n    alloc_pid+0x62/0x322\n    copy_process+0x58c/0x1036\n    kernel_clone+0x78/0x39a\n    __se_sys_clone+0x6c/0x8a\n    __riscv_sys_clone+0x18/0x20\n    do_trap_ecall_u+0x72/0x14a\n    ret_from_exception+0x0/0x64\n\nAssociated Leaks / 关联泄露:\n   同时注意到 apparmor 安全上下文和 Socket 创建也存在泄露，这可能与 PID 泄露有关。 \n  We also noticed leaks in apparmor security contexts and socket creations, which might be related to the PID leak.\n\nunreferenced object 0xfffffff031485390 (size 16):\n  comm \"kube-apiserver\"\n  backtrace:\n    kmalloc_trace\n    apparmor_sk_alloc_security\n    security_sk_alloc\n    sk_alloc\n    inet6_create\n\n[long_text_1BBAFC73-6079-49A7-BA37-348EAAA4E722.txt](https://github.com/user-attachments/files/24999317/long_text_1BBAFC73-6079-49A7-BA37-348EAAA4E722.txt)\n\nRequest for Help / 诉求\n  目前已将问题范围锁定在涉及 struct pid 的内核态泄露，但受限于专业调试工具的缺失以及对 SG2042 BSP 实现细节的了解不足，难以精确定位具体的责任模块。诚挚请求社区和厂商专家协助排查泄露源头。我可以配合提供更多日志或执行验证测试，共同解决这一关键的稳定性问题。\n  We have narrowed down the issue to a kernel-space leak involving struct pid, but due to the lack of specialized debugging tools and deep knowledge of the SG2042 BSP implementation, we are unable to pinpoint the exact module responsible. We kindly request the support of community and vendor experts to help trace the leak source. We remain fully available to provide further logs or conduct testing to resolve this critical stability issue together."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3834814443,
+   "author_login": "sterling-teng",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-02-02T12:24:24Z",
+   "updated_utc": "2026-02-02T12:24:24Z",
+   "permalink": "https://github.com/RVCK-Project/rvck/issues/209#issuecomment-3834814443",
+   "body_markdown": "你好，方便提供复现环境和步骤吗？"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3839301797,
+   "author_login": "ffkk722",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-03T06:19:15Z",
+   "updated_utc": "2026-02-03T06:20:23Z",
+   "permalink": "https://github.com/RVCK-Project/rvck/issues/209#issuecomment-3839301797",
+   "body_markdown": "> 您好，方便提供详细的环境和步骤吗？\n您好 @sterling-teng ，感谢您的快速回复。\n\n关于复现环境：\n环境是 Milk-V Pioneer 开发板 (SG2042)，运行 openEuler 24.03 LTS SP2。\n负载是 单节点 Kubernetes Master 并在其上运行 Prometheus 监控。\n由于 K8s 组件是我们团队针对该 RISC-V 开发板内部交叉编译的，依赖较多，打包完整的环境供您在本地复现会比较复杂且容易出错。\n\n我可以提供远程桌面连接（例如通过 ToDesk, 或会议链接），通过我的电脑直接访问该开发板环境。\n\n请告知我您的邮箱地址，以便安全地发送连接信息并协调合适的时间。\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5473161220,
+   "author_login": "unicornx",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-08-31T03:02:40Z",
+   "updated_utc": "2026-08-31T03:02:40Z",
+   "permalink": "https://github.com/RVCK-Project/rvck/issues/209#issuecomment-5473161220",
+   "body_markdown": "@ffkk722 你好，最近我在清理 rvck 这里的 issues。请问这个问题是否还继续存在？如无问题请关闭这个 issue。"
+  }
+ ]
+}

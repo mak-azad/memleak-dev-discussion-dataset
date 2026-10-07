@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/brendanddev/struccs/issues/10",
+ "passes": [
+  "main"
+ ],
+ "title": "fix: ll_copy leaks Node + value buffer for every element copied",
+ "author_login": "brendanddev",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:08Z",
+ "final_url": "https://github.com/brendanddev/struccs/issues/10",
+ "repo": "brendanddev/struccs",
+ "repo_language": "C",
+ "number": 10,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-15T23:04:06Z",
+ "updated_at": "2026-09-15T23:04:06Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "brendanddev",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-15T23:04:06Z",
+   "updated_utc": "2026-09-15T23:04:06Z",
+   "permalink": "https://github.com/brendanddev/struccs/issues/10",
+   "body_markdown": "The issue is with the `LinkedList` struct, specifically when it copies via `ll_copy`, which allocates a temporary `Node` via `ll_create_node`, then passes its value into `ll_insert_tail`, which makes its own independent heap copy internally. The temporary node returned by `ll_create_node` is never linked into the copied list and never freed, so it leaks on every iteration of the copy loop.\n\n### Location\n\n`src/linked_list.c`, `ll_copy`:\n\n```c\nstruct LinkedList* ll_copy(struct LinkedList *orig) {\n    struct LinkedList *copy = ll_create();\n\n    for (struct Node *current = orig->head; current != NULL; current = current->next) {\n        struct Node *cnode = ll_create_node(current->value, current->item_size);\n        ll_insert_tail(copy, cnode->value, cnode->item_size);\n        // cnode and its value buffer are never freed or linked in\n    }\n    return copy;\n}\n```\n\n### Proof (Valgrind, CI run on ubuntu-latest)\n\nCaught by `test_linkedlist_copy`, which copies a 3-node list:\n```\n==3879== HEAP SUMMARY:\n==3879== in use at exit: 108 bytes in 6 blocks\n==3879== total heap usage: 2,123 allocs, 2,117 frees, 42,452 bytes allocated\n\n==3879== 12 bytes in 3 blocks are indirectly lost in loss record 1 of 2\n==3879== at 0x4846828: malloc\n==3879== by 0x1092F6: ll_create_node\n==3879== by 0x109CCF: ll_copy\n==3879== by 0x10B9A6: test_linkedlist_copy\n==3879== by 0x10A340: main\n\n==3879== 108 (96 direct, 12 indirect) bytes in 3 blocks are definitely lost in loss record 2 of 2\n==3879== at 0x4846828: malloc\n==3879== by 0x1092A9: ll_create_node\n==3879== by 0x109CCF: ll_copy\n==3879== by 0x10B9A6: test_linkedlist_copy\n==3879== by 0x10A340: main\n\n==3879== LEAK SUMMARY:\n==3879== definitely lost: 96 bytes in 3 blocks\n==3879== indirectly lost: 12 bytes in 3 blocks\n==3879== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)\n```\n\n3 leaked `Node` structs (definitely lost) plus 3 leaked value buffers (indirectly lost), matching the 3 elements inserted by the test.\n"
+  }
+ ]
+}

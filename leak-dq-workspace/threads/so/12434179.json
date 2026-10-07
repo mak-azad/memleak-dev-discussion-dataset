@@ -1,0 +1,51 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 12434179,
+ "url": "https://stackoverflow.com/questions/12434179/do-still-reachable-memory-need-to-be-tended-to-in-valgrind",
+ "title": "Do Still Reachable memory need to be tended to in Valgrind?",
+ "tags": [
+  "c",
+  "memory",
+  "valgrind",
+  "memory-leaks"
+ ],
+ "score": 0,
+ "view_count": 170,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 12434892,
+ "created_utc": "2012-09-15T03:03:39Z",
+ "last_activity_utc": "2012-09-15T05:51:56Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1667665,
+ "author_display_name": "Cail Demetri",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/12434179/do-still-reachable-memory-need-to-be-tended-to-in-valgrind",
+ "body_html": "<p>I've gone through my C program and gotten rid of all of the definite, indirect and possibly lost leaks, but now I'm met with around 6064 bytes worth of reachable memory.</p>\n\n<p>The problem is when I use valgrind to try search for it, i'm basically given a bunch of gibberish, with many references to 'ImageLoader' that I don't think I used directly in my code. The only other ones are showing the line number of printf statements.</p>\n\n<p>So basically i'm wondering if theres a better way to find and neutralise the still reachable leaks? or If I even need to?</p>\n\n<p>Thanks For the Help!</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 12434892,
+   "parent_id": 12434179,
+   "author_user_id": 309412,
+   "author_display_name": "Lie Ryan",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/12434892",
+   "score": 1,
+   "created_utc": "2012-09-15T05:51:56Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2012-09-15T05:51:56Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Still reachable memory are generally nothing to be too worried about, your program is shutting down anyway when the memory is still reachable so those memories would be cleaned away by the OS.</p>\n\n<p>However, a having still reachable memory may be hiding the situation where you have external resources that need to be properly cleaned before your program quits. If your program does not use any external resources, then you generally don't need to be worried about it.</p>\n\n<p>A still-reachable memory usually is in main function, global, or static variables.</p>\n"
+  }
+ ]
+}

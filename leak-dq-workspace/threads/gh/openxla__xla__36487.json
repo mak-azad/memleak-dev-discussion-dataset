@@ -1,0 +1,139 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/openxla/xla/issues/36487",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[GPU] Memory leak in Collective Ops (AllGather, etc) when using Command Buffer",
+ "author_login": "apivovarov",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:24Z",
+ "final_url": "https://github.com/openxla/xla/issues/36487",
+ "repo": "openxla/xla",
+ "repo_language": "C++",
+ "number": 36487,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-01-16T06:02:10Z",
+ "updated_at": "2026-01-29T04:23:37Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "stat:awaiting openxla-eng",
+  "NVIDIA-GPU"
+ ],
+ "comments_reported": 8,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "apivovarov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-16T06:02:10Z",
+   "updated_utc": "2026-01-29T04:23:37Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487",
+   "body_markdown": "I faced a memory leak when executing collective operations (specifically Send, Recv, AllGather, etc) inside an XLA Command Buffer (CUDA Graph). The leak is triggered when the Command Buffer is used (second execution of executable)\n\nI recently added a test file to reproduce this behavior: xla/service/gpu/tests/collective_ops_command_buffer_test.cc.\n\nReproduction Steps:\nRun the test SendRecv_Simple or AllGather_Dim1 in collective_ops_command_buffer_test.cc with ASAN enabled.\nThe test executes the command buffer multiple times to force graph re-recording.\n\nLeakSanitizer detects a leak of approximately 400 bytes per re-recording\n\nI also added test for AllGather op - AllGather_Dim1 - it has memory leak issue too\nhttps://github.com/openxla/xla/pull/36486\n\n\n```bash\n[==========] Running 1 test from 1 test suite.\n[----------] Global test environment set-up.\n[----------] 1 test from CollectiveOpsCommandBufferTest\n[ RUN      ] CollectiveOpsCommandBufferTest.AllGather_Dim1\n[       OK ] CollectiveOpsCommandBufferTest.AllGather_Dim1 (7948 ms)\n[----------] 1 test from CollectiveOpsCommandBufferTest (7949 ms total)\n\n[----------] Global test environment tear-down\n[==========] 1 test from 1 test suite ran. (7949 ms total)\n[  PASSED  ] 1 test.\n\n=================================================================\n==5373==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 400 byte(s) in 2 object(s) allocated from:\n    #0 0x56541bdacde4 in malloc llvm/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:67:3\n    #1 0x7bd70849c6cf  (/build/cas/d7a/d7acd173f28755ba0140b0831c03fd6bdcf20690a6964c5e8cdb87491e79e839_02000812eda0/@0x1000+0x29b6cf) (BuildId: 047942dac4b107dd9dd6a865ced25f1acfc6aca6)\n    #2 0x7bd7085af00b  (/build/cas/d7a/d7acd173f28755ba0140b0831c03fd6bdcf20690a6964c5e8cdb87491e79e839_02000812eda0/@0x1000+0x3ae00b) (BuildId: 047942dac4b107dd9dd6a865ced25f1acfc6aca6)\n    #3 0x7bd7085a05bf  (/build/cas/d7a/d7acd173f28755ba0140b0831c03fd6bdcf20690a6964c5e8cdb87491e79e839_02000812eda0/@0x1000+0x39f5bf) (BuildId: 047942dac4b107dd9dd6a865ced25f1acfc6aca6)\n    #4 0x7fddf7ea6fa5 in stream_executor::gpu::CudaCommandBuffer::LaunchGraph(stream_executor::Stream*) /xla/stream_executor/cuda/cuda_command_buffer.cc:674:7\n    #5 0x7fddf72737eb in stream_executor::gpu::GpuCommandBuffer::Submit(stream_executor::Stream*) /xla/stream_executor/gpu/gpu_command_buffer.cc:654:10\n    #6 0x7fe06a1d2af0 in xla::gpu::CommandBufferThunk::ExecuteOnStream(xla::gpu::Thunk::ExecuteParams const&) /xla/backends/gpu/runtime/command_buffer_thunk.cc:301:38\n    #7 0x7fe052efeb97 in xla::gpu::SequentialThunk::ExecuteOnStream(xla::gpu::Thunk::ExecuteParams const&) /xla/backends/gpu/runtime/sequential_thunk.cc:106:31\n    #8 0x7fe06c151156 in xla::gpu::(anonymous namespace)::ExecuteThunksImpl(xla::DebugOptions const*, std::__u::basic_string<char, std::__u::char_traits<char>, std::__u::allocator<char>> const&, int, xla::gpu::SequentialThunk&, xla::gpu::Thunk::ExecutableSource, xla::ServiceExecutableRunOptions const*, xla::gpu::BufferAllocations const&, bool, absl::flat_hash_set<tsl::gtl::IntType<xla::gpu::ExecutionStreamId_tag_, unsigned long>, absl::hash_internal::Hash<tsl::gtl::IntType<xla::gpu::ExecutionStreamId_tag_, unsigned long>>, std::__u::equal_to<tsl::gtl::IntType<xla::gpu::ExecutionStreamId_tag_, unsigned long>>, std::__u::allocator<tsl::gtl::IntType<xla::gpu::ExecutionStreamId_tag_, unsigned long>>> const&) /xla/service/gpu/gpu_executable.cc:533:37\n    #9 0x7fe06c14c7ff in xla::gpu::GpuExecutable::ExecuteThunks(xla::gpu::BufferAllocations const&, xla::ServiceExecutableRunOptions const*) /xla/service/gpu/gpu_executable.cc:1107:22\n    #10 0x7fe06c14a2e2 in xla::gpu::GpuExecutable::ExecuteAsyncOnStreamImpl(xla::ServiceExecutableRunOptions const*, std::__u::variant<absl::Span<xla::ShapedBuffer const* const>, absl::Span<xla::ExecutionInput>>) /xla/service/gpu/gpu_executable.cc:1031:22\n    #11 0x7fe06c14b0fe in xla::gpu::GpuExecutable::ExecuteAsyncOnStream(xla::ServiceExecutableRunOptions const*, absl::Span<xla::ShapedBuffer const* const>) /xla/service/gpu/gpu_executable.cc:864:23\n    #12 0x7fddc002396b in xla::Executable::ExecuteOnStream(xla::ServiceExecutableRunOptions const*, absl::Span<xla::ShapedBuffer const* const>) /xla/service/executable.cc:82:7\n    #13 0x7fe163d3abc1 in operator() /xla/service/hlo_runner.cc:670:43\n    #14 0x7fe163d3abc1 in __invoke<(lambda at /xla/service/hlo_runner.cc:669:29) &> /src/libcxx/include/__type_traits/invoke.h:90:27\n    #15 0x7fe163d3abc1 in __call<(lambda at /xla/service/hlo_runner.cc:669:29) &> /src/libcxx/include/__type_traits/invoke.h:350:5\n    #16 0x7fe163d3abc1 in __invoke_r<void, (lambda at /xla/service/hlo_runner.cc:669:29) &> /src/libcxx/include/__type_traits/invoke.h:356:10\n    #17 0x7fe163d3abc1 in void std::__u::__function::__policy_func<void ()>::__call_func<xla::HloRunner::ExecuteReplicated(xla::OpaqueExecutable*, xla::HloRunnerInterface::ReplicatedExecuteOptions const&, xla::DeviceAssignment*, xla::ExecutionProfile*)::$_0::operator()(std::__u::vector<xla::ServiceExecutableRunOptions, std::__u::allocator<xla::ServiceExecutableRunOptions>> const&, std::__u::vector<absl::Span<xla::ShapedBuffer const* const>, std::__u::allocator<absl::Span<xla::ShapedBuffer const* const>>> const&) const::'lambda0'()>(std::__u::__function::__policy_storage const*) /src/libcxx/include/__functional/function.h:443:12\n    #18 0x7fdad5b9f44d in operator() /src/libcxx/include/__functional/function.h:502:12\n    #19 0x7fdad5b9f44d in operator() /src/libcxx/include/__functional/function.h:754:10\n    #20 0x7fdad5b9f44d in tsl::thread::EigenEnvironment::ExecuteTask(tsl::thread::EigenEnvironment::Task const&) /xla/tsl/platform/threadpool.cc:112:5\n    #21 0x7fdad5b9e46f in Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::WorkerLoop(int) eigen3/unsupported/Eigen/CXX11/../../../Eigen/src/ThreadPool/NonBlockingThreadPool.h:365:41\n    #22 0x7fdad5b9e2c4 in operator() eigen3/unsupported/Eigen/CXX11/../../../Eigen/src/ThreadPool/NonBlockingThreadPool.h:78:68\n    #23 0x7fdad5b9e2c4 in __invoke<(lambda at ./eigen3/unsupported/Eigen/CXX11/../../../Eigen/src/ThreadPool/NonBlockingThreadPool.h:78:54) &> /src/libcxx/include/__type_traits/invoke.h:90:27\n    #24 0x7fdad5b9e2c4 in __call<(lambda at ./eigen3/unsupported/Eigen/CXX11/../../../Eigen/src/ThreadPool/NonBlockingThreadPool.h:78:54) &> /src/libcxx/include/__type_traits/invoke.h:350:5\n    #25 0x7fdad5b9e2c4 in __invoke_r<void, (lambda at ./eigen3/unsupported/Eigen/CXX11/../../../Eigen/src/ThreadPool/NonBlockingThreadPool.h:78:54) &> /src/libcxx/include/__type_traits/invoke.h:356:10\n    #26 0x7fdad5b9e2c4 in void std::__u::__function::__policy_func<void ()>::__call_func<Eigen::ThreadPoolTempl<tsl::thread::EigenEnvironment>::ThreadPoolTempl(int, bool, tsl::thread::EigenEnvironment)::'lambda'()>(std::__u::__function::__policy_storage const*) /src/libcxx/include/__functional/function.h:443:12\n    #27 0x7fdad5b9e162 in operator() /src/libcxx/include/__functional/function.h:502:12\n    #28 0x7fdad5b9e162 in operator() /src/libcxx/include/__functional/function.h:754:10\n    #29 0x7fdad5b9e162 in operator() /xla/tsl/platform/threadpool.cc:95:7\n    #30 0x7fdad5b9e162 in __invoke<(lambda at /xla/tsl/platform/threadpool.cc:87:51) &> /src/libcxx/include/__type_traits/invoke.h:90:27\n    #31 0x7fdad5b9e162 in invoke<(lambda at /xla/tsl/platform/threadpool.cc:87:51) &> /src/libcxx/include/__functional/invoke.h:29:10\n    #32 0x7fdad5b9e162 in InvokeR<void, (lambda at /xla/tsl/platform/threadpool.cc:87:51) &> absl/functional/internal/any_invocable.h:121:5\n    #33 0x7fdad5b9e162 in void absl::internal_any_invocable::RemoteInvoker<false, void, tsl::thread::EigenEnvironment::CreateThread(std::__u::function<void ()>)::'lambda'()&>(absl::internal_any_invocable::TypeErasedState*) absl/functional/internal/any_invocable.h:338:10\n    #34 0x7fdad61d0464 in operator() absl/functional/internal/any_invocable.h:783:1\n    #35 0x7fdad61d0464 in tsl::(anonymous namespace)::GoogleThread::FuncThread::Run() /xla/tsl/platform/google/env.cc:264:27\n    #36 0x7fd77514525a in Thread::ThreadBody(void*) thread/thread.cc:1442:16\n    #37 0x56541bdaa690 in asan_thread_start(void*) llvm/llvm-project/compiler-rt/lib/asan/asan_interceptors.cpp:246:28\n    #38 0x7fe08e8347dc in start_thread (/lib64/libpthread.so.0+0xb7dc) (BuildId: 43d6c4d9186e9be3be4d4e41cb03a501)\n    #39 0x7fe07dfbab7e in clone (/lib64/libc.so.6+0x13db7e) (BuildId: ca23ec6d935352118622ce674a8bb52d)\n\nSUMMARY: AddressSanitizer: 400 byte(s) leaked in 2 allocation(s). (//xla/service/gpu/tests:collective_ops_command_buffer_test_2gpu)\n-- 2026-01-15 21:42:36 PST Forge runner: Test failed with exit code 66 while running on ozeh8.prod.google.com\n================================================================================\n```\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758332538,
+   "author_login": "apivovarov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-16T06:07:14Z",
+   "updated_utc": "2026-01-16T06:07:14Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758332538",
+   "body_markdown": "Eugene, Shawn, could you guys take a look and share your thoughts on how to fix this? @ezhulenev  @shawnwang18 "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758339331,
+   "author_login": "apivovarov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-16T06:10:26Z",
+   "updated_utc": "2026-01-16T06:10:26Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758339331",
+   "body_markdown": "@beckerhe "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758341637,
+   "author_login": "ezhulenev",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-01-16T06:11:33Z",
+   "updated_utc": "2026-01-16T06:11:33Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758341637",
+   "body_markdown": "This does look like a leak in CUDA, something is getting allocated when graph is executed, and never released back."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758354453,
+   "author_login": "shawnwang18",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-16T06:17:27Z",
+   "updated_utc": "2026-01-16T06:17:27Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758354453",
+   "body_markdown": "The leakage is known cuda bug, and we have a internal bug to work on this. The scenario is that:  the leaked marker is lazily created when a graph with user objects is launched. Subsequent launches will not leak additional markers. \n\nI think for some of the affected unittest, XLA is intentionally disabling leakage check. \n\n@apivovarov maybe disable the leakage test for now? \n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758391561,
+   "author_login": "apivovarov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-16T06:33:15Z",
+   "updated_utc": "2026-01-16T06:33:15Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758391561",
+   "body_markdown": "Got it. Thank you, Shawn! Thank you, Eugene!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758393326,
+   "author_login": "apivovarov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-16T06:34:04Z",
+   "updated_utc": "2026-01-16T06:34:04Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758393326",
+   "body_markdown": "Shawn, can you provide cuda bug number?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3758424192,
+   "author_login": "shawnwang18",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-16T06:44:30Z",
+   "updated_utc": "2026-01-16T06:44:30Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3758424192",
+   "body_markdown": "Cuda internal number? 5519332  \nWhat can you do externally with this number? \n\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3761765714,
+   "author_login": "apivovarov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-16T20:49:24Z",
+   "updated_utc": "2026-01-16T20:49:24Z",
+   "permalink": "https://github.com/openxla/xla/issues/36487#issuecomment-3761765714",
+   "body_markdown": "I have not realized that\nNVIDIA does not offer a public, searchable bug tracker; instead, they keep bug reports private for confidentiality, accessible only to the filer and NVIDIA personnel, requiring developers to file bugs directly through their support system or forums to get attention and updates."
+  }
+ ]
+}

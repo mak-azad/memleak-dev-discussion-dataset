@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/libming/libming/issues/276",
+ "passes": [
+  "main"
+ ],
+ "title": "allocation-size-too-big in readBytes",
+ "author_login": "Wayne-Bai",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:16Z",
+ "final_url": "https://github.com/libming/libming/issues/276",
+ "repo": "libming/libming",
+ "repo_language": "C",
+ "number": 276,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-07-21T03:35:50Z",
+ "updated_at": "2023-07-21T03:35:50Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Wayne-Bai",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-07-21T03:35:50Z",
+   "updated_utc": "2023-07-21T03:35:50Z",
+   "permalink": "https://github.com/libming/libming/issues/276",
+   "body_markdown": "There is an allocation-size-too-big issue and the poc is in the attachment.\r\n\r\ncommand: ``` ./swftophp poc-1```\r\n\r\n```\r\n==22513==ERROR: AddressSanitizer: requested allocation size 0xfffffffff7efdfbf (0xfffffffff7efefc0 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000000 (thread T0)\r\n    #0 0x4ad350 in malloc /home/eval/build/llvm_tools/llvm-11.0.0.src/projects/compiler-rt/lib/asan/asan_malloc_linux.cpp:145\r\n    #1 0x5212ab in readBytes /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/read.c:227:17\r\n    #2 0x51d8c1 in parseABC_STRING_INFO /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/parser.c:3068:30\r\n    #3 0x51e07d in parseABC_CONSTANT_POOL /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/parser.c:3175:5\r\n    #4 0x51fb37 in parseABC_FILE /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/parser.c:3426:3\r\n    #5 0x52033e in parseSWF_DOABC /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/parser.c:3481:3\r\n    #6 0x4fc2b0 in blockParse /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/blocktypes.c:145:14\r\n    #7 0x4fbf39 in readMovie /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/main.c:265:11\r\n    #8 0x4fb633 in main /home/eval/Desktop/libming-CVE-2018-8962/obj-aflgo/util/../../util/main.c:350:2\r\n    #9 0x7fec449f4c86 in __libc_start_main /build/glibc-CVJwZb/glibc-2.27/csu/../csu/libc-start.c:310\r\n\r\n==22513==HINT: if you don't care about these errors you may set allocator_may_return_null=1\r\nSUMMARY: AddressSanitizer: allocation-size-too-big /home/eval/build/llvm_tools/llvm-11.0.0.src/projects/compiler-rt/lib/asan/asan_malloc_linux.cpp:145 in malloc\r\n==22513==ABORTING\r\n```\r\n[poc-1.zip](https://github.com/libming/libming/files/12116025/poc-1.zip)\r\n"
+  }
+ ]
+}

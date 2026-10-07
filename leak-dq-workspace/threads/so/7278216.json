@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 7278216,
+ "url": "https://stackoverflow.com/questions/7278216/pthread-create-memory-leak",
+ "title": "pthread_create memory leak?",
+ "tags": [
+  "c",
+  "memory-leaks",
+  "pthreads"
+ ],
+ "score": 3,
+ "view_count": 2828,
+ "answer_count": 2,
+ "is_answered": true,
+ "accepted_answer_id": 7278675,
+ "created_utc": "2011-09-02T00:48:44Z",
+ "last_activity_utc": "2011-09-02T11:07:25Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 766251,
+ "author_display_name": "Sterling",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/7278216/pthread-create-memory-leak",
+ "body_html": "<p>Whenever I run valgrind on my program, it is telling that I have possibly lost memory wherever I call pthread_create. I have been trying to follow the guidance on </p>\n\n<p><a href=\"https://stackoverflow.com/questions/5610677/valgrind-memory-leak-errors-when-using-pthread-create\">valgrind memory leak errors when using pthread_create</a>\n<a href=\"http://gelorakan.wordpress.com/2007/11/26/pthead_create-valgrind-memory-leak-solved/\" rel=\"nofollow noreferrer\">http://gelorakan.wordpress.com/2007/11/26/pthead_create-valgrind-memory-leak-solved/</a></p>\n\n<p>and other various websites google gave me, but nothing has worked. So far I have tried joining the threads, setting an pthread_attr_t to DETACHED, calling pthread_detach on each thread, and calling pthread_exit().</p>\n\n<p>trying PTHREAD_CREATE_DETACHED - </p>\n\n<pre><code>pthread_attr_t attr;\npthread_attr_init(&amp;attr);\npthread_attr_setdetachstate(&amp;attr, PTHREAD_CREATE_DETACHED);\n\npthread_create(&amp;c_udp_comm, &amp;attr, udp_comm_thread, (void*)this);\npthread_create(&amp;drive, &amp;attr, driving_thread, (void*)this);\npthread_create(&amp;update, &amp;attr, update_server_thread(void*)this);\n</code></pre>\n\n<p>I think I may have coded this next one with joining wrong...I am going by \n<a href=\"https://computing.llnl.gov/tutorials/pthreads/\" rel=\"nofollow noreferrer\">https://computing.llnl.gov/tutorials/pthreads/</a>\nand they have all their threads in an array so they just for loop. But I don't have them all in an array so I tried to just change it to work. Please tell me if I did it wrong.</p>\n\n<pre><code>void* status;\npthread_attr_t attr;\npthread_attr_init(&amp;attr);\npthread_attr_setdetachstate(&amp;attr, PTHREAD_CREATE_JOINABLE);\n\npthread_create(&amp;c_udp_comm, &amp;attr, udp_comm_thread, (void*)this);\npthread_create(&amp;drive, &amp;attr, driving_thread, (void*)this);\npthread_create(&amp;update, &amp;attr, update_server_thread(void*)this);\n\npthread_join(c_udp_comm, &amp;status);\npthread_join(drive, &amp;status);\npthread_join(update, &amp;status);\n</code></pre>\n\n<p>trying pthread_detach - </p>\n\n<pre><code>pthread_create(&amp;c_udp_comm, NULL, udp_comm_thread, (void*)this);\npthread_create(&amp;drive, NULL, driving_thread, (void*)this);\npthread_create(&amp;update, NULL, update_server_thread(void*)this);\n\npthread_detach(c_udp_comm);\npthread_detach(drive);\npthread_detach(update);\n</code></pre>\n\n<p>trying pthread_exit - </p>\n\n<pre><code>pthread_create(&amp;c_udp_comm, NULL, udp_comm_thread, (void*)this);\npthread_create(&amp;drive, NULL, driving_thread, (void*)this);\npthread_create(&amp;update, NULL, update_server_thread(void*)this);\n\npthread_exit(NULL);\n</code></pre>\n\n<p>If anyone can help me figure out why none of this is working I would be very grateful.</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 7278675,
+   "parent_id": 7278216,
+   "author_user_id": 379897,
+   "author_display_name": "R.. GitHub STOP HELPING ICE",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/7278675",
+   "score": 5,
+   "created_utc": "2011-09-02T02:23:37Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2011-09-02T02:23:37Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>glibc doesn't free thread stacks when threads exit; it caches them for reuse, and only prunes the cache when it gets huge. Thus it always \"leaks\" some memory.</p>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 7282554,
+   "parent_id": 7278216,
+   "author_user_id": 721269,
+   "author_display_name": "David Schwartz",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/7282554",
+   "score": 2,
+   "created_utc": "2011-09-02T11:07:25Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2011-09-02T11:07:25Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>You can prove there's no leak by taking your code that uses <code>pthread_join</code> and repeating the create/join process a few times. You'll see that the amount of memory \"leaked\" does not change, proving that no memory was actually leaked at all.</p>\n"
+  }
+ ]
+}

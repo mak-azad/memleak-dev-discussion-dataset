@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/apache/mxnet/issues/20315",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "GPU memory leak after using asnumpy()",
+ "author_login": "barry-jin",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:22Z",
+ "final_url": "https://github.com/apache/mxnet/issues/20315",
+ "repo": "apache/mxnet",
+ "repo_language": "C++",
+ "number": 20315,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-05-27T01:04:49Z",
+ "updated_at": "2021-05-27T16:07:18Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "barry-jin",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-05-27T01:04:49Z",
+   "updated_utc": "2021-05-27T16:07:18Z",
+   "permalink": "https://github.com/apache/mxnet/issues/20315",
+   "body_markdown": "Looks like GPU memory will not be released after using `asnumpy()` method for a large mxnet numpy ndarray with gpu context. \r\n\r\nCode to reproduce:\r\n```python\r\nimport mxnet as mx\r\nfrom mxnet import npx\r\nnpx.set_np()\r\n\r\nmx.context._current.set(mx.gpu(0))\r\n\r\ndef test():\r\n    xshape = (16, 128, 256, 256)\r\n    x = mx.np.random.uniform(size=xshape)\r\n    for _ in range(5):\r\n        x.attach_grad()\r\n        a, b = mx.context.gpu_memory_info(0)\r\n        x.asnumpy()\r\n        print(\"Used memory {} GB, Total memory {} GB.\".format((b - a) / (1024 * 1024 * 1024), b / (1024 * 1024 * 1024)))\r\n\r\nif __name__ == '__main__':\r\n    test()\r\n``` \r\n\r\nBefore comment out `x.asnumpy()` these two lines: \r\n``` \r\nUsed memory 1.6171875 GB, Total memory 14.755615234375 GB.\r\nUsed memory 2.6171875 GB, Total memory 14.755615234375 GB.\r\nUsed memory 3.1171875 GB, Total memory 14.755615234375 GB.\r\nUsed memory 3.1171875 GB, Total memory 14.755615234375 GB.\r\nUsed memory 3.1171875 GB, Total memory 14.755615234375 GB.\r\n``` \r\n\r\nAfter comment out these two lines:\r\n``` \r\nUsed memory 1.6171875 GB, Total memory 14.755615234375 GB.\r\nUsed memory 2.1171875 GB, Total memory 14.755615234375 GB.\r\nUsed memory 2.142578125 GB, Total memory 14.755615234375 GB.\r\nUsed memory 2.142578125 GB, Total memory 14.755615234375 GB.\r\nUsed memory 2.142578125 GB, Total memory 14.755615234375 GB.\r\n``` \r\n\r\nAfter change xshape to a relatively smaller one (8, 64, 128, 128), the memory usage looks normal.\r\n\r\n_Originally posted by @barry-jin in https://github.com/apache/incubator-mxnet/pull/20262#issuecomment-849217284_"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 849737231,
+   "author_login": "lgg",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-05-27T15:39:47Z",
+   "updated_utc": "2021-05-27T15:39:47Z",
+   "permalink": "https://github.com/apache/mxnet/issues/20315#issuecomment-849737231",
+   "body_markdown": "@barry-jin what version and platform are you using?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 849757699,
+   "author_login": "barry-jin",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-05-27T16:07:17Z",
+   "updated_utc": "2021-05-27T16:07:17Z",
+   "permalink": "https://github.com/apache/mxnet/issues/20315#issuecomment-849757699",
+   "body_markdown": "> @barry-jin what version and platform are you using?\r\n\r\nHi @lgg The environment information is here\r\n\r\n```\r\n----------Python Info----------\r\nVersion      : 3.8.8\r\nCompiler     : GCC 7.5.0\r\nBuild        : ('default', 'Feb 20 2021 21:09:14')\r\nArch         : ('64bit', 'ELF')\r\n------------Pip Info-----------\r\nVersion      : 21.0.1\r\nDirectory    : /home/ubuntu/.local/lib/python3.8/site-packages/pip\r\n----------MXNet Info-----------\r\nVersion      : 2.0.0\r\nDirectory    : /home/ubuntu/workspace/incubator-mxnet/python/mxnet\r\nCommit hash file \"/home/ubuntu/workspace/incubator-mxnet/python/mxnet/COMMIT_HASH\" not found. Not installed from pre-built package or built from source.\r\nLibrary      : ['/home/ubuntu/workspace/incubator-mxnet/python/mxnet/../../build/libmxnet.so']\r\nBuild features:\r\n✔ CUDA\r\n✔ CUDNN\r\n✔ NCCL\r\n✖ TENSORRT\r\n✖ CUTENSOR\r\n✔ CPU_SSE\r\n✔ CPU_SSE2\r\n✔ CPU_SSE3\r\n✔ CPU_SSE4_1\r\n✔ CPU_SSE4_2\r\n✖ CPU_SSE4A\r\n✔ CPU_AVX\r\n✖ CPU_AVX2\r\n✔ OPENMP\r\n✖ SSE\r\n✔ F16C\r\n✖ JEMALLOC\r\n✔ BLAS_OPEN\r\n✖ BLAS_ATLAS\r\n✖ BLAS_MKL\r\n✖ BLAS_APPLE\r\n✔ LAPACK\r\n✖ ONEDNN\r\n✔ OPENCV\r\n✔ DIST_KVSTORE\r\n✔ INT64_TENSOR_SIZE\r\n✔ SIGNAL_HANDLER\r\n✖ DEBUG\r\n✖ TVM_OP\r\n----------System Info----------\r\nPlatform     : Linux-5.4.0-1047-aws-x86_64-with-glibc2.27\r\nsystem       : Linux\r\nnode         : ip-172-31-10-57\r\nrelease      : 5.4.0-1047-aws\r\nversion      : #49~18.04.1-Ubuntu SMP Wed Apr 28 23:08:58 UTC 2021\r\n----------Hardware Info----------\r\nmachine      : x86_64\r\nprocessor    : x86_64\r\nArchitecture:        x86_64\r\nCPU op-mode(s):      32-bit, 64-bit\r\nByte Order:          Little Endian\r\nCPU(s):              8\r\nOn-line CPU(s) list: 0-7\r\nThread(s) per core:  2\r\nCore(s) per socket:  4\r\nSocket(s):           1\r\nNUMA node(s):        1\r\nVendor ID:           GenuineIntel\r\nCPU family:          6\r\nModel:               85\r\nModel name:          Intel(R) Xeon(R) Platinum 8259CL CPU @ 2.50GHz\r\nStepping:            7\r\nCPU MHz:             3278.429\r\nBogoMIPS:            4999.99\r\nHypervisor vendor:   KVM\r\nVirtualization type: full\r\nL1d cache:           32K\r\nL1i cache:           32K\r\nL2 cache:            1024K\r\nL3 cache:            36608K\r\nNUMA node0 CPU(s):   0-7\r\nFlags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single pti fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx avx512f avx512dq rdseed adx smap clflushopt clwb avx512cd avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves ida arat pku ospke avx512_vnni\r\n----------Network Test----------\r\nSetting timeout: 10\r\nTiming for MXNet: https://github.com/apache/incubator-mxnet, DNS: 0.0016 sec, LOAD: 0.3136 sec.\r\nTiming for Gluon Tutorial(en): http://gluon.mxnet.io, DNS: 0.0902 sec, LOAD: 0.1888 sec.\r\nError open Gluon Tutorial(cn): https://zh.gluon.ai, <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1125)>, DNS finished in 0.19376182556152344 sec.\r\nTiming for FashionMNIST: https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/gluon/dataset/fashion-mnist/train-labels-idx1-ubyte.gz, DNS: 0.0104 sec, LOAD: 0.5044 sec.\r\nTiming for PYPI: https://pypi.python.org/pypi/pip, DNS: 0.0013 sec, LOAD: 0.2037 sec.\r\nError open Conda: https://repo.continuum.io/pkgs/free/, HTTP Error 403: Forbidden, DNS finished in 0.049257516860961914 sec.\r\n----------Environment----------\r\n```\r\nMXNet is 2.0.0 version and built from source with commit hash 978f97e8cd1d486a05aaa0682b209150e1178dfd\r\nThe issue is also in MXNet 2.0.0a"
+  }
+ ]
+}

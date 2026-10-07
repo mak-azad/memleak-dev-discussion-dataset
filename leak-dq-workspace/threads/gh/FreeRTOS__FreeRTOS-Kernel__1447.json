@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/FreeRTOS/FreeRTOS-Kernel/issues/1447",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[BUG] POSIX (GCC) port: thread marker leaked and thread mis-identified when `pthread_setspecific()` fails",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:15Z",
+ "final_url": "https://github.com/FreeRTOS/FreeRTOS-Kernel/issues/1447",
+ "repo": "FreeRTOS/FreeRTOS-Kernel",
+ "repo_language": "C",
+ "number": 1447,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-06T09:17:56Z",
+ "updated_at": "2026-07-08T17:11:54Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "RES-thread"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-06T09:17:56Z",
+   "updated_utc": "2026-07-08T17:11:54Z",
+   "permalink": "https://github.com/FreeRTOS/FreeRTOS-Kernel/issues/1447",
+   "body_markdown": "In `portable/ThirdParty/GCC/Posix/port.c`, `prvMarkAsFreeRTOSThread()` allocates a one-byte thread marker and stores it in thread-specific storage via `pthread_setspecific()`, but ignores the return value. If `pthread_setspecific()` fails, the marker is neither stored (so the TLS destructor never frees it) nor freed locally, leaking it — and the thread is left unmarked, so `prvIsFreeRTOSThread()` misclassifies it.\n\n## Affected code\n\n`portable/ThirdParty/GCC/Posix/port.c`:\n\n```c\nstatic void prvThreadKeyDestructor( void * pvData )\n{\n    free( pvData );\n}\n\n/* ... key created once ... */\n    pthread_key_create( &xThreadKey, prvThreadKeyDestructor );   /* return ignored */\n\n/* ... per FreeRTOS pthread ... */\n    uint8_t * pucThreadData = NULL;\n\n    pucThreadData = malloc( 1 );\n    configASSERT( pucThreadData != NULL );\n\n    *pucThreadData = 1;\n\n    pthread_setspecific( xThreadKey, pucThreadData );            /* return ignored */\n```\n\n## Problem\n\nOn the success path this is not a leak: ownership of the marker transfers to the\npthread TLS, and `prvThreadKeyDestructor()` frees it when the thread exits or is\ncancelled.\n\nOn the failure path (`pthread_setspecific()` returns non-zero, e.g. `EINVAL` for\nan invalid key or `ENOMEM` for insufficient resources):\n\n- The pointer is not stored in thread-specific storage.\n- The TLS destructor never receives it.\n- The local variable goes out of scope on return.\n- The one-byte allocation leaks.\n- `prvIsFreeRTOSThread()` will incorrectly report that this thread is not a\n  FreeRTOS thread.\n\nThe correctness impact (thread identity) is arguably larger than the one-byte\nleak itself.\n\n## Severity\n\nLow as a leak: one byte plus allocator metadata per failure, only on an error\npath that typically indicates the host is already resource-constrained. Worth\nfixing together with the related robustness gaps below.\n\n## Suggested fix\n\n```c\n    int xResult;\n\n    xResult = pthread_setspecific( xThreadKey, pucThreadData );\n    if( xResult != 0 )\n    {\n        free( pucThreadData );\n        configASSERT( xResult == 0 );\n    }\n```\n\nBecause the function returns `void`, if `configASSERT` is compiled out a failure\npolicy is still needed — terminate the pthread, invoke a port-specific fatal\nhandler, or change the function to return status so the caller can abort\ninitialization. Freeing and continuing avoids the leak but leaves the thread\nunmarked, which may lead to incorrect later control flow.\n\n## Related robustness issues (same area)\n\n- `configASSERT( pucThreadData != NULL )` is followed by an unconditional\n  `*pucThreadData = 1;`. With `configASSERT` compiled out and `malloc()` failing,\n  this is a NULL dereference.\n- `pthread_key_create()`'s return value is also ignored; if key creation fails,\n  `pthread_setspecific()` will subsequently fail. A complete fix should save and\n  check the key initialization status.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4917314848,
+   "author_login": "rawalexe",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-07-08T17:10:43Z",
+   "updated_utc": "2026-07-08T17:11:54Z",
+   "permalink": "https://github.com/FreeRTOS/FreeRTOS-Kernel/issues/1447#issuecomment-4917314848",
+   "body_markdown": "This is indeed a memory leak, Thank you for reporting it. We will accept it as hardening , would you also like to create a PR for it."
+  }
+ ]
+}

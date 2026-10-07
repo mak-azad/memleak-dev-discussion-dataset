@@ -1,0 +1,65 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/michaelrsweet/mxml/issues/358",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Heap use-after-free in `mxml_load_data()` error cleanup (double deletion of an already-freed descendant)",
+ "author_login": "suywang",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:04Z",
+ "final_url": "https://github.com/michaelrsweet/mxml/issues/358",
+ "repo": "michaelrsweet/mxml",
+ "repo_language": "C",
+ "number": 358,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-27T14:46:04Z",
+ "updated_at": "2026-09-30T02:18:28Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "suywang",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-27T14:46:04Z",
+   "updated_utc": "2026-09-30T02:18:28Z",
+   "permalink": "https://github.com/michaelrsweet/mxml/issues/358",
+   "body_markdown": "## Summary\n\nThe common `error:` epilogue of `mxml_load_data()` deletes two nodes without first checking whether the first delete already released the second one. `mxmlDelete()` is recursive, so when `first` is a descendant of `node`, the `mxmlDelete(node)` call frees `first` on the way, and the following `mxmlDelete(first)` then dereferences freed memory.\n\n## Affected versions\nv4.0.5 and v4.0.6\nThis is caused by the fix introduced for issue #354 \n\n## Root cause\n\n`mxml-file.c`, at the end of `mxml_load_data()`:\n\n```c\n1454:  // Common error return...\n1455:  error:\n1456:\n1457:  if (node && node != first)\n1458:    mxmlDelete(node);\n1459:\n1460:  mxmlDelete(first);\n1461:\n1462:  free(buffer);\n1463:\n1464:  return (NULL);\n```\n\nThe guard tests `node != first` only. It does not test whether `first` is a\n*descendant* of `node`.\n\nAnd `mxmlDelete()` is recursive — `mxml-node.c`:\n\n```c\n136:  mxmlRemove(node);\n137:\n138:  // Delete children...\n139:  for (current = node->child; current; current = next)\n140:  {\n...\n156:    // Free child...\n157:    mxml_free(current);\n158:  }\n159:\n160:  // Then free the memory used by the parent node...\n161:  mxml_free(node);\n```\n\n`node` becomes an ancestor of `first` on the ordinary close-tag path — `mxml-file.c`:\n\n```c\n1299:        node   = parent;\n1300:        parent = parent->parent;\n```\n\nafter which a second root node reaches the epilogue with `node` still pointing at that ancestor. So `mxmlDelete(node)` at :1458 releases `first` as part of the subtree, and `mxmlDelete(first)` at :1460 re-enters `mxmlDelete()` on a dangling pointer. It dereferences it immediately, in `mxmlRemove()` — `mxml-node.c`:\n\n```c\n751: void\n752: mxmlRemove(mxml_node_t *node)\n753: {\n...\n756:   // Range check input...\n757:   if (!node || !node->parent)\n```\n\nwhich is exactly where AddressSanitizer reports the read. The second `mxml_free()` on that address is never reached, so this is a use-after-free caused by a double deletion rather than two `free()` calls on one pointer.\n\nThe same delete also frees the caller's `top`:\n\n`mxml_load_data()` uses the caller's node as its initial parent:\n\n```c\n844:  parent     = top;\n845:  first      = NULL;\n```\n\nIn this scenario the close-tag branch has already set `node = parent` (`:1299`), so the `node` that `mxmlDelete(node)` deletes at `:1458` *is* the caller's `top`. Nothing in the error path distinguishes a node mxml allocated from the node the caller passed in, so the caller's node is freed along with everything else.\n\nThat makes a second use-after-free, this one landing in the caller: after a **failed** load `top` is dangling, while after a successful one it is still the caller's. `mxmlLoadString()` returns NULL, and the caller's own `mxmlDelete(top)` then operates on freed memory. \n\n`testmxml.c` builds a node, loads into it, and deletes it at the end:\n\n```c\n 84:  tree    = mxmlNewElement(xml, \"element\");\n...\n111:  mxmlOptionsSetTypeValue(options, MXML_TYPE_TEXT);\n112:  mxmlLoadString(tree, options, \"<group type='string'>string string string</group>\");\n```\n\nThat is the documented pattern, and it only stays safe today because every document in the test is well formed. Feed the test a malformed one and the cleanup at the end of `main()` operates on freed memory.\n\n## Reproduction\n\nUbuntu 20.04\n\nAddressSanitizer\n```bash\n./mxml_double_free_asan poc_mxml_load_data_double_free.xml\n```\n\nsame without the sanitizer flags\n```bash\n/mxml_double_free_plain poc_mxml_load_data_double_free.xml\n```\n\nPlease refer to the attached package for specific compilation commands.\n\n## PoC\n\n[poc_mxml_error_handling.tar.gz](https://github.com/user-attachments/files/32701825/poc_mxml_error_handling.tar.gz)\n\n## Error Log\n\nAddressSanitizer\n```\n==2063569==ERROR: AddressSanitizer: heap-use-after-free on address 0x6080000000b8 at pc 0x00000040c071 bp 0x7ffc56d93cc0 sp 0x7ffc56d93cb0\nREAD of size 8 at 0x6080000000b8 thread T0\n    #0 0x40c070 in mxmlRemove /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:757\n    #1 0x40d6c5 in mxmlDelete /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:136\n    #2 0x405b16 in mxml_load_data /home/autoresearch/advtaint/0day/repos/mxml/mxml-file.c:1460\n    #3 0x409ef9 in mxmlLoadString /home/autoresearch/advtaint/0day/repos/mxml/mxml-file.c:239\n    #4 0x40282e in main /tmp/opencode/triage/verify/v_mxml.c:10\n    #5 0x70632ae68082 in __libc_start_main ../csu/libc-start.c:308\n    #6 0x40273d in _start (/tmp/opencode/triage/verify/v_mxml+0x40273d)\n\n0x6080000000b8 is located 24 bytes inside of 88-byte region [0x6080000000a0,0x6080000000f8)\nfreed by thread T0 here:\n    #0 0x70632b16640f in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:122\n    #1 0x40bcd0 in mxml_free /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:913\n    #2 0x40d794 in mxmlDelete /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:157\n    #3 0x405b0a in mxml_load_data /home/autoresearch/advtaint/0day/repos/mxml/mxml-file.c:1458\n    #4 0x409ef9 in mxmlLoadString /home/autoresearch/advtaint/0day/repos/mxml/mxml-file.c:239\n    #5 0x40282e in main /tmp/opencode/triage/verify/v_mxml.c:10\n    #6 0x70632ae68082 in __libc_start_main ../csu/libc-start.c:308\n\npreviously allocated by thread T0 here:\n    #0 0x70632b166a06 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:153\n    #1 0x40c463 in mxml_new /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:931\n    #2 0x40d37a in mxmlNewText /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:692\n    #3 0x405066 in mxml_load_data /home/autoresearch/advtaint/0day/repos/mxml/mxml-file.c:895\n    #4 0x409ef9 in mxmlLoadString /home/autoresearch/advtaint/0day/repos/mxml/mxml-file.c:239\n    #5 0x40282e in main /tmp/opencode/triage/verify/v_mxml.c:10\n    #6 0x70632ae68082 in __libc_start_main ../csu/libc-start.c:308\n\nSUMMARY: AddressSanitizer: heap-use-after-free /home/autoresearch/advtaint/0day/repos/mxml/mxml-node.c:757 in mxmlRemove\nShadow bytes around the buggy address:\n  0x0c107fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c107fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c107fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c107fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c107fff8000: fa fa fa fa fd fd fd fd fd fd fd fd fd fd fd fa\n=>0x0c107fff8010: fa fa fa fa fd fd fd[fd]fd fd fd fd fd fd fd fa\n  0x0c107fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c107fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c107fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c107fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c107fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n  Shadow gap:              cc\n==2063569==ABORTING\n```\n\nsame without the sanitizer flags\n```\n[harness] input: \"x</x><y>\" (8 bytes)\n[harness] calling mxmlLoadString(top=0x5690a59db510, options=0x5690a59db480)\n<y> cannot be a second root node after <(null)> on line 1.\n[harness] mxmlLoadString returned (nil)\n[harness] (reached only if no memory error was detected)\nSegmentation fault (core dumped)\n```\n\n## Impact\n\nThis is heap corruption with a reliable crash.  Whether it can be pushed further depends on the allocator and the surrounding heap state.\n\n\n## CWE\n\nCWE-416 Use After Free\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5892601868,
+   "author_login": "michaelrsweet",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-29T14:45:04Z",
+   "updated_utc": "2026-09-29T14:45:04Z",
+   "permalink": "https://github.com/michaelrsweet/mxml/issues/358#issuecomment-5892601868",
+   "body_markdown": "Seems like the solution here is to bump the reference count for the \"first\" node so that it isn't immediately deleted."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5902775187,
+   "author_login": "suywang",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-30T02:18:28Z",
+   "updated_utc": "2026-09-30T02:18:28Z",
+   "permalink": "https://github.com/michaelrsweet/mxml/issues/358#issuecomment-5902775187",
+   "body_markdown": "Thanks for looking into this. I dug in a bit more and have a patch against v4.0.6 (attached for reference).\n\nI confirmed that simply retaining first does not prevent the UAF: mxmlDelete(node) still recursively frees first, and the same ASan heap-use-after-free is reported.\n\nThe approach I tested is to make first consistently represent the first node added by the current load operation: it is assigned immediately after each successful node creation, and cleared when a SAX callback releases that node. The error path then deletes only the nodes added by this load, rather than using the current node cursor for cleanup.\n\nThis fixes both cases I was seeing:\n\nthe #354 malformed-input leak does not come back;\nthe #358 UAF is gone, including the case where node has become the caller-supplied top.\n\nI also added regression coverage for malformed input, caller-provided top, and SAX callbacks. The new tests fail on v4.0.6 (ASan reports the UAF) and pass with the patch; the full test suite passes with ASan on Linux (also checked with UBSan).\n\nOne behavior change worth noting: when loading into a caller-provided top, a failed load now removes the nodes added by that load, instead of leaving partial siblings attached to top.\n\nHappy to adjust the patch if you'd prefer a different approach. \n\n[mxml-fix-354-358.patch](https://github.com/user-attachments/files/32836547/mxml-fix-354-358.patch)"
+  }
+ ]
+}

@@ -1,0 +1,32 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 70678060,
+ "url": "https://stackoverflow.com/questions/70678060/vulkan-physical-device-selection-causes-memory-leaks",
+ "title": "Vulkan physical device selection causes memory leaks?",
+ "tags": [
+  "c++",
+  "memory-leaks",
+  "vulkan"
+ ],
+ "score": 2,
+ "view_count": 378,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2022-01-12T07:59:31Z",
+ "last_activity_utc": "2022-01-12T07:59:31Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 13874267,
+ "author_display_name": "spaL",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/70678060/vulkan-physical-device-selection-causes-memory-leaks",
+ "body_html": "<p>Currently using Ubuntu 20.04 LTS, g++11.1.0, C++20, SDL2</p>\n<p>Compiler Flags: <code>-lvulkan -ldl -lSDL2main -lSDL2</code></p>\n<p>Code:</p>\n<pre><code>#include &quot;VkBootstrap.h&quot;\n\n#include &lt;SDL2/SDL.h&gt;\n#include &lt;SDL2/SDL_vulkan.h&gt;\n#include &lt;vulkan/vulkan.hpp&gt;\n\n#include &lt;iostream&gt;\n\nint main()\n{\n    VkExtent2D windowExtent {1600, 900};\n\n    // Initialize SDL\n    if (SDL_Init(SDL_INIT_VIDEO))\n    {\n        std::cerr &lt;&lt; &quot;Unable to initialize SDL: &quot; &lt;&lt; SDL_GetError();\n        std::abort();\n    }\n\n    // Create a SDL Window\n    SDL_Window* window {SDL_CreateWindow(\n        &quot;Vulkan&quot;,\n        SDL_WINDOWPOS_UNDEFINED,\n        SDL_WINDOWPOS_UNDEFINED,\n        windowExtent.width,\n        windowExtent.height,\n        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE\n    )};\n\n    // Check if window was created sucessfully\n    if (!window)\n    {\n        std::cerr &lt;&lt; &quot;Failed to create SDL Window: &quot; &lt;&lt; SDL_GetError();\n        std::abort();\n    }\n\n    vkb::InstanceBuilder instanceBuilder {};\n\n    // Initialize the Vulkan instance, with basic debug features\n    auto builderResult {instanceBuilder\n        .set_app_name(&quot;Vulkan Game&quot;)\n    .request_validation_layers(true)\n        .use_default_debug_messenger()\n    .require_api_version(1, 2, 0)\n    .build()};\n\n    vkb::Instance vkbInstance {builderResult.value()};\n\n    // Store the Instance\n    VkInstance instance {vkbInstance.instance};\n\n    // Store the Debug Messenger\n    VkDebugUtilsMessengerEXT debugMessenger {vkbInstance.debug_messenger};\n\n    VkSurfaceKHR surface {};\n\n    // Get a Vulkan Rendering Surface of the SDL Window\n    if (!SDL_Vulkan_CreateSurface(window, instance, &amp;surface))\n    {\n        std::cerr &lt;&lt; &quot;Unable to Create Vulkan Rendering Surface.\\n&quot;;\n        std::abort();\n    }\n\n    vkb::PhysicalDeviceSelector gpuSelector {vkbInstance};\n\n    // Initialize the Physical Device with a GPU that can render to the window\n    vkb::PhysicalDevice vkbPhysicalDevice {gpuSelector\n    .set_minimum_version(1, 2)\n    .set_surface(surface)\n    .select()\n    .value()};\n    \n    // Store the Vulkan Physical Device\n    VkPhysicalDevice physicalDevice {vkbPhysicalDevice.physical_device};\n\n    // Surface Deletion\n    vkDestroySurfaceKHR(instance, surface, nullptr);\n\n    // Debug Messenger Deletion\n    vkb::destroy_debug_utils_messenger(instance, debugMessenger);\n\n    // Instance Deletion\n    vkDestroyInstance(instance, nullptr);\n\n    // Window Deletion\n    SDL_DestroyWindow(window);\n}\n</code></pre>\n<p>Driver:\n<a href=\"https://i.sstatic.net/0UWYI.png\" rel=\"nofollow noreferrer\"><img src=\"https://i.sstatic.net/0UWYI.png\" alt=\"enter image description here\" /></a></p>\n<p>Following the tutorial <a href=\"https://vkguide.dev/\" rel=\"nofollow noreferrer\">https://vkguide.dev/</a> and using the VkBootstrap library, when I try to select the physical device, it causes a memory leak like the one shown below:</p>\n<pre><code>=================================================================\n==44934==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 576 byte(s) in 4 object(s) allocated from:\n    #0 0x7f8e9c905e17 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x7f8e97a13a1d  (/lib/x86_64-linux-gnu/libdrm.so.2+0x4a1d)\n    #2 0x31647261632e  (&lt;unknown module&gt;)\n\nDirect leak of 128 byte(s) in 4 object(s) allocated from:\n    #0 0x7f8e9c905c47 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x7f8e9b35a0c5  (/lib/x86_64-linux-gnu/libxcb.so.1+0xe0c5)\n\nSUMMARY: AddressSanitizer: 704 byte(s) leaked in 8 allocation(s).\n</code></pre>\n<p>I ran a diagnostic on the available GPUs by modifying the VkBootstrap.cpp file to output data, and got this:</p>\n<pre><code>GPU: Intel(R) HD Graphics 530 (SKL GT2)\nApi Version: 4202641\nDevice ID: 6418\nDevice Type: 1\nDriver Version: 88080387\n\n\nGPU: llvmpipe (LLVM 12.0.0, 256 bits)\nApi Version: 4194306\nDevice ID: 0\nDevice Type: 4\nDriver Version: 1\n\n\nSelected GPU: Intel(R) HD Graphics 530 (SKL GT2)\n</code></pre>\n<p>Although I have an Nvidia and Intel graphics card, how come it isn't showing the Nvidia graphics card as a viable GPU?</p>\n<p>Also, why are these memory leaks occurring? How can I resolve them?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": []
+}

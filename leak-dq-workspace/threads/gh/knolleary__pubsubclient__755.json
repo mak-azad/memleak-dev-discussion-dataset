@@ -1,0 +1,99 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/knolleary/pubsubclient/issues/755",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in PubSubClient::setBufferSize",
+ "author_login": "gudnimg",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:46Z",
+ "final_url": "https://github.com/knolleary/pubsubclient/issues/755",
+ "repo": "knolleary/pubsubclient",
+ "repo_language": "C++",
+ "number": 755,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-07-02T10:32:27Z",
+ "updated_at": "2020-07-04T11:05:50Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 5,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "gudnimg",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-07-02T10:32:27Z",
+   "updated_utc": "2020-07-04T11:05:50Z",
+   "permalink": "https://github.com/knolleary/pubsubclient/issues/755",
+   "body_markdown": "There is a memory leak in line 752 in PubSubClient.cpp. I can't say I understand the code but when I use Check feature in PlatformIO, it reports this leak.\r\n\r\n```c\r\nboolean PubSubClient::setBufferSize(uint16_t size) {\r\n    if (size == 0) {\r\n        // Cannot set it back to 0\r\n        return false;\r\n    }\r\n    if (this->bufferSize == 0) {\r\n        this->buffer = (uint8_t*)malloc(size);\r\n    } else {\r\n        uint8_t* newBuffer = (uint8_t*)realloc(this->buffer, size);\r\n        if (newBuffer != NULL) {\r\n            this->buffer = newBuffer;\r\n        } else {\r\n            return false; // this is line 752\r\n        }\r\n    }\r\n    this->bufferSize = size;\r\n    return (this->buffer != NULL);\r\n}\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 652927965,
+   "author_login": "knolleary",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2020-07-02T10:34:00Z",
+   "updated_utc": "2020-07-02T10:34:00Z",
+   "permalink": "https://github.com/knolleary/pubsubclient/issues/755#issuecomment-652927965",
+   "body_markdown": "You'll have to give a bit more information then that.\r\n\r\nWhat is the actual message from PlatformIO?\r\n\r\nHave you observed an actual leak?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 652930967,
+   "author_login": "gudnimg",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-07-02T10:40:59Z",
+   "updated_utc": "2020-07-02T10:40:59Z",
+   "permalink": "https://github.com/knolleary/pubsubclient/issues/755#issuecomment-652930967",
+   "body_markdown": "Message from PlatformIO: _include\\PubSubClient.cpp:752: [high:error] Memory leak: newBuffer [memleak]_\r\n\r\nNo I haven't observed an actual leak, just noticed this message when trying to debug my own code.\r\n\r\n![image](https://user-images.githubusercontent.com/8218499/86349312-69ffd180-bc50-11ea-9244-d0b0bca1f102.png)\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 652932012,
+   "author_login": "knolleary",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2020-07-02T10:43:16Z",
+   "updated_utc": "2020-07-02T10:43:16Z",
+   "permalink": "https://github.com/knolleary/pubsubclient/issues/755#issuecomment-652932012",
+   "body_markdown": "Hmm, I'm not entirely sure how that can leak. We only go to line 752 if `newBuffer` is `NULL`. I don't use PlatformIO, so I don't know what it is doing to analyse the source code. But I *think* its a false positive."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 652971769,
+   "author_login": "gudnimg",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-07-02T12:18:15Z",
+   "updated_utc": "2020-07-02T12:18:15Z",
+   "permalink": "https://github.com/knolleary/pubsubclient/issues/755#issuecomment-652971769",
+   "body_markdown": "Interesting if I add `free(newBuffer);` PlatformIO no longer reports a leak. \r\n\r\n```c\r\nboolean PubSubClient::setBufferSize(uint16_t size) {\r\n    if (size == 0) {\r\n        // Cannot set it back to 0\r\n        return false;\r\n    }\r\n    if (this->bufferSize == 0) {\r\n        this->buffer = (uint8_t*)malloc(size);\r\n    } else {\r\n        uint8_t* newBuffer = (uint8_t*)realloc(this->buffer, size);\r\n        if (newBuffer != NULL) {\r\n            this->buffer = newBuffer;\r\n        } else {\r\n            free(newBuffer); // <---\r\n            return false;\r\n        }\r\n    }\r\n    this->bufferSize = size;\r\n    return (this->buffer != NULL);\r\n}\r\n```\r\n\r\nAs I am trying to undestand this, the documentation at cppreference (https://en.cppreference.com/w/c/memory/realloc) mentions this:\r\n\r\n> On failure, returns a null pointer. The original pointer ptr remains valid and **may need to be deallocated with free()** or realloc()\r\n\r\nThis makes me think that `this->buffer` needs to be freed in the else statement. But PlatformIO will still see the memory leak due to newBuffer.\r\n\r\n```c\r\nboolean PubSubClient::setBufferSize(uint16_t size) {\r\n    if (size == 0) {\r\n        // Cannot set it back to 0\r\n        return false;\r\n    }\r\n    if (this->bufferSize == 0) {\r\n        this->buffer = (uint8_t*)malloc(size);\r\n    } else {\r\n        uint8_t* newBuffer = (uint8_t*)realloc(this->buffer, size);\r\n        if (newBuffer != NULL) {\r\n            this->buffer = newBuffer;\r\n        } else {\r\n            free(this->buffer); // <---\r\n            return false;\r\n        }\r\n    }\r\n    this->bufferSize = size;\r\n    return (this->buffer != NULL);\r\n}\r\n```\r\n\r\nI am just going to assume this is a false positive as you say :)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 653752201,
+   "author_login": "OBorce",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-07-04T11:05:50Z",
+   "updated_utc": "2020-07-04T11:05:50Z",
+   "permalink": "https://github.com/knolleary/pubsubclient/issues/755#issuecomment-653752201",
+   "body_markdown": "it is a false positive."
+  }
+ ]
+}

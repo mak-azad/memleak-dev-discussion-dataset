@@ -1,0 +1,42 @@
+# [STK-996] -flto with address sanitizer (ASAN) causes g++ bug
+
+- URL: https://github.com/SophistSolutions/Stroika/issues/1128
+- Repo: SophistSolutions/Stroika (language: C++)
+- State: open; created 2026-08-17T23:28:56Z; status ok; passes main
+
+## Issue body
+
+reporter (MEMBER) · LewisPringle · 2026-08-17T23:28:56Z · https://github.com/SophistSolutions/Stroika/issues/1128
+
+<!-- jira-import: {"assignee":"Lewis Pringle","attachments":[],"components":["Build-System"],"created":"2023-10-26T10:48:07.322-0400","fixVersions":[],"jiraLabels":[],"key":"STK-996","links":[],"priority":"Medium","reporter":"Lewis Pringle","resolution":null,"resolved":null,"status":"Open","type":"Task","updated":"2023-10-26T10:48:07.880-0400"} -->
+
+
+*Imported from JIRA. The table below is the state as of the 2026-08-16 export - historical,
+not current. Live status is this issue; live priority/type are the project fields.*
+
+| | |
+|---|---|
+| reporter | Lewis Pringle |
+| jira created | 2023-10-26T10:48:07.322-0400 |
+| jira last updated | 2023-10-26T10:48:07.880-0400 |
+
+<https://stroika.atlassian.net/browse/STK-996>
+
+## Description
+
+
+```
+Â  Â  Â  Â  Â  Â  Â  Â  ./Builds/g++-release-sanitize_address_undefined/Tests/Test02
+=================================================================
+==2050532==ERROR: AddressSanitizer: requested allocation size 0xccccccccccc86000 (0xccccccccccc87000 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000000 (thread T0)
+Â  Â  #0 0x5628d4f54bff in malloc (/Sandbox/Stroika-Dev/Builds/g++-release-sanitize_address_undefined/Tests/Test02+0x9dcbff) (BuildId: 97ffc4d1d27cdcfb13de655b58bf06b57977e113)
+Â  Â  #1 0x5628d53fdb7e in Stroika::Foundation::Memory::InlineBuffer<wchar_t, 1024ul>::Allocate_(unsigned long) /Sandbox/Stroika-Dev/Library/Sources/Stroika/Foundation/Characters/../Memory/InlineBuffer.inl:517
+Â  Â  #2 0x5628d53fdb7e in Stroika::Foundation::Memory::InlineBuffer<wchar_t, 1024ul>::reserve(unsigned long, bool) [clone .constprop.0] /Sandbox/Stroika-Dev/Library/Sources/Stroika/Foundation/Characters/../Memory/InlineBuffer.inl:331
+SUMMARY: AddressSanitizer: allocation-size-too-big (/Sandbox/Stroika-Dev/Builds/g++-release-sanitize_address_undefined/Tests/Test02+0x9dcbff) (BuildId: 97ffc4d1d27cdcfb13de655b58bf06b57977e113) in malloc
+==2050532==ABORTING
+
+```
+
+Seem on ubuntu 22.04 cross compile to raspi and on Ubunut 23.10 directly.
+
+

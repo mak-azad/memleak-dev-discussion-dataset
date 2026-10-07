@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 42159456,
+ "url": "https://stackoverflow.com/questions/42159456/double-free-or-corruptionfasttop",
+ "title": "double free or corruption(fasttop)",
+ "tags": [
+  "c",
+  "memory-management"
+ ],
+ "score": 1,
+ "view_count": 1019,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 42159512,
+ "created_utc": "2017-02-10T12:30:08Z",
+ "last_activity_utc": "2017-02-10T12:33:19Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": null,
+ "author_display_name": "user6552957",
+ "author_id_missing": true,
+ "permalink": "https://stackoverflow.com/questions/42159456/double-free-or-corruptionfasttop",
+ "body_html": "<p>Hello guys I have an array resizing function like this</p>\n\n<pre><code>int\nadd_time_element (time_t *array, time_t element, size_t *size)\n{\n    if (NULL == array)\n    {\n        return STATUS_FAIL;\n    }\n\n    int status = STATUS_SUCCESS;\n    time_t *tmp = NULL;\n    size_t local_size;\n\n    (*size)++;\n    local_size = *size;\n\n    printf (\"Local size %lu\\n\", local_size);\n\n    tmp = realloc (array, local_size * sizeof (time_t));\n    if (NULL == tmp)\n    {\n        status = STATUS_FAIL;   \n    }\n    else \n    {\n        array = tmp;\n    }\n\n    if (STATUS_FAIL == status)\n    {   \n        (*size)--;\n    }\n    else\n    {\n        array[local_size - ONE] = element;\n    }\n\n    return status;  \n}\n</code></pre>\n\n<p>I am calling this function like this..</p>\n\n<pre><code>  time_t *dates = NULL;\n    dates = malloc (ONE);\n    for (slot_index = ZERO; slot_index &lt; data_provider-&gt;n_slots; slot_index++)\n    {\n        printf (\"Testing\\n\");\n        /*slot = data_provider-&gt;slots[slot_index];\n        date = get_date (slot-&gt;start_time);*/\n        date += ONE;    \n        if (STATUS_FAIL ==  add_unique_time_element (dates, date, &amp;n_dates))\n        {\n            free (dates);\n            dates = NULL;   \n            return STATUS_FAIL;\n        }\n    }\n</code></pre>\n\n<p>I am getting the double free(fasttop) error in realloc function..</p>\n\n<p>And valgrind analysis report says</p>\n\n<pre><code>Invalid free() / delete / delete[] / realloc()\n==22491==    at 0x4C2DD9F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)\n==22491==    by 0x402BA3: add_time_element (array_util.c:353)\n==22491==    by 0x402C6C: add_unique_time_element (array_util.c:399)\n==22491==    by 0x401F92: create_dates (data_provider.c:283)\n==22491==    by 0x401D7D: create_data_provider_file (data_provider.c:174)\n==22491==    by 0x4075CC: main (data_provider_test.c:13)\n==22491==  Address 0x5b63170 is 0 bytes inside a block of size 1 free'd\n==22491==    at 0x4C2DD9F: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)\n==22491==    by 0x402BA3: add_time_element (array_util.c:353)\n</code></pre>\n\n<p>Please help.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 42159512,
+   "parent_id": 42159456,
+   "author_user_id": 6451573,
+   "author_display_name": "Jean-François Fabre",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/42159512",
+   "score": 1,
+   "created_utc": "2017-02-10T12:33:19Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2017-02-10T12:33:19Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>the prototype of your function is </p>\n\n<p><code>int\nadd_time_element (time_t *array, time_t element, size_t *size)</code></p>\n\n<p>you're changing <code>array</code> in your routine, but it does not reflect on the caller, you're changing a <em>copy</em> of the <code>array</code> pointer.</p>\n\n<p>So, next time you call your routine, if <code>array</code> has been changed by <code>realloc</code> at some point because it needed more size (doesn't happen systematically), you're passing an already freed pointer.</p>\n\n<p>Possible fixes:</p>\n\n<ul>\n<li>return <code>array</code> instead of your status (returning <code>NULL</code> when fails would be OK)</li>\n<li>pass <code>array</code> as <code>time_t **array</code> and refer to it as <code>*array</code> in your routine (and call with <code>&amp;array</code>)</li>\n</ul>\n\n<p>(first alternative is simpler)</p>\n\n<p>Note: the rest of your code is remarkably well-written against error handling (that's the irony of the thing)</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 71486036,
+   "parent_id": 42159512,
+   "parent_type": "answer",
+   "author_user_id": null,
+   "author_display_name": "user6552957",
+   "author_id_missing": true,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/42159456/#comment71486036_42159512",
+   "score": 0,
+   "created_utc": "2017-02-10T13:27:35Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Is the array not updated. As it is a memory location?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 71486129,
+   "parent_id": 42159512,
+   "parent_type": "answer",
+   "author_user_id": 6451573,
+   "author_display_name": "Jean-François Fabre",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/42159456/#comment71486129_42159512",
+   "score": 0,
+   "created_utc": "2017-02-10T13:29:46Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "the array is <i>copied</i> somewhere else (not <i>moved</i> so you may believe your program works for a moment, that&#39;s the vicious part). You have to export the return value of <code>realloc</code> to your caller."
+  }
+ ]
+}

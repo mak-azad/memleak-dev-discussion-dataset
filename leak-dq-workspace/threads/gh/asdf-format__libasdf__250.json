@@ -1,0 +1,76 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/asdf-format/libasdf/issues/250",
+ "passes": [
+  "main"
+ ],
+ "title": "Consider an asdf_free() for buffers the library allocates on the caller's behalf",
+ "author_login": "cruzzil",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:34Z",
+ "final_url": "https://github.com/asdf-format/libasdf/issues/250",
+ "repo": "asdf-format/libasdf",
+ "repo_language": "C",
+ "number": 250,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2026-09-04T15:29:58Z",
+ "updated_at": "2026-09-09T15:57:48Z",
+ "closed_at": "2026-09-09T15:57:48Z",
+ "labels": [
+  "bug",
+  "enhancement"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "cruzzil",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-04T15:29:58Z",
+   "updated_utc": "2026-09-09T15:57:48Z",
+   "permalink": "https://github.com/asdf-format/libasdf/issues/250",
+   "body_markdown": "# Consider an `asdf_free()` for buffers the library allocates on the caller's behalf\n\nFour public entry points allocate a buffer and hand ownership to the caller,\nand the documented way to release it is a bare `free()`:\n\n| Function | Header |\n|---|---|\n| `asdf_write_to_mem` | `asdf/file.h:318` — \"a buffer is allocated with `malloc()` … The caller is responsible for freeing the buffer with `free()`.\" |\n| `asdf_ndarray_read_all` | `asdf/core/ndarray.h:463` |\n| `asdf_ndarray_read_tile_ndim` | `asdf/core/ndarray.h:492` |\n| `asdf_ndarray_read_tile_2d` | `asdf/core/ndarray.h:525` |\n\nThat makes the allocator part of the ABI rather than an implementation\ndetail, which has two consequences.\n\n## Callers can crash on Windows\n\nA DLL and the application linking it can be built against different C runtimes,\nand each CRT keeps its own heap. `free()` on a pointer from another CRT's\n`malloc()` is undefined and in practice corrupts the heap or aborts. This is\nthe standard reason libraries that cross a DLL boundary export their own\ndeallocator, and it applies here as soon as libasdf ships as a DLL.\n\nIt is invisible on Linux and macOS, where there is one system allocator, so it\nwould not show up in CI.\n\n## libasdf cannot change its own allocator\n\nBecause the contract names `free()`, these four functions can never use an\narena, a pool, a debug allocator, or a tracking allocator — not even\ninternally, and not even behind a build flag. A `asdf_config_t` allocator hook,\nif one were ever wanted, could not cover them.\n\nThe same constraint binds re-implementations. I maintain a Rust implementation\nof this ABI ([libasdf-rs](https://github.com/cruzzil/asdf)), and these\nfour functions are the only places it cannot use Rust's allocator: it has to\ncall `malloc` directly so that a caller's `free()` is valid. Everything else in\nthe library is allocator-agnostic.\n\n## Suggested change\n\nExport a deallocator and document it as the way to release these buffers:\n\n```c\n/**\n * Free a buffer allocated by libasdf on the caller's behalf\n *\n * Use this for buffers returned by `asdf_write_to_mem`,\n * `asdf_ndarray_read_all` and the `asdf_ndarray_read_tile_*` family when they\n * were asked to allocate. Passing NULL is a no-op.\n */\nASDF_EXPORT void asdf_free(void *ptr);\n```\n\nThe initial implementation is one line — `free(ptr)` — so this is a\ndocumentation and forward-compatibility change rather than a behavioural one.\nIt is source-compatible for every existing caller: `free()` keeps working for\nas long as the implementation uses `malloc()`, so the docs can recommend\n`asdf_free()` and deprecate the bare `free()` at whatever pace suits.\n\nHappy to open a PR if this seems worth doing.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5584823321,
+   "author_login": "embray",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-08T12:03:02Z",
+   "updated_utc": "2026-09-08T12:03:02Z",
+   "permalink": "https://github.com/asdf-format/libasdf/issues/250#issuecomment-5584823321",
+   "body_markdown": "Agreed on both points. For the next release I really want to clean up the memory allocation story for libasdf-managed objects, especially frequently used ones like `asdf_value_t`.\n\nFortunately those all have their own destructors so swapping out allocation strategies can be done easily.\n\nI’m also on the fence about all the functions you mentioned returning raw memory buffers directly as opposed to some wrapper struct, but having at least one function that exposes the raw memory is valuable either way. I agree having an `asdf_free` for those is advantageous."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5593278511,
+   "author_login": "cruzzil",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-08T23:25:21Z",
+   "updated_utc": "2026-09-08T23:25:21Z",
+   "permalink": "https://github.com/asdf-format/libasdf/issues/250#issuecomment-5593278511",
+   "body_markdown": "Agree a wrapper struct is better but you'd still need a destructor for it in some form. "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5601383635,
+   "author_login": "embray",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-09T11:52:21Z",
+   "updated_utc": "2026-09-09T11:52:21Z",
+   "permalink": "https://github.com/asdf-format/libasdf/issues/250#issuecomment-5601383635",
+   "body_markdown": "Yep.  That will probably be a future change though, not for now.  "
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 71886062,
+ "url": "https://stackoverflow.com/questions/71886062/custom-size-integer-or-float-with-malloc",
+ "title": "custom size integer or float with malloc",
+ "tags": [
+  "c",
+  "malloc",
+  "dynamic-memory-allocation"
+ ],
+ "score": 0,
+ "view_count": 225,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2022-04-15T15:41:30Z",
+ "last_activity_utc": "2022-04-15T15:41:30Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 10136531,
+ "author_display_name": "Chrishdev",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/71886062/custom-size-integer-or-float-with-malloc",
+ "body_html": "<p>I am writing a command line(linux) calculator program in c.\nSo far, I accomplished the following:-</p>\n<ol>\n<li>take string input from user and store in char* malloc()</li>\n<li>validate(check) the string for invalid characters.</li>\n<li>insert multiply operator between braces. i.e. x(...) = x*(...), (..)(..) = (..)*(..)</li>\n</ol>\n<p>finally, it returns a string which is ready to be evaluated.\n//following is yet to be implememted</p>\n<ol>\n<li>evaluate string(expresion) on the basis of BODMAS rule, by manually looping through the string, convert string to integer/float etc...</li>\n</ol>\n<p>but the problem is the variable to store the answer, or the result of the evaluation.\nI realized that the answer can be very large, beyond the capacity of long int or long double.(which are 4 to 16 bytes which can hold limited digit numbers)</p>\n<p>but when the user inputs something like,\n4^4^4, or 5^5^5, the answer is very large,\n4^4^4 = 155 and 5^5^5 = 2185 digit number according to python3, len(str(5^5^5)),</p>\n<p>however this can be simply avoided, by displaying 'infinity' in the screen when the answer is larger than certain digits, i.e beyond the capacity of long double,\n<strong>But I want the program to be able to calculate the answer up to 1000 digits long</strong></p>\n<p>So, to solve this, as a beginner in c and new to dynamic allocation, I tried the following lines:</p>\n<pre><code>float *largef = malloc(4096);\nfloat *largef2 = malloc(sizeof(float) * 1024);\nint *largei = malloc(4096);\nint *largei2 = malloc(sizeof(int) * 1024);\n</code></pre>\n<p>But, all these line did was declare an array of int or float, which can hold 1024 numbers similar to <strong>int arr[1024];</strong>\nand each int in variable largei is just 4 bytes.\nThis is not what I wanted.</p>\n<p><strong><em>What I wanted to declare using 'float</em> largef = malloc(4096);' is to declare the float variable of size 4096 bytes just like the int is 4 bytes and long int is 8 bytes(in 64 bit system) ,\nbut what the malloc(4096) did was declare an array that holds 1024 floats each of size 4 bytes.</strong>*</p>\n<p>So how can I dynamically declare a variable of custom size that can hold the number of desired digits. i.e. a variable to store the floats number of upto 1000 digits.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 127029189,
+   "parent_id": 71886062,
+   "parent_type": "question",
+   "author_user_id": 298225,
+   "author_display_name": "Eric Postpischil",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/71886062/#comment127029189_71886062",
+   "score": 1,
+   "created_utc": "2022-04-15T15:47:09Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "The C standard does not provide any such built-in features. You must write or use an arbitrary or extended precision math library, such as <a href=\"https://gmplib.org\" rel=\"nofollow noreferrer\">The GNU Multiple Precision Arithmetic Library</a>."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 127029209,
+   "parent_id": 71886062,
+   "parent_type": "question",
+   "author_user_id": 440558,
+   "author_display_name": "Some programmer dude",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/71886062/#comment127029209_71886062",
+   "score": 1,
+   "created_utc": "2022-04-15T15:48:16Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "C don&#39;t have arbitrarily large (or small) values. If you want a 16kbit floating point type, you need to implement it yourself, or find a library which can do it for you."
+  }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/mappu/miqt/issues/154",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak with callback return values",
+ "author_login": "arnetheduck",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:06Z",
+ "final_url": "https://github.com/mappu/miqt/issues/154",
+ "repo": "mappu/miqt",
+ "repo_language": "Go",
+ "number": 154,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-01-29T15:57:16Z",
+ "updated_at": "2025-06-05T05:12:28Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "arnetheduck",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-01-29T15:57:16Z",
+   "updated_utc": "2025-06-05T05:12:28Z",
+   "permalink": "https://github.com/mappu/miqt/issues/154",
+   "body_markdown": "https://github.com/mappu/miqt/blob/7ee91701fc9d86233ec3d6d42a781e693f94888f/qt/gen_qabstractitemview.cpp#L977\n\nIn this callback handler, the `miqt_array` is allocated on the go side but never freed. Ditto for other, similar conversions.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2623524681,
+   "author_login": "mappu",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-01-30T05:02:07Z",
+   "updated_utc": "2025-01-30T05:02:07Z",
+   "permalink": "https://github.com/mappu/miqt/issues/154#issuecomment-2623524681",
+   "body_markdown": "The `modelview` example with `QAbstractListModel_OnData` is susceptible to this - it has to return a pointer to QVariant, because that is all that can traverse the ABI, but the Qt C++ method presumes a pass by value.\n\nProbably, any callbacks that return a type by value (and the C ABI has to project as a pass by value) will need to destruct the value.\n\nCurrently, the destructors are embedded directly in the emitgo functions (e.g. `emitParameterGo2CABIForwarding` does a lot of `defer C.free(...)`). They'll need to be split out to separate functions and called more intelligently.\n\nThis is the dual of the problem in #86. A complete solution would fix both problems."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2624007273,
+   "author_login": "arnetheduck",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-01-30T09:50:06Z",
+   "updated_utc": "2025-01-30T09:50:06Z",
+   "permalink": "https://github.com/mappu/miqt/issues/154#issuecomment-2624007273",
+   "body_markdown": "This bug is more about `miqt_array.data` which `miqt_exec_callback_QAbstractItemView_SelectedIndexes` allocates - after the generated code has finished iterating over the items and adding them to the list, it could free `data`. Ditto other similar converters (`miqt_string` to `QString` etc)."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2678039251,
+   "author_login": "arnetheduck",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-02-24T10:45:33Z",
+   "updated_utc": "2025-06-05T05:12:27Z",
+   "permalink": "https://github.com/mappu/miqt/issues/154#issuecomment-2678039251",
+   "body_markdown": "https://github.com/seaqt/seaqt-gen/commit/eb9711ff3ca1aebc6fa10848c2899ceeb163b322 provides some relief to this issue"
+  }
+ ]
+}

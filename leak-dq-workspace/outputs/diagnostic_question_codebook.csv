@@ -1,0 +1,33 @@
+dq_code,dimension,diagnostic_question,threads_total,so_questions,so_threads,gh_questions,gh_statements,asker_occurrences,responder_occurrences
+V1,Report interpretation,"Is the suspected leak/invalid free real, or a false positive / benign report?",76,68,51,4,30,65,37
+R2,Report interpretation,"What does the tool's report category or runtime error mean (definitely/indirectly/possibly lost, still reachable, suppressed, invalid pointer)?",51,63,41,2,13,65,13
+R3,Report interpretation,"Is the report caused by my code, or by a library, runtime, or the tool itself?",52,42,27,4,35,57,24
+R4,Report interpretation,Where was the block allocated / where does the leak or bad free originate?,30,22,21,2,11,25,10
+R5,Report interpretation,"How do I detect, configure, or suppress this with the tool?",41,55,34,4,6,37,28
+A1,Allocation,"Is this memory on the heap at all (vs. stack, static, string literal)?",39,57,30,0,16,60,13
+A2,Allocation,Does this function/API allocate what it returns (must the caller free it)?,12,20,9,0,3,16,7
+A3,Allocation,Which allocator family produced this pointer (malloc/new/new[]/custom/library)?,16,11,11,1,6,6,12
+A4,Allocation,"Is the allocation size bounded and validated (untrusted input, overflow, huge/negative size, failure)?",37,23,13,4,29,34,22
+O1,Ownership,Who is responsible for releasing this memory (caller vs. callee contract)?,37,21,16,3,35,41,18
+O2,Ownership,"Was ownership transferred (to a container, smart pointer, library, or object), so someone else releases it?",21,26,12,2,20,35,13
+D1,Deallocation,"Is there a matching release for this allocation, and where should it go?",50,34,32,2,21,39,18
+D2,Deallocation,Is the pointer passed to free exactly the one the allocator returned (not offset/advanced)?,15,15,11,2,3,13,7
+D3,Deallocation,Is the deallocator the right one for the allocator (free vs delete vs delete[] vs library free)?,53,59,28,0,38,76,21
+D4,Deallocation,"Is the pointer valid to free right now (initialized, not already freed, not dangling)?",52,48,31,0,33,68,13
+C1,Control flow,"Is the memory released on every path: error handling, early return, exceptions, longjmp?",44,28,20,0,41,53,16
+C2,Control flow,"Is the old block released on each loop iteration / reallocation (realloc failure, reassignment in a loop)?",33,22,17,2,31,44,11
+L1,Lifetime,"Must the memory be freed before program exit, or is exit-time retention acceptable?",41,77,30,3,19,51,48
+L2,Lifetime,"Is the object destroyed when its lifetime ends (scope exit, destructor called, virtual destructor)?",59,75,43,1,21,78,19
+L3,Lifetime,"Does memory keep growing with repetitions (retained longer than needed, unbounded growth)?",23,15,11,3,12,19,11
+L4,Lifetime,Are threads joined/detached so that their resources are released?,9,6,5,0,4,8,2
+E1,Escape / aliasing,Was the last reference overwritten or lost before release?,18,11,10,0,22,22,11
+E2,Escape / aliasing,"Does the pointer escape (global, struct field, return value) so it must be released elsewhere?",5,6,5,0,0,3,3
+E3,Escape / aliasing,"Do other aliases or copies refer to the same block (shallow copy, copy ctor, two owners)?",16,16,12,0,5,13,8
+N1,Composite cleanup,"Are nested sub-allocations released (struct members, list nodes, 2-D arrays) before/with the parent?",24,23,18,1,7,20,11
+N2,Composite cleanup,Is a reference cycle or refcount imbalance preventing release?,16,12,7,1,14,19,8
+N3,Composite cleanup,Does the cleanup routine / destructor release every resource the object owns?,17,12,12,0,5,13,4
+X1,Cross-module,"Are allocation and release done by the same module/runtime heap (DLL, CRT, FFI boundary)?",22,16,13,1,16,28,5
+G,Non-diagnostic,Generic: why does this leak/crash? (no specific evidence asked),26,24,22,4,0,27,1
+T1,Non-diagnostic,"Triage: reproducer, full trace, version, build flags",70,10,9,10,85,62,43
+P,Non-diagnostic,Prevention / best-practice advice,18,21,15,2,2,23,2
+K,Non-diagnostic,"Allocator internals (how free knows the size, etc.)",10,21,10,0,0,17,4

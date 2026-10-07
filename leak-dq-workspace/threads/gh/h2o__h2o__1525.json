@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/h2o/h2o/issues/1525",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "socket leaks with prematurely disconnected HTTP/1 clients",
+ "author_login": "dmitri--",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:05Z",
+ "final_url": "https://github.com/h2o/h2o/issues/1525",
+ "repo": "h2o/h2o",
+ "repo_language": "C",
+ "number": 1525,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2017-12-07T19:49:55Z",
+ "updated_at": "2017-12-08T02:45:07Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "RES-socket"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dmitri--",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-12-07T19:49:55Z",
+   "updated_utc": "2017-12-08T02:45:07Z",
+   "permalink": "https://github.com/h2o/h2o/issues/1525",
+   "body_markdown": "in short: if a HTTP/1 client disconnects too early, server will miss UV_EOF notification on that socket and will leave it half-open.\r\n\r\nIt appears that http1.c stops reading the socket even before calling on_req handler -- it explicitly calls uv_read_stop(), therefore should socket gets disconnected on the client side, there is no way for the server to recognize this situation.\r\n\r\nlong story:\r\nI have a handler installed in on_req callback. This handler can't respond immediately. It responds as soon as it can and this may take several seconds. I implemented this handler in asynchronous way, so if it can't respond immediately, it just quits on_req. When it gets notification about data availability, it breaks the uv loop using uv_async object, then in the uv_async object's callback it first calls h2o_start_response(), then repeats async operation with h2o_send()  calls until all the data is returned. It works perfectly well with HTTP/2 clients (for instance h2load). But, if I use HTTP/1 client (for exeample GET or curl) and kill the client with SIGINT before the data is arrived, the socket leaks in libh2o.\r\n\r\nI'm not sure why h2o needs to stop reading HTTP/1 clients. I tried to comment out h2o_socket_read_stop call in http1.c and this simple change fixed the problem -- now as soon as client breaks, server gets notification and calls generator's stop callback -- same way as in HTTP/2 case.\r\n\r\nSteps to reproduce:\r\n* in examples/libh2o/simple.c comment out all lines in chunked_test() function\r\n* make lib-examples\r\n* run examples-simple\r\n* run `GET \"http://127.0.0.1:7890/chunked-test\"`\r\n* kill GET with SIGINT\r\n* check `netstat -naop | grep ^tcp | grep -F 7890` output\r\n\r\nExpected behavour:\r\nonly one (LISTENING) socket is expected in last command output\r\n\r\nObserved behaviour:\r\nthere are 3 sockets -- LISTENING, FIN_WAIT2 and CLOSE_WAIT for more than one minute.\r\n\r\nPlatform:\r\nlinux 3.1\r\n\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 350138309,
+   "author_login": "kazuho",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2017-12-08T00:40:52Z",
+   "updated_utc": "2017-12-08T00:40:52Z",
+   "permalink": "https://github.com/h2o/h2o/issues/1525#issuecomment-350138309",
+   "body_markdown": "> I'm not sure why h2o needs to stop reading HTTP/1 clients.\r\n\r\nIt is done so to cap the memory required for handling a single connection. A HTTP/1.1 client is allowed to pipeline requests. In other words, it is legal for a client to send following requests while the server processes one.\r\n\r\nBy stopping reading, H2O control the maximum bytes that can be sent by the client carrying the following request to the size of the TCP window. If we do not stop reading, then the client could continue sending additional data to the server and the server will be required to buffer it until the handler returns a response. This could lead to memory exhaustion.\r\n\r\n> in examples/libh2o/simple.c comment out all lines in chunked_test() function\r\n\r\nThe moment the http1 handler notices the socket being closed is when it tries to write a response (i.e. when `h2o_start_response` or `h2o_send` is being called). Commenting out these lines break that assumption, therefore it is expected that the socket would be kept open.\r\n\r\nCould it be the case with your handler as well?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 350151781,
+   "author_login": "dmitri--",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-12-08T02:09:24Z",
+   "updated_utc": "2017-12-08T02:11:05Z",
+   "permalink": "https://github.com/h2o/h2o/issues/1525#issuecomment-350151781",
+   "body_markdown": "> The moment the http1 handler notices the socket being closed is when it tries to write a response\r\n\r\nFair point. Perhaps you're right and it's not an issue at all if I add support for timeout. As I mentioned, my handler is asynchronous and it's not predictable when data becomes available. Is there a way to set timeout so the server (libh2o) would close socket (in case of HTTP/1) or stream (in case of HTTP/2) with some non-OK code?\r\nAlso, suppose the handler has started sending data but experienced an error somewhere in the middle. Is there a way to send error code to the client using RST_STREAM header? \r\nFinally, there a way to set content length header and avoid chunked response?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 350156951,
+   "author_login": "kazuho",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2017-12-08T02:45:07Z",
+   "updated_utc": "2017-12-08T02:45:07Z",
+   "permalink": "https://github.com/h2o/h2o/issues/1525#issuecomment-350156951",
+   "body_markdown": "> As I mentioned, my handler is asynchronous and it's not predictable when data becomes available. Is there a way to set timeout so the server (libh2o) would close socket (in case of HTTP/1) or stream (in case of HTTP/2) with some non-OK code?\r\n\r\nThe preferred approach would be to use `uv_timer`.\r\n\r\n> Also, suppose the handler has started sending data but experienced an error somewhere in the middle. Is there a way to send error code to the client using RST_STREAM header?\r\n\r\nPass `H2O_SEND_STATE_ERROR` as the last argument to `h2o_send`.\r\n\r\n> Finally, there a way to set content length header and avoid chunked response?\r\n\r\nSet `req->content_length` to some value other than `UINT64_MAX`."
+  }
+ ]
+}

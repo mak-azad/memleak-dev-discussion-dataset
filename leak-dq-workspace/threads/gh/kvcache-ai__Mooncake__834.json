@@ -1,0 +1,87 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/kvcache-ai/Mooncake/issues/834",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[Bug]: mooncake_master potential memory leaking",
+ "author_login": "nickyc975",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:30Z",
+ "final_url": "https://github.com/kvcache-ai/Mooncake/issues/834",
+ "repo": "kvcache-ai/Mooncake",
+ "repo_language": "C++",
+ "number": 834,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2025-09-12T08:05:23Z",
+ "updated_at": "2025-09-17T07:21:21Z",
+ "closed_at": "2025-09-17T07:21:21Z",
+ "labels": [],
+ "comments_reported": 4,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "nickyc975",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-09-12T08:05:23Z",
+   "updated_utc": "2025-09-17T07:21:21Z",
+   "permalink": "https://github.com/kvcache-ai/Mooncake/issues/834",
+   "body_markdown": "### Bug Report\n\nWe observed that mooncake_master's memory usage keeps growing up when running stress_cluster_benchmark.py in prefill mode multiple times. Here is a simple script to demonstrate our operations:\n\n```bash\n#!/bin/bash\n\n# Start mooncake_master in advance and use its pid as the first argument.\nmaster_pid=$1\n# Specify the file path to store the result.\noutput_file=$2\n\ntop -b -p $master_pid -n 1 | grep $master_pid >> $output_file\nfor ((i=0; i<10; i++)); do\n    python3 mooncake-store/tests/stress_cluster_benchmark.py \\\n        --role=prefill --protocol=rdma \\\n        --device-name=mlx5_bond_0 --local-hostname=127.0.0.1:8081 \\\n        --local-buffer-size=1024 --global-segment-size=32768 \\\n        --max-requests=33554432 --value-length=1024 --batch-size=4096 \\\n        --wait-time=0\n    # Sleep for a while to let master calm down.\n    sleep 30\n    top -b -p $master_pid -n 1 | grep $master_pid >> $output_file\ndone\n```\n\nRunning the test against the latest version of Mooncake produced the following result:\n\n```\n1311706 root      20   0  526228  37480  10832 S   0.0   0.0   0:00.03 moonca+\n1311706 root      20   0   11.2g  10.5g  10960 S   0.0   4.2   2:39.36 moonca+\n1311706 root      20   0   20.0g  19.2g  10960 S   0.0   7.6   5:03.04 moonca+\n1311706 root      20   0   29.2g  28.3g  10960 S   0.0  11.3   7:22.89 moonca+\n1311706 root      20   0   39.2g  38.3g  10960 S   0.0  15.2   9:43.54 moonca+\n1311706 root      20   0   39.1g  38.2g  10960 S   0.0  15.2  11:59.55 moonca+\n1311706 root      20   0   40.0g  39.0g  10960 S   0.0  15.5  14:18.33 moonca+\n1311706 root      20   0   40.9g  39.9g  10960 S   0.0  15.9  16:27.42 moonca+\n1311706 root      20   0   40.9g  39.9g  10960 S   0.0  15.9  18:41.46 moonca+\n1311706 root      20   0   40.9g  39.9g  10960 S   0.0  15.9  20:52.79 moonca+\n1311706 root      20   0   40.9g  39.9g  10960 S   0.0  15.9  23:12.31 moonca+\n\n```\n\nAs we can see, mooncake_master's memory usage keeps growing dramatically in the first 4 tests, and finally reaches as high as 39.9g. The problem is that, the memory usage may increase after the first test, but should not increase to that much in following tests.\n\n### Before submitting...\n\n- [x] Ensure you searched for relevant issues and read the [documentation]"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3284763520,
+   "author_login": "ykwd",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-09-12T10:40:45Z",
+   "updated_utc": "2025-09-12T10:40:45Z",
+   "permalink": "https://github.com/kvcache-ai/Mooncake/issues/834#issuecomment-3284763520",
+   "body_markdown": "Thanks for reporting this. We will try to find out what happened."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3290618367,
+   "author_login": "xiaguan",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-09-15T06:07:54Z",
+   "updated_utc": "2025-09-15T06:07:54Z",
+   "permalink": "https://github.com/kvcache-ai/Mooncake/issues/834#issuecomment-3290618367",
+   "body_markdown": "Thanks for reporting this.\n\nQuick summary: This is not a memory leak, but expected behavior.\n\nThe stress test generates too many small keys, which are frequently inserted into the `std::unordered_map`. Even though we call `erase()` later, the `unordered_map` doesn't immediately shrink or release memory.\n\nAs a workaround, try increasing the value size during testing. We might also look into more efficient index structures in the future."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3290633570,
+   "author_login": "xiaguan",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-09-15T06:15:37Z",
+   "updated_utc": "2025-09-15T06:15:37Z",
+   "permalink": "https://github.com/kvcache-ai/Mooncake/issues/834#issuecomment-3290633570",
+   "body_markdown": "reproduce\n\n```cpp\n#include <bits/stdc++.h>\n#include <sys/resource.h>\n#include <sys/time.h>\n#include <unistd.h>\n#include <dlfcn.h>\n\n// ==== Container switch ======================================================\n// Default: std::unordered_map. Build with -DUSE_ABSL to use absl::flat_hash_map.\n#ifdef USE_ABSL\n  #include \"absl/container/flat_hash_map.h\"\n  template <typename K, typename V>\n  using HashMap = absl::flat_hash_map<K, V>;\n#else\n  template <typename K, typename V>\n  using HashMap = std::unordered_map<K, V>;\n#endif\n\nusing namespace std;\n\n// ---- helpers to read memory stats from /proc ----\nstruct MemStat {\n    long rss_kb = -1;             // Resident Set Size\n    long pss_kb = -1;             // Proportional Set Size (kernel estimate)\n    long priv_dirty_kb = -1;      // Private_Dirty\n    long shared_clean_kb = -1;    // Shared_Clean\n};\n\nstatic MemStat read_smaps_rollup() {\n    MemStat ms;\n    FILE* f = fopen(\"/proc/self/smaps_rollup\", \"r\");\n    if (!f) return ms;\n    char line[512];\n    while (fgets(line, sizeof(line), f)) {\n        if (sscanf(line, \"Rss: %ld kB\", &ms.rss_kb) == 1) continue;\n        if (sscanf(line, \"Pss: %ld kB\", &ms.pss_kb) == 1) continue;\n        if (sscanf(line, \"Private_Dirty: %ld kB\", &ms.priv_dirty_kb) == 1) continue;\n        if (sscanf(line, \"Shared_Clean: %ld kB\", &ms.shared_clean_kb) == 1) continue;\n    }\n    fclose(f);\n    return ms;\n}\n\nstatic string human_mb(long kb) {\n    if (kb < 0) return \"?\";\n    char buf[64];\n    snprintf(buf, sizeof(buf), \"%.2f MB\", kb / 1024.0);\n    return string(buf);\n}\n\nstatic void print_mem(const string& tag) {\n    MemStat ms = read_smaps_rollup();\n    cerr << fixed << setprecision(2);\n    cerr << \"[MEM] \" << tag\n         << \" | Rss=\" << human_mb(ms.rss_kb)\n         << \" Pss=\" << human_mb(ms.pss_kb)\n         << \" PrivDirty=\" << human_mb(ms.priv_dirty_kb)\n         << \" SharedClean=\" << human_mb(ms.shared_clean_kb)\n         << \"\\n\";\n}\n\n// ---- optional jemalloc purge (runtime, no hard link dependency) ----\nusing mallctl_fn = int (*)(const char*, void*, size_t*, void*, size_t);\n\nstatic void jemalloc_epoch() {\n    void* sym = dlsym(RTLD_DEFAULT, \"mallctl\");\n    if (!sym) return; // not jemalloc\n    mallctl_fn mallctl_p = reinterpret_cast<mallctl_fn>(sym);\n    size_t epoch = 1; size_t sz = sizeof(epoch);\n    (void)mallctl_p(\"epoch\", &epoch, &sz, nullptr, 0);\n}\n\nstatic void jemalloc_purge_all() {\n    void* sym = dlsym(RTLD_DEFAULT, \"mallctl\");\n    if (!sym) return; // not jemalloc\n    mallctl_fn mallctl_p = reinterpret_cast<mallctl_fn>(sym);\n    jemalloc_epoch();\n    (void)mallctl_p(\"arenas.purge\", nullptr, nullptr, nullptr, 0);\n    jemalloc_epoch();\n}\n\n#ifdef __GLIBC__\n  #include <malloc.h>\n  static void glibc_tune_and_trim_once() {\n      mallopt(M_TRIM_THRESHOLD, 128 * 1024);\n      mallopt(M_MMAP_THRESHOLD, 64 * 1024);\n      malloc_trim(0);\n  }\n#else\n  static void glibc_tune_and_trim_once() {}\n#endif\n\n// ---- workload ----\nint main(int argc, char** argv) {\n    ios::sync_with_stdio(false);\n\n    // Parameters\n    size_t N = 10'000'000;       // default: 1e7\n    bool do_reserve = true;\n    size_t reserve_buckets = 0;  // 0 -> let implementation decide\n\n    // parse args: --n=, --no-reserve, --reserve=, --sleep_ms=, --rounds=\n    int sleep_ms = 500;  // small pause between phases\n    int rounds = 1;      // repeat whole experiment\n    for (int i = 1; i < argc; ++i) {\n        string a = argv[i];\n        if (a.rfind(\"--n=\",0)==0) N = stoull(a.substr(4));\n        else if (a == \"--no-reserve\") do_reserve = false;\n        else if (a.rfind(\"--reserve=\",0)==0) { reserve_buckets = stoull(a.substr(10)); do_reserve=true; }\n        else if (a.rfind(\"--sleep_ms=\",0)==0) sleep_ms = stoi(a.substr(11));\n        else if (a.rfind(\"--rounds=\",0)==0) rounds = stoi(a.substr(9));\n    }\n\n    cerr << \"Config: N=\" << N\n         << \" do_reserve=\" << (do_reserve?\"true\":\"false\")\n         << \" reserve_buckets=\" << reserve_buckets\n         << \" rounds=\" << rounds\n#ifdef USE_ABSL\n         << \" container=absl::flat_hash_map\"\n#else\n         << \" container=std::unordered_map\"\n#endif\n         << \"\\n\";\n\n    if (N >= 100'000'000ULL) {\n        cerr << \"[WARN] N is very large for hash maps. Ensure you have enough RAM.\\n\";\n    }\n\n    for (int r = 0; r < rounds; ++r) {\n        cerr << \"\\n=== Round \" << r << \" ===\\n\";\n        print_mem(\"start\");\n\n        HashMap<uint64_t, uint64_t> m;\n        if (do_reserve) {\n#ifdef USE_ABSL\n            // absl::flat_hash_map::rehash expects #buckets; reserve() expects elements.\n            if (reserve_buckets) m.rehash(reserve_buckets);\n            else m.reserve(N);\n#else\n            if (reserve_buckets) m.rehash(reserve_buckets);\n            else m.reserve(N);\n#endif\n        }\n\n        // INSERT\n        {\n            auto t0 = chrono::steady_clock::now();\n            for (uint64_t i = 0; i < N; ++i) {\n                m.emplace(i, i);\n            }\n            auto t1 = chrono::steady_clock::now();\n            print_mem(\"after insert\");\n            cerr << \"insert time: \"\n                 << chrono::duration_cast<chrono::milliseconds>(t1-t0).count()\n                 << \" ms\\n\";\n        }\n\n        this_thread::sleep_for(chrono::milliseconds(sleep_ms));\n        print_mem(\"steady after insert\");\n\n        // ERASE ALL (erase/clear will not necessarily shrink capacity)\n        {\n            auto t0 = chrono::steady_clock::now();\n            m.clear();\n            auto t1 = chrono::steady_clock::now();\n            print_mem(\"after clear (no shrink)\");\n            cerr << \"clear time: \"\n                 << chrono::duration_cast<chrono::milliseconds>(t1-t0).count()\n                 << \" ms\\n\";\n        }\n\n        this_thread::sleep_for(chrono::milliseconds(sleep_ms));\n        print_mem(\"steady after clear (still high due to capacity/retained)\");\n\n        // SHRINK buckets: rehash(0) where supported\n        {\n            auto t0 = chrono::steady_clock::now();\n            m.rehash(0);\n            auto t1 = chrono::steady_clock::now();\n            print_mem(\"after rehash(0) (buckets shrunk)\");\n            cerr << \"rehash(0) time: \"\n                 << chrono::duration_cast<chrono::milliseconds>(t1-t0).count()\n                 << \" ms\\n\";\n        }\n\n        this_thread::sleep_for(chrono::milliseconds(sleep_ms));\n        print_mem(\"steady after rehash(0)\");\n\n        // SWAP trick\n        {\n            auto t0 = chrono::steady_clock::now();\n            HashMap<uint64_t, uint64_t> tmp;\n            tmp.swap(m);\n            auto t1 = chrono::steady_clock::now();\n            print_mem(\"after swap-to-empty (capacity released to allocator)\");\n            cerr << \"swap-to-empty time: \"\n                 << chrono::duration_cast<chrono::milliseconds>(t1-t0).count()\n                 << \" ms\\n\";\n        }\n\n        // jemalloc purge (if present) and/or glibc trim\n        jemalloc_purge_all();\n        glibc_tune_and_trim_once();\n        this_thread::sleep_for(chrono::milliseconds(sleep_ms));\n        print_mem(\"after purge/trim\");\n    }\n\n    cerr << \"\\nDone.\\n\";\n    return 0;\n}\n```\n\nresult\n```\n./umap_rss_demo_absl \nConfig: N=10000000 do_reserve=true reserve_buckets=0 rounds=1 container=absl::flat_hash_map\n\n=== Round 0 ===\n[MEM] start | Rss=4.07 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.31 MB\n[MEM] after insert | Rss=276.38 MB Pss=272.85 MB PrivDirty=272.45 MB SharedClean=3.62 MB\ninsert time: 1716 ms\n[MEM] steady after insert | Rss=276.44 MB Pss=272.85 MB PrivDirty=272.45 MB SharedClean=3.69 MB\n[MEM] after clear (no shrink) | Rss=4.44 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.69 MB\nclear time: 25 ms\n[MEM] steady after clear (still high due to capacity/retained) | Rss=4.44 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.69 MB\n[MEM] after rehash(0) (buckets shrunk) | Rss=4.44 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.69 MB\nrehash(0) time: 0 ms\n[MEM] steady after rehash(0) | Rss=4.44 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.69 MB\n[MEM] after swap-to-empty (capacity released to allocator) | Rss=4.44 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.69 MB\nswap-to-empty time: 0 ms\n[MEM] after purge/trim | Rss=4.44 MB Pss=0.85 MB PrivDirty=0.45 MB SharedClean=3.69 MB\n\nDone.\n\n        \nConfig: N=10000000 do_reserve=true reserve_buckets=0 rounds=1 container=std::unordered_map\n\n=== Round 0 ===\n[MEM] start | Rss=3.45 MB Pss=0.30 MB PrivDirty=0.22 MB SharedClean=3.20 MB\n[MEM] after insert | Rss=387.93 MB Pss=384.46 MB PrivDirty=384.39 MB SharedClean=3.52 MB\ninsert time: 423 ms\n[MEM] steady after insert | Rss=387.99 MB Pss=384.46 MB PrivDirty=384.39 MB SharedClean=3.58 MB\n[MEM] after clear (no shrink) | Rss=387.99 MB Pss=384.46 MB PrivDirty=384.39 MB SharedClean=3.58 MB\nclear time: 88 ms\n[MEM] steady after clear (still high due to capacity/retained) | Rss=387.99 MB Pss=384.46 MB PrivDirty=384.39 MB SharedClean=3.58 MB\n[MEM] after rehash(0) (buckets shrunk) | Rss=309.00 MB Pss=305.47 MB PrivDirty=305.40 MB SharedClean=3.58 MB\nrehash(0) time: 7 ms\n[MEM] steady after rehash(0) | Rss=309.00 MB Pss=305.47 MB PrivDirty=305.40 MB SharedClean=3.58 MB\n[MEM] after swap-to-empty (capacity released to allocator) | Rss=309.00 MB Pss=305.47 MB PrivDirty=305.40 MB SharedClean=3.58 MB\nswap-to-empty time: 0 ms\n[MEM] after purge/trim | Rss=3.83 MB Pss=0.30 MB PrivDirty=0.23 MB SharedClean=3.58 MB\n\nDone.\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3301642933,
+   "author_login": "xiaguan",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-09-17T07:21:21Z",
+   "updated_utc": "2025-09-17T07:21:21Z",
+   "permalink": "https://github.com/kvcache-ai/Mooncake/issues/834#issuecomment-3301642933",
+   "body_markdown": "close this issue since it's not a bug."
+  }
+ ]
+}

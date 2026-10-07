@@ -1,0 +1,65 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 69459004,
+ "url": "https://stackoverflow.com/questions/69459004/matrix-reporting-mismatched-free-delete-delete",
+ "title": "Matrix reporting Mismatched free() / delete / delete []",
+ "tags": [
+  "c++"
+ ],
+ "score": 0,
+ "view_count": 76,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2021-10-06T01:55:39Z",
+ "last_activity_utc": "2021-10-06T01:55:39Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 16922589,
+ "author_display_name": "Sufiyan Mustafa",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/69459004/matrix-reporting-mismatched-free-delete-delete",
+ "body_html": "<p>Im new to programming and my program out seems to work just fine in visual studio but when I run it on matrix, I get this bug... The output in visual studio comes perfectly so I dont know why this is happening in gcc.</p>\n<p>This is the bug:</p>\n<pre><code>Adding a new city to the country and migrating new people there\n==245301== Mismatched free() / delete / delete []\n==245301==    at 0x4C2B51D: operator delete(void*) (vg_replace_malloc.c:586)\n==245301==    by 0x40132E: sdds::Country::addCity(sdds::City const&amp;) (in /home/s\n==245301==    by 0x401984: main (in /home/smustafa14/ws)\n==245301==  Address 0x5afdcd0 is 0 bytes inside a block of size 108 alloc'd\n==245301==    at 0x4C2AC38: operator new[](unsigned long) (vg_replace_malloc.c:4\n==245301==    by 0x4010B2: sdds::Country::Country(char const*, int, sdds::City c\n==245301==    by 0x40177E: main (in /home/smustafa14/ws)\n==245301==\n</code></pre>\n<p>and I dont know why this is happenening since this doesnt show in visual studio.\nI think my bug is producing in this code...</p>\n<pre><code>    #include &lt;iostream&gt;\n    #include &lt;cstring&gt;\n    #include &lt;iomanip&gt;\n    \nusing namespace std;\n\n\n    // default constructor to set Country to an empty state\n    Country::Country()\n    {\n        setEmpty();\n    }\n\n    // parameterized constructor to set the Country fields to specified values if valid\n    Country::Country(const char* name, int noOfCity, const City* cities)\n    {\n        setEmpty(); // set Country to empty state\n        // validate name, noOfCity\n        if (name != nullptr &amp;&amp; strlen(name) &gt; 0 &amp;&amp; noOfCity &gt; 0 &amp;&amp; noOfCity &lt;= MAX_CITY) {\n            // copy name, cities\n            m_name = new char[strlen(name) + 1];\n            strcpy(m_name, name);\n            m_noOfCity = noOfCity;\n            m_city = new City[noOfCity];\n            for (int i = 0; i &lt; noOfCity; i++)\n                m_city[i] = cities[i];\n        }\n    }\n\n    // function to set the name of the Country\n    void Country::setName(const char* name)\n    {\n        delete m_name; // delete existing name\n\n        // validate input name\n        if (name != nullptr &amp;&amp; strlen(name) &gt; 0)\n        {\n            // copy name\n            m_name = new char[strlen(name) + 1];\n            strcpy(m_name, name);\n        }\n        else // invalid name\n        {\n            // delete m_city and set it to empty state\n            delete[] m_city;\n            setEmpty();\n        }\n    }\n\n    // If the incoming City reference is not empty, this method will add the city to the m_city array of cities,\n    // otherwise, the function is exited and no action will be taken.\n    Country&amp; Country::addCity(const City&amp; c)\n    {\n\n        // validate input city is not empty\n        if (!c.isEmpty()) {\n\n            // expand the array\n            City* temp = new City[m_noOfCity + 1];\n            for (int i = 0; i &lt; m_noOfCity; i++)\n                temp[i] = m_city[i];\n\n            delete m_city;\n            // add the city\n            temp[m_noOfCity] = c;\n            m_city = temp;\n            m_noOfCity++;\n        }\n        return *this;\n    }\n\n    // This function will receive the number of people who want to migrate to the list of cities m_city.\n    Country&amp; Country::migrate(int people)\n    {\n\n        // loop over the cities of the Country\n        for (int i = 0; i &lt; m_noOfCity; i++)\n        {\n            // population of the city is less than max population, add people to this city\n            if (m_city[i].getPeople() &lt; POPULATION) {\n                m_city[i].addPopulation(people);\n            }\n        }\n\n        return *this;\n    }\n\n\n\n    // Deallocate the memory allocated by m_name and m_city.\n    Country::~Country()\n    {\n        delete[] m_name;\n        delete[] m_city;\n    }\n\n    // function to display the Country details\n    void Country::display()const\n    {\n        if (!isEmpty()) {\n            cout &lt;&lt; &quot;Country Name: &quot; &lt;&lt; m_name &lt;&lt; endl;\n            cout &lt;&lt; &quot;No of city: &quot; &lt;&lt; m_noOfCity &lt;&lt; endl;\n            cout &lt;&lt; left &lt;&lt; setw(35) &lt;&lt; &quot;City name&quot; &lt;&lt; &quot;Population&quot; &lt;&lt; endl;\n            for (int i = 0; i &lt; m_noOfCity; i++)\n                m_city[i].display();\n            }\n            else\n                cout &lt;&lt; &quot;Invalid country object&quot; &lt;&lt; endl;\n        }\n    \n//This is the code that tests all the stuff above\nint main(){\n    cout &lt;&lt; &quot;Adding a new city to the country and migrating new people there&quot; &lt;&lt; endl;\n    cu[3].addCity(c3);\n    cu[3].migrate(8000);\n    cu[3].display();\n    return 0;\n}\n</code></pre>\n<p>on visual studio, this is how the output is</p>\n<pre><code>Adding a new city to the country and migrating new people there\nCountry Name: Flower\nNo of city: 4\nCity name                          Population\n|Lily                          |     20000|\n|Tulip                         |     20000|\n|Daisy                         |     18500|\n|Rose                          |      8000|\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 122770156,
+   "parent_id": 69459004,
+   "parent_type": "question",
+   "author_user_id": 6752050,
+   "author_display_name": "3CEZVQ",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/69459004/#comment122770156_69459004",
+   "score": 1,
+   "created_utc": "2021-10-06T02:12:23Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "<code>delete m_city</code> or <code>delete[] m_city</code>, only one is correct."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 122770168,
+   "parent_id": 69459004,
+   "parent_type": "question",
+   "author_user_id": 5282154,
+   "author_display_name": "doug",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/69459004/#comment122770168_69459004",
+   "score": 0,
+   "created_utc": "2021-10-06T02:13:50Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Also <code>delete m_name;</code> sb <code>delete[] m_name;</code>"
+  }
+ ]
+}

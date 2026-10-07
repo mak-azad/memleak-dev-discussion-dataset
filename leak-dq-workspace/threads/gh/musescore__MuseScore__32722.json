@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/musescore/MuseScore/issues/32722",
+ "passes": [
+  "main"
+ ],
+ "title": " Memory leaks in instrument ownership model",
+ "author_login": "CubikingChill",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:02Z",
+ "final_url": "https://github.com/musescore/MuseScore/issues/32722",
+ "repo": "musescore/MuseScore",
+ "repo_language": "C++",
+ "number": 32722,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-03-21T00:54:15Z",
+ "updated_at": "2026-03-31T17:19:44Z",
+ "closed_at": null,
+ "labels": [
+  "needs review"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "CubikingChill",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-21T00:54:15Z",
+   "updated_utc": "2026-03-31T17:19:44Z",
+   "permalink": "https://github.com/musescore/MuseScore/issues/32722",
+   "body_markdown": "## Multiple memory leaks and crashes exist in instrument management:\n\nMemory leaks: Part destructor missing, instruments never freed\nDouble-free risk: InstrumentChange deletes shared pointers\nUse-after-free: setInstruments({}) after shallow-copy leaves dangling pointers\nEID assertion: No idempotent registration check causes crashes on memory reuse\nThread-safety: Parallel excerpt serialization races on MIDI mapping\n\n## Root cause: \nNo ownership model for Instrument pointers shared between InstrumentChange and Part::m_instruments.\n\n### Checklist\n\n- [x] This report follows the [guidelines](https://github.com/musescore/MuseScore/wiki/Reporting-bugs-and-issues) for reporting bugs and issues\n- [x] I have verified that this issue has not been logged before, by searching the [issue tracker](https://github.com/musescore/MuseScore/issues) for similar issues\n- [x] I have attached all requested files and information to this report\n- [x] I have attempted to identify the root problem as concisely as possible, and have used minimal reproducible examples where possible"
+  }
+ ]
+}

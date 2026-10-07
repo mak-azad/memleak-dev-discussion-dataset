@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/owenthewizard/i3lock-next/issues/19",
+ "passes": [
+  "main"
+ ],
+ "title": "==16971==ERROR: LeakSanitizer: detected memory leaks",
+ "author_login": "ibrokemypie",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:41Z",
+ "final_url": "https://github.com/owenthewizard/i3lock-next/issues/19",
+ "repo": "owenthewizard/i3lock-next",
+ "repo_language": "C",
+ "number": 19,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-02-06T02:30:06Z",
+ "updated_at": "2018-05-07T18:23:57Z",
+ "closed_at": null,
+ "labels": [
+  "fix in rewrite",
+  "legacy"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ibrokemypie",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-02-06T02:30:06Z",
+   "updated_utc": "2018-05-07T18:23:57Z",
+   "permalink": "https://github.com/owenthewizard/i3lock-next/issues/19",
+   "body_markdown": "When running as a post-suspend systemd service I get this in my journalctl every time it wakes from sleep.\r\n\r\n```\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: =================================================================\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: ==16971==ERROR: LeakSanitizer: detected memory leaks\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: =================================================================\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: Direct leak of 512 byte(s) in 2 object(s) allocated from:\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: ==16966==ERROR: LeakSanitizer: detected memory leaks\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: Direct leak of 768 byte(s) in 3 object(s) allocated from:\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #0 0x563d7797c9a1 in malloc (/usr/bin/i3lock+0xe99a1)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #1 0x7f1a4b5b87ee  (/usr/lib/libfontconfig.so.1+0x1d7ee)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #0 0x563d7797c9a1 in malloc (/usr/bin/i3lock+0xe99a1)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #1 0x7f1a4b5b87ee  (/usr/lib/libfontconfig.so.1+0x1d7ee)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: Indirect leak of 128 byte(s) in 4 object(s) allocated from:\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #0 0x563d7797cbe1 in calloc (/usr/bin/i3lock+0xe9be1)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: Indirect leak of 224 byte(s) in 7 object(s) allocated from:\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #1 0x7f1a4b5b8ed9  (/usr/lib/libfontconfig.so.1+0x1ded9)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: Indirect leak of 14 byte(s) in 2 object(s) allocated from:\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #0 0x563d7797cbe1 in calloc (/usr/bin/i3lock+0xe9be1)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #0 0x563d778d8de1 in __interceptor_strdup (/usr/bin/i3lock+0x45de1)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #1 0x7f1a4b5b8ed9  (/usr/lib/libfontconfig.so.1+0x1ded9)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #1 0x7f1a4b5b81f5 in FcValueSave (/usr/lib/libfontconfig.so.1+0x1d1f5)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: SUMMARY: AddressSanitizer: 654 byte(s) leaked in 8 allocation(s).\r\nFeb 06 13:28:44 badhp i3lock-next[16881]: Indirect leak of 25 byte(s) in 3 object(s) allocated from:\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #0 0x563d778d8de1 in __interceptor_strdup (/usr/bin/i3lock+0x45de1)\r\nFeb 06 13:28:44 badhp i3lock-next[16881]:     #1 0x7f1a4b5b81f5 in FcValueSave (/usr/lib/libfontconfig.so.1+0x1d1\r\n```"
+  }
+ ]
+}

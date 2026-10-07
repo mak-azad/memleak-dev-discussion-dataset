@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ANSHAM1/LSTMiniNet/issues/1",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug] Memory Leak in Training Loop (CPU)",
+ "author_login": "ANSHAM1",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:16Z",
+ "final_url": "https://github.com/ANSHAM1/LSTMiniNet/issues/1",
+ "repo": "ANSHAM1/LSTMiniNet",
+ "repo_language": "C++",
+ "number": 1,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-08-31T17:41:14Z",
+ "updated_at": "2025-08-31T17:41:14Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ANSHAM1",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-08-31T17:41:14Z",
+   "updated_utc": "2025-08-31T17:41:14Z",
+   "permalink": "https://github.com/ANSHAM1/LSTMiniNet/issues/1",
+   "body_markdown": "While training LSTMiniNet, memory usage increases continuously with every epoch and is never released. On longer training runs, this eventually leads to a system crash due to memory exhaustion.\n\nThis occurs on CPU build (C++20, no external ML/DL libraries) and seems related to how computational graphs or intermediate states are handled inside each epoch.\n\n✅ Expected Behavior\nMemory usage should remain stable across epochs (aside from temporary batch allocations).\nAfter an epoch completes, no leftover graph nodes, gradients, or matrices should persist.\n\n📊 Actual Behavior\nMemory usage grows linearly with the number of epochs.\nOn long runs, this causes memory overflow and program termination.\n\n🔍 Possible Causes\nReverse AutoDiff Engine: shared_ptr<Node> objects from previous epochs may not be released due to lingering references.\nGradient accumulation: Gradients may be stacking without reset between epochs.\nMatrix allocations: Intermediate matrices might not be destroyed after use.\n\n📌 Additional Context\nThis issue makes it difficult to run training for more than a few epochs.\n\nFixing it likely requires ensuring that:\n    1. Graph nodes from one epoch don’t persist into the next.\n    2. Gradients and states are reset after each step/epoch.\n    3. Matrices are properly destructed when out of scope.\n\n⚠️ Request: Could contributors suggest best practices for cleaning up autodiff graphs in C++ (shared_ptr cycle breaking, epoch cleanup, etc.)?"
+  }
+ ]
+}

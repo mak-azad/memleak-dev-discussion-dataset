@@ -1,0 +1,34 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 12513426,
+ "url": "https://stackoverflow.com/questions/12513426/what-happens-when-delete-pointer-to-stack-object",
+ "title": "What happens when delete pointer to stack object?",
+ "tags": [
+  "c++",
+  "object",
+  "stack",
+  "heap-memory",
+  "delete-operator"
+ ],
+ "score": 3,
+ "view_count": 1793,
+ "answer_count": 0,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2012-09-20T13:15:32Z",
+ "last_activity_utc": "2015-10-13T00:07:17Z",
+ "license": null,
+ "author_user_id": 991484,
+ "author_display_name": "dtech",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/12513426/what-happens-when-delete-pointer-to-stack-object",
+ "body_html": "<blockquote>\n  <p><strong>Possible Duplicate:</strong><br>\n  <a href=\"https://stackoverflow.com/questions/441831/c-calling-delete-on-variable-allocated-on-the-stack\">C++ calling delete on variable allocated on the stack</a>  </p>\n</blockquote>\n\n\n\n<pre><code>int i = 10;\nint* iP = &amp;i;\ndelete iP;\n</code></pre>\n\n<p>What exactly happens when this code is executed? I am not getting any runtime errors or compiler warnings at all, the pointer still holds the same address before and after calling delete on it, however after delete trying to dereference or even cast it to <code>int</code> crashes the program <strong>sometimes</strong> but other time it just works, which kind of smells like undefined behavior.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": []
+}

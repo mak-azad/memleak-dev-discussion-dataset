@@ -1,0 +1,68 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 10560910,
+ "url": "https://stackoverflow.com/questions/10560910/avoiding-glib-memory-pools-valgrind-possibly-lost-in-c",
+ "title": "Avoiding GLib memory pools & Valgrind possibly lost in C",
+ "tags": [
+  "c",
+  "memory-leaks",
+  "valgrind",
+  "glib"
+ ],
+ "score": 4,
+ "view_count": 2149,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2012-05-12T03:46:24Z",
+ "last_activity_utc": "2012-05-12T07:47:36Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 43092,
+ "author_display_name": "user43092",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/10560910/avoiding-glib-memory-pools-valgrind-possibly-lost-in-c",
+ "body_html": "<p>Due to <a href=\"https://stackoverflow.com/questions/4254610/valgrind-reports-memory-possibly-lost-when-using-glib-data-types\"><strong>memory pools</strong></a> <code>(g_slice)</code>, I get <code>possibly lost</code> in my code. My question is: is there anything I could do in my code to avoid leaking or is this purely a GLib issue?</p>\n\n<p>All of these are reported as 'possibly lost'.</p>\n\n<pre><code>==2552== \n==2552== 744 bytes in 3 blocks are possibly lost in loss record 6 of 8\n==2552==    at 0x40235BE: memalign (vg_replace_malloc.c:694)\n==2552==    by 0x402361B: posix_memalign (vg_replace_malloc.c:835)\n==2552==    by 0x408693E: ??? (in /usr/lib/libglib-2.0.so.0.1600.6)\n==2552==    by 0x4088112: g_slice_alloc (in /usr/lib/libglib-2.0.so.0.1600.6)\n==2552==    by 0x405B503: ??? (in /usr/lib/libglib-2.0.so.0.1600.6)\n==2552==    by 0x804876C: add_inv (in /home/user/a.out)\n==2552==    by 0x8048818: main (in /home/user/a.out)\n</code></pre>\n\n<hr>\n\n<pre><code>#include &lt;glib.h&gt;\nstatic GHashTable *hashtable1;\nstatic GHashTable *hashtable2;\n\nint add_inv (char *a, char *b) {\n  GHashTable *table = NULL;\n  gpointer old_value;\n  char *mykey = NULL;\n  int i, plus, *pointer;\n\n  for (i = 0; i &lt; 2; i++)\n    {\n      if (i == 0)\n        {\n          table = hashtable1;\n          mykey = a;\n        }\n      else if (i == 1)\n        {\n          table = hashtable2;\n          mykey = b;\n        }\n      old_value = g_hash_table_lookup (table, mykey);\n      if (old_value != NULL)\n        {\n          pointer = (int *) old_value;\n          plus = *pointer + 10;\n        }\n      else\n        plus = 10;\n\n      pointer = g_malloc (sizeof (int));\n      *pointer = plus;\n      g_hash_table_replace (table, g_strdup (mykey), pointer);\n    }\n}\n\nint main () {\n  int i;\n  hashtable1 = g_hash_table_new_full (g_str_hash, g_str_equal, (GDestroyNotify) g_free, g_free);\n  hashtable2 = g_hash_table_new_full (g_str_hash, g_str_equal, (GDestroyNotify) g_free, g_free);\n\n  for (i = 0; i &lt; 20; i++)\n    {\n      char *a = g_strdup (\"val1\");\n      char *b = g_strdup (\"val2\");\n      add_inv (a, b);\n      g_free (a);\n      g_free (b);\n    }\n  g_hash_table_destroy (hashtable1);\n  g_hash_table_destroy (hashtable2);\n  return 0;\n}\n</code></pre>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 10561947,
+   "parent_id": 10560910,
+   "author_user_id": 1365671,
+   "author_display_name": "Szilárd Pfeiffer",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/10561947",
+   "score": 2,
+   "created_utc": "2012-05-12T07:45:40Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2012-05-12T07:45:40Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Set G_SLICE environment variable to reconfigure the GSlice memory allocator.</p>\n\n<pre><code>G_SLICE=always-malloc ./your_application\n</code></pre>\n\n<p>Here is the related part of the <a href=\"http://developer.gnome.org/glib/2.30/glib-running.html\" rel=\"nofollow\">GLib documentation</a>.</p>\n\n<blockquote>\n  <p>This will cause all slices allocated through g_slice_alloc() and\n  released by g_slice_free1() to be actually allocated via direct calls\n  to g_malloc() and g_free(). This is most useful for memory checkers\n  and similar programs that use Bohem GC alike algorithms to produce\n  more accurate results. It can also be in conjunction with debugging\n  features of the system's malloc implementation such as glibc's\n  MALLOC_CHECK_=2 to debug erroneous slice allocation code, allthough\n  debug-blocks usually is a better suited debugging tool.</p>\n</blockquote>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 13676033,
+   "parent_id": 10561947,
+   "parent_type": "answer",
+   "author_user_id": 43092,
+   "author_display_name": "user43092",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/10560910/#comment13676033_10561947",
+   "score": 0,
+   "created_utc": "2012-05-12T15:10:36Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "I got that part, however, I&#39;m interested to see if I can somehow get rid of them within my code and not just when I execute the program."
+  }
+ ]
+}

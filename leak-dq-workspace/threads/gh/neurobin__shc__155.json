@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/neurobin/shc/issues/155",
+ "passes": [
+  "main"
+ ],
+ "title": "LeakSanitizer: detected memory leaks",
+ "author_login": "yangfar",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:42Z",
+ "final_url": "https://github.com/neurobin/shc/issues/155",
+ "repo": "neurobin/shc",
+ "repo_language": "C",
+ "number": 155,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-08-17T07:46:26Z",
+ "updated_at": "2024-01-05T21:22:41Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "yangfar",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-08-17T07:46:26Z",
+   "updated_utc": "2024-01-05T21:22:41Z",
+   "permalink": "https://github.com/neurobin/shc/issues/155",
+   "body_markdown": "When I compiled shc in afl-gcc and fsanitize mode and converted sh to an executable file, I found a memory leak.\r\nhttps://github.com/kn007/silk-v3-decoder/commit/07bfa0f56bbfcdacd56e2e73b7bcd10a0efb7f4c\r\n\r\nDetails:\r\nfl-clang-fast 2.57b by <lszekeres@google.com>\r\nafl-llvm-pass 2.57b by <lszekeres@google.com>\r\n[+] Instrumented 82 locations (ASAN/MSAN mode, ratio 100%).\r\n\r\n=================================================================\r\n==61537==ERROR: LeakSanitizer: detected memory leaks\r\n\r\nDirect leak of 65 byte(s) in 1 object(s) allocated from:\r\n    #0 0x493e59 in realloc (/home/yzy/fuzzsoftware/shc/local/bin/shc+0x493e59)\r\n    #1 0x4c6385 in write_C /home/yzy/fuzzsoftware/shc/src/shc.c:1221:16\r\n    #2 0x4ca7d0 in do_all /home/yzy/fuzzsoftware/shc/src/shc.c:1348:6\r\n    #3 0x4cb11f in main /home/yzy/fuzzsoftware/shc/src/shc.c:1358:2\r\n\r\nDirect leak of 44 byte(s) in 1 object(s) allocated from:\r\n    #0 0x493e59 in realloc (/home/yzy/fuzzsoftware/shc/local/bin/shc+0x493e59)\r\n    #1 0x4c82fa in write_C /home/yzy/fuzzsoftware/shc/src/shc.c:1246:16\r\n    #2 0x4ca7d0 in do_all /home/yzy/fuzzsoftware/shc/src/shc.c:1348:6\r\n    #3 0x4cb11f in main /home/yzy/fuzzsoftware/shc/src/shc.c:1358:2\r\nCmd: \r\n./shc -f /home/root/shc/converter.sh -o converter\r\nUbuntu:\r\nx86_64 x86_64 x86_64 GNU/Linux\r\n\r\nThanks!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1879272310,
+   "author_login": "mdeweerd",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-01-05T21:22:40Z",
+   "updated_utc": "2024-01-05T21:22:40Z",
+   "permalink": "https://github.com/neurobin/shc/issues/155#issuecomment-1879272310",
+   "body_markdown": "Also found by cppcheck:\r\n```\r\nsrc/shc.c(1033): error (memleak): Memory leak: ptr\r\nsrc/shc.c(1088): error (memleak): Memory leak: text\r\nsrc/shc.c(1037): error (memleakOnRealloc): Common realloc mistake: 'shll' nulled but not freed upon failure\r\nsrc/shc.c(1065): error (memleakOnRealloc): Common realloc mistake: 'opts' nulled but not freed upon failure\r\nsrc/shc.c(1090): error (memleakOnRealloc): Common realloc mistake: 'text' nulled but not freed upon failure\r\nsrc/shc.c(1099): error (memleakOnRealloc): Common realloc mistake: 'text' nulled but not freed upon failure\r\n```"
+  }
+ ]
+}

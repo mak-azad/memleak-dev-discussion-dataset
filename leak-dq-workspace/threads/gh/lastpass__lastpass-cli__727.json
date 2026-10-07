@@ -1,0 +1,135 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lastpass/lastpass-cli/issues/727",
+ "passes": [
+  "main"
+ ],
+ "title": "malloc error on macOS Sequoia: pointer being freed was not allocated - crashes on login",
+ "author_login": "motorthings",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:01Z",
+ "final_url": "https://github.com/lastpass/lastpass-cli/issues/727",
+ "repo": "lastpass/lastpass-cli",
+ "repo_language": "C",
+ "number": 727,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-01-03T19:23:20Z",
+ "updated_at": "2026-02-24T12:12:35Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 8,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "motorthings",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-01-03T19:23:20Z",
+   "updated_utc": "2026-02-24T12:12:35Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727",
+   "body_markdown": "**Summary:**\n  LastPass CLI crashes immediately on login with a malloc error on macOS Sequoia 15.6.\n\n  **Environment:**\n  - **OS:** macOS Sequoia 15.6 (Darwin 24.6.0)\n  - **Architecture:** Apple Silicon (arm64)\n  - **LastPass CLI version:** 1.6.1_2 (installed via Homebrew)\n  - **Installation method:** `brew install lastpass-cli`\n\n  **Steps to Reproduce:**\n  1. Install lastpass-cli via Homebrew: `brew install lastpass-cli`\n  2. Run: `lpass login <email>`\n  3. Observe immediate crash before password prompt\n\n  **Expected Behavior:**\n  The command should prompt for the master password and proceed with login.\n\n  **Actual Behavior:**\n  The command crashes immediately with a malloc error:\n  lpass(78847,0x1fbe220c0) malloc: *** error for object 0x600000000001: pointer being freed was not allocated\n  lpass(78847,0x1fbe220c0) malloc: *** set a breakpoint in malloc_error_break to debug\n  zsh: abort      lpass login motorthings@gmail.com\n\n  **Additional Context:**\n  - The error occurs with both default execution and with `LPASS_DISABLE_PINENTRY=1`\n  - All lpass commands appear to trigger the same malloc error\n  - The issue prevents any use of the CLI\n\n  **Related Issues:**\n  Similar malloc errors have been reported on previous macOS versions:\n  - #447 (macOS Mojave)\n  - #513 (macOS Catalina)\n  - #427 (macOS Mojave Beta)\n\n  This appears to be a continuation of the library compatibility issues on newer macOS versions."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3747871403,
+   "author_login": "jacmacmod",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-14T05:40:21Z",
+   "updated_utc": "2026-01-14T05:42:48Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3747871403",
+   "body_markdown": "I have had the issue many times. Not sure what fixes it but creating new terminal windows seems to help me login but when trying to use tokens I still get that issue so have reverted to saving keys in env variables for now."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3805662552,
+   "author_login": "aclevername",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-27T14:51:32Z",
+   "updated_utc": "2026-01-27T14:51:32Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3805662552",
+   "body_markdown": "Seeing this on Tahoe as well (related: https://github.com/lastpass/lastpass-cli/issues/731)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3807842980,
+   "author_login": "jakegage",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-27T22:30:27Z",
+   "updated_utc": "2026-01-27T22:30:27Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3807842980",
+   "body_markdown": "I can confirm that I've been seeing this for weeks on Sequoia."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3854413999,
+   "author_login": "abaines",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-05T15:32:29Z",
+   "updated_utc": "2026-02-05T15:32:29Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3854413999",
+   "body_markdown": "I'm pretty sure I'm also encountering this issue with the machine:\n```\nChip Apple M4 Pro\nmacOS Sequoia 15.7.3\n```\nSeems related to https://github.com/lastpass/lastpass-cli/issues/427 and https://github.com/lastpass/lastpass-cli/issues/550 issues.\n\nHoping for an official LastPass recommended steps to fix this soon.\n\nThanks! 🤗"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3881575624,
+   "author_login": "jdbaudean",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-11T01:08:11Z",
+   "updated_utc": "2026-02-11T01:08:11Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3881575624",
+   "body_markdown": "I'm seeing this too, are there any workarounds?\n\n```\nProductName:\t\tmacOS\nProductVersion:\t\t15.7.3\nBuildVersion:\t\t24G419\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3890216276,
+   "author_login": "lhaeger",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-12T11:04:21Z",
+   "updated_utc": "2026-02-12T16:27:36Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3890216276",
+   "body_markdown": "I got exactly this error after upgrading macOS 15.7.3 --> 15.7.4 today. Seems to be related to macOS' `curl` version. I tried compiling `lpass` from source while pointing it at the Homebrew `curl` version (rather than letting it use macOS' curl) and that solved the issue for me:\n\n- `brew uninstall lastpass-cli`\n- `brew install curl`\n- `git clone https://github.com/lastpass/lastpass-cli.git`\n- edit the `Makefile` to begin as follows:\n```\n# changed to /usr/local\nPREFIX ?= /usr/local\nMANDIR ?= $(PREFIX)/share/man\nBUILDDIR=build\nCMAKEMAKE=$(BUILDDIR)/Makefile\n# added -DCMAKE_POLICY_VERSION_MINIMUM=3.5\nCMAKEOPTS=-DCMAKE_INSTALL_PREFIX:PATH=$(PREFIX) -DCMAKE_INSTALL_MANDIR:PATH=$(MANDIR) -DCMAKE_POLICY_VERSION_MINIMUM=3.5\n# added the following lines\nLDFLAGS=\"-L/opt/homebrew/opt/curl/lib\"\nCPPFLAGS=\"-I/opt/homebrew/opt/curl/include\"\nPKG_CONFIG_PATH=\"/opt/homebrew/opt/curl/lib/pkgconfig\"\n```\n- `make && make install`\n- add `/usr/local/bin` to your PATH\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3899359935,
+   "author_login": "wfaulk",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-13T20:43:24Z",
+   "updated_utc": "2026-02-13T20:43:45Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3899359935",
+   "body_markdown": "You can do the equivalent thing within homebrew by running `brew edit lastpass-cli`, deleting the line `uses_from_macos 'curl'`, adding the line `depends_on 'curl'` immediately above the `depends_on 'openssl@3'` line, saving that, and then reinstalling with `HOMEBREW_NO_INSTALL_FROM_API=1 brew reinstall --build-from-source lastpass-cli`.\n\nI have submitted [a PR to get this applied within homebrew](https://github.com/Homebrew/homebrew-core/pull/267439)."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3951327732,
+   "author_login": "LittaKake",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-24T12:12:35Z",
+   "updated_utc": "2026-02-24T12:12:35Z",
+   "permalink": "https://github.com/lastpass/lastpass-cli/issues/727#issuecomment-3951327732",
+   "body_markdown": "> You can do the equivalent thing within homebrew by running `brew edit lastpass-cli`, deleting the line `uses_from_macos 'curl'`, adding the line `depends_on 'curl'` immediately above the `depends_on 'openssl@3'` line, saving that, and then reinstalling with `HOMEBREW_NO_INSTALL_FROM_API=1 brew reinstall --build-from-source lastpass-cli`.\n> \n> I have submitted [a PR to get this applied within homebrew](https://github.com/Homebrew/homebrew-core/pull/267439).\n\nSeems like your PR is merged. I reinstalled lpass cli and everything works as expected now."
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/jaspinegz/babble/issues/3",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leaks",
+ "author_login": "jaspinegz",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:22Z",
+ "final_url": "https://github.com/jaspinegz/babble/issues/3",
+ "repo": "jaspinegz/babble",
+ "repo_language": "C",
+ "number": 3,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-02-27T11:10:25Z",
+ "updated_at": "2020-02-27T11:13:38Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jaspinegz",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-02-27T11:10:25Z",
+   "updated_utc": "2020-02-27T11:13:38Z",
+   "permalink": "https://github.com/jaspinegz/babble/issues/3",
+   "body_markdown": "A big problem with the library is the concept of caching. Discord bot libraries are expected to cache everything it is reasonable to cache - guilds, channels, messages, etc. Caching is hard, but even without considering the implementation there are immediate problems with respect to when these objects are freed.\r\n\r\nAssume an event handler exists...\r\n```c\r\n void on_message(message_t* message) {\r\n  //do something with message\r\n}\r\n```\r\n...who is responsible for freeing this `message_t` struct?\r\n- Is it the user? It's quite easy to assert that the user can't be responsible because there can be multiple handlers to one event. If the pointer to `message_t` is freed here, any subsequent handler executions may cause a seg. fault. The library also can't cache this message.\r\n- Is it the library? If the library is responsible, then what if the user wants to keep hold of this `message_t` pointer i.e. store a `last_message` global variable. The user can't safely use this pointer since the library's caching implementation may choose to free it at any arbitrary time in the future. With that in mind, how can the user even use this `message` pointer during the execution of the handler, given the caching implementation could reasonably be running on a separate thread to the ws event handler?\r\n\r\n**Partial solution:** During the execution of a handler function, the cache is locked.\r\n\r\nThis is only relevant if the cache is on a different thread to websocket handlers. But what about if the user wants to keep the pointer? I've considered the concept of allowing the user to \"steal\" the pointer from the library:\r\n\r\n```c\r\nmessage_t* last_message;\r\n\r\nvoid on_message(message_t* message) {\r\n  take_entity_ownership(message);\r\n  last_message = message;\r\n}\r\n```\r\n\r\nHowever, now the user has the capacity to free the pointer before it is given to subsequent handlers _and_ the library loses the ability to cache this message. Instead, I think this is most reasonable:\r\n\r\n```c\r\nvoid on_message(const message_t* message) {\r\n  last_message = clone_message(message);\r\n}\r\n// some time later ...\r\nfree_message(last_message);\r\n```\r\n\r\nBoth `clone_message` and `free_message`have to be implemented in the same way as `parse_message` and `compose_message` (private functions in `json.c`) because both require handling each attribute of `message_t`. In this case the user is trusted to not `free(message)` for performance (don't copy `message` if unnecessary). They are responsible for freeing any pointer returned by a `clone_*` function call."
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lieff/minimp4/issues/50",
+ "passes": [
+  "main"
+ ],
+ "title": "Heap buffer overflow via integer overflow in stsz/stts malloc size (CWE-190/CWE-122)",
+ "author_login": "ByamB4",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:36Z",
+ "final_url": "https://github.com/lieff/minimp4/issues/50",
+ "repo": "lieff/minimp4",
+ "repo_language": "C",
+ "number": 50,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-02-17T03:41:12Z",
+ "updated_at": "2026-03-28T15:20:18Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ByamB4",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-17T03:41:12Z",
+   "updated_utc": "2026-03-28T15:20:18Z",
+   "permalink": "https://github.com/lieff/minimp4/issues/50",
+   "body_markdown": "## Summary\n\nMultiple heap buffer overflow vulnerabilities exist in `MP4D_open()` caused by 32-bit integer overflow in `malloc` size calculations. The multiplications `sample_count * 4` and `ts_count * 4` use 32-bit unsigned arithmetic even on 64-bit systems, allowing an attacker to allocate a small buffer while the subsequent loop writes far beyond it.\n\n## Root Cause\n\nIn `minimp4.h`, the `MALLOC` macro performs:\n```c\n#define MALLOC(t, p, size) p = (t)malloc(size); if (!(p)) { ERROR(\"out of memory\"); }\n```\n\nThe `size` argument is computed using 32-bit arithmetic before being widened to `size_t` for `malloc()`.\n\n### Vulnerable site 1: `stsz` box (line ~2810)\n\n```c\ntr->sample_count = READ(4);           // attacker-controlled, unsigned int (32-bit)\nMALLOC(unsigned int*, tr->entry_size, tr->sample_count * 4);  // 32-bit overflow!\nfor (i = 0; i < tr->sample_count; i++) {\n    tr->entry_size[i] = (sample_size ? sample_size : READ(4));\n}\n```\n\n- `tr->sample_count` is `unsigned int` (32-bit)\n- The literal `4` is `int` (32-bit)\n- The multiplication `unsigned int * int` produces `unsigned int` (32-bit), which overflows at 2^32\n- This 32-bit result is then implicitly widened to `size_t` for `malloc` — but the overflow has already occurred\n\n**Critically**, when `sample_size != 0`, the loop writes `sample_size` to every entry WITHOUT calling `READ()`, so the loop is not bounded by `payload_bytes`/EOF. This allows the full overflow to be exploited.\n\n### Vulnerable site 2: `stts` box (line ~2858)\n\n```c\nunsigned count = READ(4);\nunsigned ts_count = count;\nMALLOC(unsigned int*, tr->timestamp, ts_count * 4);   // 32-bit overflow!\nMALLOC(unsigned int*, tr->duration,  ts_count * 4);    // 32-bit overflow!\n```\n\nSame root cause. The realloc guard `if (k + sc > ts_count)` uses `sizeof(unsigned)` (which is `size_t` on 64-bit), but the initial allocation has already overflowed.\n\n## Proof of Concept\n\nCraft an MP4 file containing an `stsz` box with:\n- `sample_size = 1` (non-zero, so entries are filled without reading from file)\n- `sample_count = 0x40000001`\n\nResult:\n1. `malloc(0x40000001 * 4)` → `malloc(0x00000004)` due to 32-bit truncation → allocates **4 bytes**\n2. Loop runs `0x40000001` iterations, writing `tr->entry_size[i] = 1` for each\n3. After index 0, all writes are **out of bounds** → **heap buffer overflow write**\n\nThe attacker controls both the value written (`sample_size`) and the number of OOB writes. This is sufficient for arbitrary code execution via heap metadata corruption.\n\n## Impact\n\n- **Type**: Heap buffer overflow write (CWE-122) via integer overflow (CWE-190)\n- **Severity**: High (CVSS ~8.8 — attacker crafts malicious MP4 file)\n- **Exploitability**: High — attacker controls write value and count; no ASLR/heap layout knowledge needed for DoS, standard heap exploitation techniques for RCE\n- **Attack vector**: User opens crafted `.mp4` file with any application using minimp4 for demuxing\n\n## Suggested Fix\n\nUse `(size_t)` cast to force 64-bit arithmetic on 64-bit systems:\n\n```diff\n- MALLOC(unsigned int*, tr->entry_size, tr->sample_count * 4);\n+ MALLOC(unsigned int*, tr->entry_size, (size_t)tr->sample_count * sizeof(unsigned int));\n```\n\n```diff\n- MALLOC(unsigned int*, tr->timestamp, ts_count * 4);\n- MALLOC(unsigned int*, tr->duration,  ts_count * 4);\n+ MALLOC(unsigned int*, tr->timestamp, (size_t)ts_count * sizeof(unsigned int));\n+ MALLOC(unsigned int*, tr->duration,  (size_t)ts_count * sizeof(unsigned int));\n```\n\nAdditionally, consider adding a sanity check on `sample_count` (e.g., rejecting values > some reasonable maximum like 100M samples, or validating against `payload_bytes`).\n\n## Additional: avcC box overflow\n\nThe `BOX_avcC` handler (line ~3028) allocates `malloc((size_t)box_bytes)` for `tr->dsi`, then writes SPS/PPS data via `*p++` in loops controlled by `numOfSequenceParameterSets` and `sequenceParameterSetLength` from the file. These lengths are not validated against the allocation size. When the sum of declared SPS/PPS lengths exceeds `box_bytes`, the writes go past the allocated buffer.\n\n## Environment\n\n- minimp4 version: latest (main branch, Feb 2026)\n- Discovered via: manual source code audit\n- Affects: 32-bit and 64-bit platforms (the overflow is in 32-bit unsigned arithmetic regardless of platform word size)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4148251369,
+   "author_login": "YongRui0402",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-03-28T15:20:18Z",
+   "updated_utc": "2026-03-28T15:20:18Z",
+   "permalink": "https://github.com/lieff/minimp4/issues/50#issuecomment-4148251369",
+   "body_markdown": "Fixed in maintained fork: https://github.com/YongRui0402/minimp4\n\nCast malloc size calculations to `(size_t)` to prevent 32-bit integer overflow in stsz/stts/stsc/stco handlers. Also added sanity check on sample_count."
+  }
+ ]
+}

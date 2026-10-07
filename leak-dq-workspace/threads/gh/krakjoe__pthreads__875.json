@@ -1,0 +1,111 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/krakjoe/pthreads/issues/875",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "pool collect memory leak",
+ "author_login": "BoltUser",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:47Z",
+ "final_url": "https://github.com/krakjoe/pthreads/issues/875",
+ "repo": "krakjoe/pthreads",
+ "repo_language": "C",
+ "number": 875,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-06-07T16:46:52Z",
+ "updated_at": "2019-02-14T11:47:43Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 6,
+ "query_buckets": [
+  "POOL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "BoltUser",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-06-07T16:46:52Z",
+   "updated_utc": "2019-02-14T11:47:43Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875",
+   "body_markdown": "Hi,\r\non the following code : \r\n```\r\n$pool = new Pool(5, Worker::class);\r\nwhile (true) {\r\n    $i++;\r\n    try {\r\n        $message = new Message($receiver->recv());\r\n        $messages[] = $message;\r\n        if ($i ==5) {\r\n            for ($th = 0; $th < 5; $th++) {\r\n                $pool->submit(new DispatcherQueueWorker($messages[$th]));\r\n            }\r\n            //while ($pool->collect()) ;\r\n            $pool->collect();\r\n            $i = 0;\r\n            unset($messages);\r\n        }\r\n        usleep(1000);\r\n    } catch (ZMQException $e) {\r\n        $pool->shutdown();\r\n        die();\r\n    }\r\n\r\n```\r\nthe memory increase because in run method on DispatcherQueueWorker i have a simple getmxrr(), if i try to change with :\r\n\r\n`while ($pool->collect()) ;`\r\n\r\ni dont have memory leaks, but the script wait every time that all worker are finished. \r\nThis is not good for my application, because if a have a worker blocked with 60 seconds of response, all workers are waiting that only 1 or two worker finishing.\r\n\r\nis possible to have a situation without memory leaks but with all workers that work indipendently, without waiting others?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 462940881,
+   "author_login": "joeyhub",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-02-12T21:23:34Z",
+   "updated_utc": "2019-02-12T21:23:34Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875#issuecomment-462940881",
+   "body_markdown": "How are you determining that there's a memory leak? You need to enable the gc in php for cyclicle collection."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 462988671,
+   "author_login": "BoltUser",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-02-12T23:41:44Z",
+   "updated_utc": "2019-02-12T23:41:44Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875#issuecomment-462988671",
+   "body_markdown": "the GC is already enabled, and the memory leak is on \nstream_socket_client, when you use streams with pthreads you can have \nmemory leaks.\n\nAt the moment i don't have a solution about this issue.\n\nIl 12/02/2019 21:23, Joey ha scritto:\n>\n> How are you determining that there's a memory leak? You need to enable \n> the gc in php for cyclicle collection.\n>\n> —\n> You are receiving this because you authored the thread.\n> Reply to this email directly, view it on GitHub \n> <https://github.com/krakjoe/pthreads/issues/875#issuecomment-462940881>, \n> or mute the thread \n> <https://github.com/notifications/unsubscribe-auth/AgdL1ZrU7DZKRWwZQ2k3C6233xYlXWdwks5vMzDcgaJpZM4UewuS>.\n>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 463483277,
+   "author_login": "joeyhub",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-02-14T04:18:33Z",
+   "updated_utc": "2019-02-14T04:18:33Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875#issuecomment-463483277",
+   "body_markdown": "You might be better of using multiple processes and a more stable async lib instead. I think collect might be an async function. Also that might be old pthreads. I thought collect moved to worker."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 463484937,
+   "author_login": "joeyhub",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-02-14T04:27:42Z",
+   "updated_utc": "2019-02-14T04:27:42Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875#issuecomment-463484937",
+   "body_markdown": "If there's no leak in while then it's just you need to manually gc which is a bit freaky. It doesn't seem like in that case you have a memory leak but you do have much delayed GC. Having it on while will bomb out a CPU core probably. Though it might be worse if your thread fails to fclose. Until collected I'd assume those PHP instances as worker stay open. So if you did fopen but not fclose then that handle will stick around same as in normal PHP.\r\n\r\nAdditionally do you need Worker here? It looks like instead you can stick to thread. That's not persistent so in theory the php scope should shutdown sooner (though the thread object would want to still be collected I'd guess)."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 463485826,
+   "author_login": "joeyhub",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-02-14T04:33:09Z",
+   "updated_utc": "2019-02-14T04:33:09Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875#issuecomment-463485826",
+   "body_markdown": "Move the pool collect somewhere else as well so it runs every second, not every five. You're delaying it worse with that. Also you're wrapping too much with that try catch. Try to only wrap what actually throws the exception. Why even have that? It makes no sense just let the exception propagate up or catch throwable, shutdown the pool then throw it back up. You should almost never use die or exit. Die is the default PHP exception handler so why reimplement that?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 463597872,
+   "author_login": "BoltUser",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-02-14T11:44:53Z",
+   "updated_utc": "2019-02-14T11:47:43Z",
+   "permalink": "https://github.com/krakjoe/pthreads/issues/875#issuecomment-463597872",
+   "body_markdown": "Yes in fact at the moment my code is little different, and i have tried with syncronize for some stuff, like update an object shared with other threads (but after 5 minute , the process crash with segfault) for that reason now i have a copy of Data objects for each threads because only one shared object cause a segfault (on update, not on read)!\r\n\r\nand all my worker now are in while true, each worker, never die, but the standard streams functions leak with pthreads.\r\n\r\nI have tried a new beta implementation of Streams made by @SirSnyder, but i see the same behaviour\r\n\r\n\r\nExample (Pseudo code)\r\nMain.php:\r\n```php\r\n<?php\r\n$mydataobject = new MyData(); (this object is Volatile!)\r\n$connections= new Connections(); (this object is Volatile!)\r\n\r\n$workerPool = new Pool(10,'Worker');\r\nfor ($i = 0; $i <= 10; $i++) {\r\n    $workerPool->submit(new DispatcherWorker($mydataobject,$connections));\r\n}\r\n```\r\n------------------------------------------------\r\nDispatcherWorker.php:\r\n```php\r\n<?php\r\nclass dispatcherWorker{\r\n\r\nprivate $mydataobject;\r\nprivate $connections;\r\n\r\npublic function __construct($mydataobject,$connections){\r\n  $this->mydataobject = $mydataobject;\r\n  $this->connections = $connections;\r\n}\r\n\r\npublic function run(){\r\n  while(true){\r\n    $this->mydataobject->synchronize(function(){\r\n       $this->mydataobject->updateProperties();\r\n    });\r\n\r\n     $slot = $this->getFreeSlot();\r\n     $this->connections[$slot]->connect();\r\n     somestuff...\r\n     $connections[$slot]->disconnect();\r\n     sleep(1);\r\n  }\r\n}\r\n}\r\n```\r\nWith this code the syncronize not do lock job, because some times i receive a segfault.\r\n\r\nand the streams standard function used on connection, send data, and disconnection leaks.\r\ni think that the problem is on the closing of stream resource, in threads context the stream is not really closed."
+  }
+ ]
+}

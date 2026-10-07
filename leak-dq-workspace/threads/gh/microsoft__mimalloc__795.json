@@ -1,0 +1,65 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/microsoft/mimalloc/issues/795",
+ "passes": [
+  "main"
+ ],
+ "title": " AddressSanitizer: attempting free on address which was not malloc()-ed",
+ "author_login": "sergio-nsk",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:26Z",
+ "final_url": "https://github.com/microsoft/mimalloc/issues/795",
+ "repo": "microsoft/mimalloc",
+ "repo_language": "C",
+ "number": 795,
+ "state": "closed",
+ "state_reason": "not_planned",
+ "created_at": "2023-07-27T22:36:23Z",
+ "updated_at": "2026-07-24T21:37:33Z",
+ "closed_at": "2026-07-24T21:37:33Z",
+ "labels": [
+  "stale"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "sergio-nsk",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-07-27T22:36:23Z",
+   "updated_utc": "2026-07-24T21:37:33Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/795",
+   "body_markdown": "When built with  AppleClang 13.1.6 on macOS Monterey 12.4 x86_64 with `-fsanitize=address` and configured with `-DMI_TRACK_ASAN=ON -DMI_OVERRIDE=OFF` and using V8 installed by `brew install v8`, getting the error while my app start:\r\n```\r\n==39100==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x02e41a0f09a0 in thread T0\r\n1:     #0 0x10b1f95cd in wrap__ZdlPv+0x7d (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x575cd)\r\n1:     #1 0x10d45e2ca in v8::internal::(anonymous namespace)::ComputeFlagListHash()+0x39a (libv8.dylib:x86_64+0x34[32](https://github.com/snxd/client/actions/runs/5685487943/job/15410906961?pr=1464#step:9:33)ca)\r\n1:     #2 0x10d45df24 in v8::internal::FlagList::Hash()+0x14 (libv8.dylib:x86_64+0x342f24)\r\n1:     #3 0x10d5ad69a in v8::internal::V8::Initialize()+0x86a (libv8.dylib:x86_64+0x49269a)\r\n```\r\nIt seems to happen in libclang_rt wrap for `operator delete(void*)` in local variable destructors [v8/src/flags/flags.cc:555](https://source.chromium.org/chromium/chromium/src/+/refs/heads/main:v8/src/flags/flags.cc;l=555;drc=714e1e34e823b7b4bc172fa4bdefee5aaf5e5fff).\r\n\r\nMy app includes `mimalloc-new-delete.h` in one of .cc files.\r\nmimalloc v2.1.2"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4939727939,
+   "author_login": "github-actions[bot]",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-10T21:36:39Z",
+   "updated_utc": "2026-07-10T21:36:39Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/795#issuecomment-4939727939",
+   "body_markdown": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs in the next 14 days. Thank you for your contributions!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5074660179,
+   "author_login": "github-actions[bot]",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-24T21:37:32Z",
+   "updated_utc": "2026-07-24T21:37:32Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/795#issuecomment-5074660179",
+   "body_markdown": "This issue was closed because it has been inactive for 14 days since being marked as stale. Please feel free to reopen if this is still an active issue."
+  }
+ ]
+}

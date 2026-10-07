@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/edwardwawrzynek/ovid/issues/24",
+ "passes": [
+  "main"
+ ],
+ "title": "Self-referential types cause memory leaks",
+ "author_login": "edwardwawrzynek",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:15Z",
+ "final_url": "https://github.com/edwardwawrzynek/ovid/issues/24",
+ "repo": "edwardwawrzynek/ovid",
+ "repo_language": "C++",
+ "number": 24,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-08-25T05:43:23Z",
+ "updated_at": "2020-08-25T05:43:23Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "edwardwawrzynek",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-08-25T05:43:23Z",
+   "updated_utc": "2020-08-25T05:43:23Z",
+   "permalink": "https://github.com/edwardwawrzynek/ovid/issues/24",
+   "body_markdown": "Self-referential types (ie `struct Test { t *Test }`) cause std::shared_ptr cycles.\r\n\r\nType's don't have clear ownership, which is why shared_ptr is used. However, nearly all types survive until the llvm ir has been generated. \r\n\r\nIt may make more sense to just allocate all types with a custom function that keeps track of allocations in a linked list, use raw pointers, and just free all types right before llvm codegen."
+  }
+ ]
+}

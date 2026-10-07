@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/saghul/txiki.js/issues/1095",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[txiki/process.c] ASan heap-use-after-free when tjs.spawn fails to start executable",
+ "author_login": "xmzyshypnc",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:03Z",
+ "final_url": "https://github.com/saghul/txiki.js/issues/1095",
+ "repo": "saghul/txiki.js",
+ "repo_language": "C",
+ "number": 1095,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-28T14:05:27Z",
+ "updated_at": "2026-09-28T14:05:27Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "xmzyshypnc",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-28T14:05:27Z",
+   "updated_utc": "2026-09-28T14:05:27Z",
+   "permalink": "https://github.com/saghul/txiki.js/issues/1095",
+   "body_markdown": "## Summary\n\nCalling `tjs.spawn()` with a nonexistent executable frees the native process\nwrapper immediately after `uv_spawn()` fails, while libuv still retains the\nprocess handle in its closing queue. Runtime teardown then writes through the\nfreed handle and ASan reports a heap-use-after-free.\n\n**Severity**: ASan memory-safety finding; the ordinary Release build currently\nreturns the expected `ENOENT` error rather than visibly crashing.\n**Component**: txiki.js `src/mod_process.c` / libuv process teardown\n**Version**: master commit `8f1425764108`\n\n## Reproducer\n\n```js\ntjs.spawn([\"/definitely/not/a/real/executable\"]);\n```\n\nRun with an ASan-enabled txiki.js binary using the ordinary entrypoint:\n\n```sh\nenv ASAN_OPTIONS=detect_leaks=0:halt_on_error=1:abort_on_error=1:symbolize=1 \\\n  tjs run poc.js\n```\n\nThe ASan build failed on all 10 replay attempts. Eight attempts printed the\nsame UAF report and two terminated with SIGSEGV before ASan printed a report.\nThe Release build returned `Error: ENOENT: no such file or directory` with\nstatus 1 on all 10 attempts.\n\n## Sanitizer output\n\n```text\nERROR: AddressSanitizer: heap-use-after-free\nWRITE of size 8\n    #0 uv__queue_remove       deps/libuv/src/queue.h:87\n    #1 uv__finish_close       deps/libuv/src/unix/core.c:360\n    #2 uv__run_closing_handles deps/libuv/src/unix/core.c:377\n    #3 uv_run                  deps/libuv/src/unix/core.c:475\n    #4 TJS_FreeRuntime         src/vm.c:711\n\nfreed by thread T0 here:\n    #1 tjs_spawn               src/mod_process.c:419\n\npreviously allocated by thread T0 here:\n    #1 tjs_spawn               src/mod_process.c:159\n```\n\n## Root Cause\n\nThe failed `uv_spawn()` path reaches:\n\n```c\nfail:\n    tjs__free(p);\n    JS_FreeValue(ctx, obj);\n```\n\n`p->process.data` was already set to the `TJSProcess` allocation. Freeing `p`\nbefore libuv has finished closing the process handle leaves libuv's closing\nqueue pointing into freed memory. `TJS_FreeRuntime()` later runs the loop and\n`uv__finish_close()` removes the dangling handle.\n\nThe failed-spawn path must complete or cancel the libuv handle lifecycle before\nreleasing `TJSProcess`, or avoid registering a closeable handle when spawning\nfails before initialization.\n\n## Suggested Fix\n\nMake the failed-spawn cleanup follow libuv's handle lifetime rules. The owner\nmust remain allocated until the process handle's close callback has completed,\nor the path must prove that no libuv handle was registered before freeing the\nowner.\n\n## Impact\n\nThe one-line JavaScript input reaches a native heap-use-after-free during\nnormal runtime teardown. The Release manifestation is currently latent: it\nreturns the normal `ENOENT` exception, but the same execution under ASan\nperforms an invalid write through freed libuv queue storage.\n\n## Credit\n\nxmzyshypnc([@xmzyshypnc](https://github.com/xmzyshypnc)) and Yanjie Zhao([@carol233](https://github.com/carol233)) and Yiyang Liu([@lyyffee](https://github.com/lyyffee))"
+  }
+ ]
+}

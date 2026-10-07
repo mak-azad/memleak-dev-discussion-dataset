@@ -1,0 +1,82 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 19600526,
+ "url": "https://stackoverflow.com/questions/19600526/why-does-modifying-a-string-literal-cause-a-segmentation-fault",
+ "title": "Why does modifying a string literal cause a segmentation fault?",
+ "tags": [
+  "c"
+ ],
+ "score": 1,
+ "view_count": 255,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 19600565,
+ "created_utc": "2013-10-25T22:45:08Z",
+ "last_activity_utc": "2013-10-25T22:48:07Z",
+ "license": null,
+ "author_user_id": 847292,
+ "author_display_name": "Ryan",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/19600526/why-does-modifying-a-string-literal-cause-a-segmentation-fault",
+ "body_html": "<p>Why does modifying a pre-initialized string literal cause a segmentation fault? For example: </p>\n\n<pre><code>char *str = \"Hello world\";\nstr[0] = 'h'; \n</code></pre>\n\n<p>When you initialize <code>str</code> to that string value, doesn't the compiler automatically allocate memory for that string constant, assign its starting location to <code>str</code> and free it upon program exit? </p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 19600565,
+   "parent_id": 19600526,
+   "author_user_id": 621338,
+   "author_display_name": "necromancer",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/19600565",
+   "score": 2,
+   "created_utc": "2013-10-25T22:48:07Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2013-10-25T22:48:07Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>it is in a read only section of the process's address space because the string literal is a constant. (the <code>str</code> variable is not in read only space but it should be made to point to a valid writable location before you can use it the way you do.)</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 29093883,
+   "parent_id": 19600526,
+   "parent_type": "question",
+   "author_user_id": 65295,
+   "author_display_name": "Seth",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/19600526/#comment29093883_19600526",
+   "score": 0,
+   "created_utc": "2013-10-25T22:50:45Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "The problem is that you shouldn&#39;t assign a string literal to a <code>char *</code>, it&#39;s deprecated, and your compiler should have generated a warning. See: <a href=\"http://stackoverflow.com/questions/13248399/hello-world-string-literal-can-be-assigned-to-char-type\" title=\"hello world string literal can be assigned to char type\">stackoverflow.com/questions/13248399/&hellip;</a>"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 29093898,
+   "parent_id": 19600526,
+   "parent_type": "question",
+   "author_user_id": 1175077,
+   "author_display_name": "jpw",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/19600526/#comment29093898_19600526",
+   "score": 0,
+   "created_utc": "2013-10-25T22:51:28Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "if you want to read a bit more about this I&#39;d take a look at <a href=\"https://www.securecoding.cert.org/confluence/display/seccode/STR30-C.+Do+not+attempt+to+modify+string+literals\" rel=\"nofollow noreferrer\">securecoding.cert.org/confluence/display/seccode/&hellip;</a>"
+  }
+ ]
+}

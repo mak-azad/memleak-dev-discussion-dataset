@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/eclipse-4diac/4diac-forte/issues/1054",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in OPCUA_MGR::initialize() (34 allocations, 385 bytes, every -d OPCUA_DEV startup)",
+ "author_login": "franz-hoepfinger-4diac",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:00Z",
+ "final_url": "https://github.com/eclipse-4diac/4diac-forte/issues/1054",
+ "repo": "eclipse-4diac/4diac-forte",
+ "repo_language": "C++",
+ "number": 1054,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-17T22:55:54Z",
+ "updated_at": "2026-09-17T23:13:29Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "franz-hoepfinger-4diac",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-17T22:55:54Z",
+   "updated_utc": "2026-09-17T23:13:29Z",
+   "permalink": "https://github.com/eclipse-4diac/4diac-forte/issues/1054",
+   "body_markdown": "## Summary\nStarting FORTE with the `-d OPCUA_DEV` device (see `doc/tutorials/opcuadeployment.adoc`) leaks 385 bytes across 34 allocations, every single time, confirmed via AddressSanitizer/LeakSanitizer. The leak originates from `OPCUA_MGR::initialize()` (called once, from `OPCUA_DEV::startDevice()`), via two sub-paths that both end up copying a `UA_NodeId`/`UA_String` into open62541's node store without that copy ever being freed:\n\n- `OPCUA_MGR::addMethodNode()` — called once per management method OPCUA_MGR registers (`writeDevice`, `startDevice`, `stopDevice`, `resetDevice`, `killDevice`, per-resource/FB CRUD methods, etc.) — 31 of the 34 leaked allocations.\n- `OPCUA_MGR::addMgmtObjectInstance()` — 3 of the 34 leaked allocations, for the management object instance node itself.\n\n## Root cause (as far as traced)\nBoth paths eventually call into open62541's `addNode_raw()`/`Operation_addNode_begin()`, which internally does `UA_copy()` → `NodeId_copy()` → `String_copy()` → `UA_Array_copy()` to store its own copy of the requested `UA_NodeId`'s string component. That copy is what LeakSanitizer reports as never freed. I have not tracked down why this particular copy escapes cleanup (whether it's an OPCUA_MGR-side issue, e.g. never deleting these specific nodes before the server itself is torn down, or something open62541-side) -- flagging with the confirmed call sites and stack traces rather than guessing further.\n\n## Reproduction\nBuild with `-DFORTE_COM_OPC_UA=ON -DFORTE_SYSTEM_TESTS=ON` and Address/LeakSanitizer enabled (e.g. via `-DCMAKE_CXX_FLAGS=-fsanitize=address`), then run any bootfile with `-d OPCUA_DEV`:\n\n```\n./forte_systemtest -d OPCUA_DEV -f <any .fboot>\n```\n\nLeakSanitizer reports the leak at process exit regardless of which bootfile is used, since the leak happens during `OPCUA_DEV::startDevice()`, before any bootfile is even loaded.\n\n## Evidence\nTwo representative stack traces (`ASAN_OPTIONS=fast_unwind_on_malloc=0:malloc_context_size=30`, needed because the default fast unwinder only resolves 2 frames on this build):\n\n```\nDirect leak of 20 byte(s) in 1 object(s) allocated from:\n    #0 calloc\n    #1 UA_Array_copy                 open62541/src/ua_types.c:2724\n    #2 String_copy                   open62541/src/ua_types.c:288\n    #3 NodeId_copy                   open62541/src/ua_types.c:799\n    #4 UA_copy                       open62541/src/ua_types.c:2104\n    #5 zipNsInsertNode               open62541/.../types_generated.h:584\n    #6 addNode_raw                   open62541/src/server/ua_services_nodemanagement.c:1390\n    #7 Operation_addNode_begin       open62541/src/server/ua_services_nodemanagement.c:1496\n    #8 addMethodNode                 (open62541, constprop)\n    #9 UA_Server_addMethodNode       open62541/src/server/ua_services_nodemanagement.c:3355\n    #10 forte::iec61499::system::OPCUA_MGR::addMethodNode(...)           stdfblib/system/src/OPCUA_MGR.cpp:1578\n    #11 forte::iec61499::system::OPCUA_MGR::addQueryGlobalConstTypeMethod(UA_Server*)  stdfblib/system/src/OPCUA_MGR.cpp:1345\n    #12 forte::iec61499::system::OPCUA_MGR::createIEC61499MgmtObject(UA_Server*)       stdfblib/system/src/OPCUA_MGR.cpp:438\n    #13 forte::iec61499::system::OPCUA_MGR::initialize()                              stdfblib/system/src/OPCUA_MGR.cpp:391\n    #14 forte::iec61499::system::OPCUA_DEV::startDevice()                             stdfblib/system/src/OPCUA_DEV.cpp:30\n    #15 forte::C4diacFORTEInstance::startupNewDevice(std::string const&)              core/src/forteinstance.cpp:36\n    #16 main                                                                          core/arch/common/src/main.cpp:60\n```\n\n```\nDirect leak of ... byte(s) in ... object(s) allocated from:\n    #0 calloc\n    #1 UA_Array_copy ... (same chain as above)\n    #10 forte::iec61499::system::OPCUA_MGR::addMgmtObjectInstance()   stdfblib/system/src/OPCUA_MGR.cpp:467\n    #11 forte::iec61499::system::OPCUA_MGR::createIEC61499MgmtObject(UA_Server*)  stdfblib/system/src/OPCUA_MGR.cpp:444\n    #12 forte::iec61499::system::OPCUA_MGR::initialize()                          stdfblib/system/src/OPCUA_MGR.cpp:391\n```\n\n`SUMMARY: AddressSanitizer: 385 byte(s) leaked in 34 allocation(s).` -- consistently reproducible, not flaky.\n\n## Environment\nFound while building a systemtest for a different issue (#1053) that happens to use `-d OPCUA_DEV`; no other existing systemtest uses that device, which is presumably why this hasn't been caught before. POSIX/Linux build, `open62541` 1.5.8, ASan/LSan enabled build.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5722459222,
+   "author_login": "franz-hoepfinger-4diac",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-17T23:13:29Z",
+   "updated_utc": "2026-09-17T23:13:29Z",
+   "permalink": "https://github.com/eclipse-4diac/4diac-forte/issues/1054#issuecomment-5722459222",
+   "body_markdown": "Fix proposed against a fork for now: https://github.com/Meisterschulen-am-Ostbahnhof-Munchen/4diac-forte/pull/59\n\nRoot cause confirmed: `UA_Server_addMethodNode()`/`UA_Server_addObjectNode()`'s `outNewNodeId` output parameter is caller-owned and must be released (per open62541's own docs), and `OPCUA_MGR` never did. Fixed by clearing the local NodeId in `addMethodNode()` right after use, and clearing `mMgmtTypeId`/`mMgmtNodeId`/`mResourceTypeId` in the destructor. Confirmed via LeakSanitizer: 385 bytes across 34 allocations before the fix, zero after."
+  }
+ ]
+}

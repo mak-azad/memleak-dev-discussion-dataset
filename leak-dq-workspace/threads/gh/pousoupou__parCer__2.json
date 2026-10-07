@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/pousoupou/parCer/issues/2",
+ "passes": [
+  "main"
+ ],
+ "title": "(CXX-W2049) Use of `realloc` without aliasing can lead to memory leaks",
+ "author_login": "pousoupou",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:50Z",
+ "final_url": "https://github.com/pousoupou/parCer/issues/2",
+ "repo": "pousoupou/parCer",
+ "repo_language": "C",
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-08-10T19:17:20Z",
+ "updated_at": "2024-08-10T19:20:29Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "pousoupou",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-08-10T19:17:20Z",
+   "updated_utc": "2024-08-10T19:20:29Z",
+   "permalink": "https://github.com/pousoupou/parCer/issues/2",
+   "body_markdown": "## Description\r\nFound realloc assignment to the same expression as passed to the first argument. The return value of `realloc` is assigned to the same expression as passed to the first argument. The problem with this construct is that if `realloc` fails, it returns a null pointer but does not deallocate the original memory. **Probably resulting in the seg fault.**\r\n\r\n## Occurrences\r\nThere is 1 occurrence of this issue in the repository.\r\n\r\nSee all occurrences on DeepSource &rarr; [app.deepsource.com/gh/pousoupou/parCer/issue/CXX-W2049/occurrences/](https://app.deepsource.com/gh/pousoupou/parCer/issue/CXX-W2049/occurrences/)\r\n"
+  }
+ ]
+}

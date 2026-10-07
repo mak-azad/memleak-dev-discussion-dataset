@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ryanbreen/breenix/issues/638",
+ "passes": [
+  "main"
+ ],
+ "title": "aarch64: heap corruption panic under starvation — linked_list_allocator hole.rs:554 \"Freed node aliases existing hole! Bad free?\" (starved100 max serial-90, NEW)",
+ "author_login": "ryanbreen",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:39Z",
+ "final_url": "https://github.com/ryanbreen/breenix/issues/638",
+ "repo": "ryanbreen/breenix",
+ "repo_language": "Rust",
+ "number": 638,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-22T18:32:20Z",
+ "updated_at": "2026-08-22T22:16:09Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ryanbreen",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-22T18:32:20Z",
+   "updated_utc": "2026-08-22T22:16:09Z",
+   "permalink": "https://github.com/ryanbreen/breenix/issues/638",
+   "body_markdown": "## Signature\n\n```\nKERNEL PANIC!\npanicked at /Users/wrb/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/linked_list_allocator-0.10.5/src/hole.rs:554:9:\nFreed node (0xffff00005038e0f0) aliases existing hole (0xffff00005038e0f0[104])! Bad free?\n```\n\nObserved once in the round-2 confirm battery on `fix/607-576-zero-pc-family` @ `2a2eeefc`:\n`starved-gate 100/profile` (14 host `yes` hogs @ `nice -n 19`), `max` profile, boot 90. The boot\npanics and then times out (45 s). Preserved in-repo:\n`docs/planning/teardown-unification/607-576-serials/round2-gates/starved100-max-NEW-heap-alloc-panic-serial-90.txt:695-698`.\n\nNever observed on `main` — the round-2 baseline slot ran 300 boots on `main` @ `9602d6d4` (clean\n100/profile + starved 50/profile) with zero heap-allocator panics of any kind. Not in the\npre-adjudicated signature list (#555/#536/#586/#612/#613/#599/#622-624/#627/#628/#576/#626/#633/#635/#637).\n\n## Why this matters here\n\n`linked_list_allocator`'s \"Freed node aliases existing hole\" fires when a free is applied to a\nkernel-heap node that is already free (a double free or a corrupted free-list pointer) — the exact\nfailure class that would leave a **stale context image sitting in a reused kernel stack page**, which\nis precisely the kind of producer #635's family needs to exist. Filed as producer-family-suspect and\ncross-referenced against #635 (aarch64 ret-dispatch transfers to a kernel-STACK resume PC,\n`FAR==ELR==x30==x29`, `ESR=0x8600000e`), #633 (thread-id-as-resume-value shape), and #637 (EL0 resumed\nat a kernel address) — not claimed to be the same defect as any of them, but the double-free class is\na plausible producer for a stale/reused-stack-page write that later shows up as one of those three\nconsumer-side faces.\n\n## Round-2 evidence context\n\nThis heap panic surfaced during T3-G PR2's round-2 confirm slot (`fix/607-576-zero-pc-family`,\ncoordinator ruling R41), which narrowed the aarch64 ret-dispatch resume-PC validation to a\nkernel-text-range predicate. The branch's diff does not touch the heap allocator; this is disclosed as\nnew/unfiled/unattributed evidence surfaced by the same soak battery, not attributed to that PR's\nchange.\n\n## Next step\n\nRoot-cause on the allocator's own free/coalesce path — likely candidate is a double-free or an\nover-eager coalesce racing a concurrent allocation from another CPU under heap-lock contention induced\nby host starvation (this only reproduced under the 14-hog starved-gate leg, never under the idle\nclean-gate leg in 200+200 boots). Reproduce under GDB with a breakpoint on the panicking\n`hole.rs:554` assertion and walk the free-list state at the point of the aliasing free."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5382883504,
+   "author_login": "ryanbreen",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-22T22:16:08Z",
+   "updated_utc": "2026-08-22T22:16:08Z",
+   "permalink": "https://github.com/ryanbreen/breenix/issues/638#issuecomment-5382883504",
+   "body_markdown": "## Sibling, not parent — and the \"heap corruption is upstream of the resume-PC family\" theory is falsified (T3-G PR3)\n\nThe producer-side RCA for #635/#633/#637 considered this issue as a candidate **root** for the\nresume-PC family: one heap corruption producing every bad resume PC downstream. That does not\nsurvive the evidence, and I am recording the falsification rather than leaving the theory standing.\n\n* The four byte-identical #635 captures carry **no** heap panic, and the boot that carries this\n  issue's panic carries **no** #635 face. Neither is a precondition for the other.\n* In the #635 captures the allocator is *live on the faulting register file* — `x0` resolves exactly\n  to `kernel::memory::heap::ALLOCATOR`, offset 0 — i.e. concurrent with the fault, not upstream of\n  it.\n\n### What the two do share, and it is worth keeping on the record\n\nBoth land in the same phase and are driven by the same actor. The faulting thread in every #635\ncapture is a userspace thread blocked in a syscall, running\n`scheduler::reclaim_terminated_threads`, inside the kernel heap allocator, on its own kernel stack.\n`scheduler.rs` has the reaper return `Vec<Box<Thread>>` and `drop(reclaimed_threads)` run **outside**\nthe lock and **outside** `without_interrupts`. That is the one call chain that frees both a\n`Box<Thread>` (this issue's resource) and a kernel-stack slot (#635's and #576's). Same root-cause\n*class* — reclaiming a still-referenced object — different resource.\n\nSo: sibling in phase and in actor, separate defect until a custody probe says otherwise. Staying\nopen on its own terms.\n\n### One containment change from PR-A that touches this neighbourhood\n\nA refused resume PC now repoints the per-CPU `kernel_stack_top`/`user_sp_scratch` at the CPU's own\nidle stack before redirecting, so a CPU that refuses stops executing on a stack the reaper may\nreclaim and re-scrub, and the refusal drain terminates the thread the record names rather than\nleaving it Running on a CPU. Neither is a fix for this issue; both remove a way the two could\ncompound.\n"
+  }
+ ]
+}

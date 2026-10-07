@@ -1,0 +1,77 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242",
+ "passes": [
+  "main"
+ ],
+ "title": "csv-driver: Mismatched free() / delete / delete [ ]",
+ "author_login": "SpencerFleming",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:07Z",
+ "final_url": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242",
+ "repo": "BoiseState-AdaptLab/adapt-lidar-tools",
+ "repo_language": "C++",
+ "number": 242,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2019-07-22T00:01:49Z",
+ "updated_at": "2019-12-18T06:30:36Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "SpencerFleming",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-07-22T00:01:49Z",
+   "updated_utc": "2019-12-18T06:30:36Z",
+   "permalink": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242",
+   "body_markdown": "So, I was working on this as a part of #136, but it's causing me enough trouble that I want to document it as its own issue and get some help with it if I can.\n\nEssentially, despite me getting a csv file with data in it, csv-driver is exiting with code 1. Valgrind tells me the following:\n\n> 4535 ==36357== Mismatched free() / delete / delete []\n> 4536 ==36357==    at 0x4C2AFF8: free (vg_replace_malloc.c:540)\n> 4537 ==36357==    by 0x40ABCF: FlightLineData::calc_xyz_activation(std::vector<Peak*, std::allocato     r<Peak*> >*) (FlightLineData.cpp:379)\n> 4538 ==36357==    by 0x40DD53: LidarDriver::fit_data_csv(FlightLineData&, std::vector<std::string*,      std::allocator<std::string*> >&, csv_CmdLine&) (LidarDriver.cpp:175)\n> 4539 ==36357==    by 0x4059DA: main (pls_to_csv.cpp:46)\n> 4540 ==36357==  Address 0xf0d8360 is 0 bytes inside a block of size 128 alloc'd\n> 4541 ==36357==    at 0x4C2A4AA: operator new(unsigned long) (vg_replace_malloc.c:344)\n> 4542 ==36357==    by 0x414ECD: GaussianFitter::guess_peaks(std::vector<Peak*, std::allocator<Peak*>      >*, std::vector<int, std::allocator<int> >, std::vector<int, std::allocator<int> >) (Gaussian     Fitter.cpp:751)\n> 4543 ==36357==    by 0x413EAF: GaussianFitter::find_peaks(std::vector<Peak*, std::allocator<Peak*>      >*, std::vector<int, std::allocator<int> >, std::vector<int, std::allocator<int> >, unsigned l     ong) (GaussianFitter.cpp:365)\n> 4544 ==36357==    by 0x40DCB0: LidarDriver::fit_data_csv(FlightLineData&, std::vector<std::string*,      std::allocator<std::string*> >&, csv_CmdLine&) (LidarDriver.cpp:167)\n> 4545 ==36357==    by 0x4059DA: main (pls_to_csv.cpp:46)\n\nfit_data_csv is similar to fit_data, except that instead of putting peaks into a LidarVolume object, it just runs to_string on them and then deletes them. That said, this distinction only occurs once calc_xyz_activation has already been called, so I'm not sure why that would even affect calc_xyz except that perhaps some artifact is being left in the peak vector between iterations, despite my deleting of every peak followed by a clear statement."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 513599117,
+   "author_login": "SpencerFleming",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-07-22T00:02:37Z",
+   "updated_utc": "2019-07-22T00:02:37Z",
+   "permalink": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242#issuecomment-513599117",
+   "body_markdown": "~half an hour on this."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 514855685,
+   "author_login": "SpencerFleming",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-07-25T01:14:02Z",
+   "updated_utc": "2019-07-25T01:14:02Z",
+   "permalink": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242#issuecomment-514855685",
+   "body_markdown": "~ 1 hr on this"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 518811748,
+   "author_login": "SpencerFleming",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-08-06T19:33:04Z",
+   "updated_utc": "2019-08-06T19:33:04Z",
+   "permalink": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242#issuecomment-518811748",
+   "body_markdown": "Interesting news: I have found that the error in my first comment (mismatched free) is actually a nonfatal error for geotiff-driver. I'll have to do more research with this in mind when I get around do it!"
+  }
+ ]
+}

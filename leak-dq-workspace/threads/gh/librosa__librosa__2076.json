@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/librosa/librosa/issues/2076",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[Bug]: chroma_stft (via estimate_tuning/piptrack) leaves unreturned memory in the glibc arena, growing RSS across repeated calls",
+ "author_login": "imrulhuda",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:36Z",
+ "final_url": "https://github.com/librosa/librosa/issues/2076",
+ "repo": "librosa/librosa",
+ "repo_language": "Python",
+ "number": 2076,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-13T21:57:42Z",
+ "updated_at": "2026-07-31T20:37:55Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "imrulhuda",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-13T21:57:42Z",
+   "updated_utc": "2026-07-31T20:37:55Z",
+   "permalink": "https://github.com/librosa/librosa/issues/2076",
+   "body_markdown": "### Bug summary\n\nRepeated calls to `librosa.feature.chroma_stft()` cause process RSS (resident memory) to grow over time in a long-lived process, especially when input length varies call-to-call (as real audio files typically do). This is not a Python object leak or a growing cache — `chroma_stft` internally calls `estimate_tuning()` → `piptrack()`, which allocates ~6 full-spectrogram-sized temporary arrays (including a redundant `np.abs(S)` copy, since the input power spectrogram is already non-negative) to compute a single scalar tuning offset. These are freed correctly at the Python level every call, but glibc's malloc does not return the freed memory to the OS under this allocation pattern. A single `ctypes` call to `malloc_trim(0)` reliably reclaims the excess, confirming this is arena fragmentation rather than a reference leak.\n\n### Code for reproduction\n\n```python\nimport ctypes\nimport numpy as np\nimport librosa\n\nlibc = ctypes.CDLL(\"libc.so.6\")\n\ndef vmrss_mb():\n    with open(\"/proc/self/status\") as f:\n        for line in f:\n            if line.startswith(\"VmRSS:\"):\n                return int(line.split()[1]) / 1024\n\nsr = 16000\nrng = np.random.default_rng(0)\nbase_len = 3_964_032  # ~248s at 16kHz\n\n# Fixed-length input: RSS should plateau quickly if this is just one-time setup cost.\ny0 = rng.standard_normal(base_len).astype(np.float32)\nlibrosa.feature.chroma_stft(y=y0, sr=sr, hop_length=256)  # warmup\nprint(f\"[fixed length] warmup: {vmrss_mb():.1f} MB\")\nfor i in range(1, 11):\n    librosa.feature.chroma_stft(y=y0, sr=sr, hop_length=256)\n    print(f\"[fixed length] call {i}: {vmrss_mb():.1f} MB\")\n\nlibc.malloc_trim(0)\nprint(f\"[fixed length] after malloc_trim(0): {vmrss_mb():.1f} MB\")\n\n# Varying-length input, closer to real-world usage (real files are rarely identical length):\nprint()\nfor i in range(1, 21):\n    length = base_len + rng.integers(-500_000, 500_000)\n    y = rng.standard_normal(length).astype(np.float32)\n    librosa.feature.chroma_stft(y=y, sr=sr, hop_length=256)\n    print(f\"[varying length] call {i} (len={length}): {vmrss_mb():.1f} MB\")\n\nlibc.malloc_trim(0)\nprint(f\"[varying length] after malloc_trim(0): {vmrss_mb():.1f} MB\")\n```\n\n### Actual outcome\n\nReal output from the exact script above, on our machine:\n\n```\n[fixed length] warmup: 323.8 MB\n[fixed length] call 1: 323.9 MB\n[fixed length] call 2: 323.9 MB\n...\n[fixed length] call 10: 323.7 MB\n[fixed length] after malloc_trim(0): 268.1 MB\n\n[varying length] call 1 (len=3747151): 329.1 MB\n[varying length] call 2 (len=4134037): 342.3 MB\n[varying length] call 3 (len=4226114): 359.9 MB\n...\n[varying length] call 16 (len=4129722): 360.1 MB\n[varying length] call 20 (len=4082139): 342.3 MB\n[varying length] after malloc_trim(0): 285.2 MB\n```\n\nFixed-length calls plateau almost immediately (~323.7–323.9 MB), yet `malloc_trim(0)` still recovers 55.6 MB that accumulated invisibly during warmup. Varying-length calls push the ceiling meaningfully higher (up to ~360 MB) before `malloc_trim(0)` recovers most of it. In both cases, none of this memory is referenced by Python — it's sitting in glibc's arena.\n\n### Expected outcome\n\nRSS should stay close to a stable baseline across repeated calls, without requiring an explicit `malloc_trim(0)` to reclaim tens of megabytes — especially for a function whose actual return value here is a single scalar float per call. At minimum, we'd expect the growth to be negligible relative to the ~63MB scratch arrays being churned, not a meaningful fraction of it.\n\n### Additional information\n\nTraced via bisection: isolated `chroma_stft`'s four internal steps (STFT, `estimate_tuning`, `filters.chroma` filterbank lookup, final `einsum` contraction) — only `estimate_tuning` (via `piptrack`) shows this behavior; the others are flat. `piptrack`'s implementation (`librosa/core/pitch.py`) computes `S = np.abs(S)` (redundant when `S` is already a non-negative power spectrogram), then allocates `pitches = np.zeros_like(S)`, `mags = np.zeros_like(S)`, `avg = np.gradient(S, axis=-2)`, `shift = _parabolic_interpolation(S, axis=-2)`, and `dskew = 0.5 * avg * shift` — 6 full-size temporary arrays just to return a scalar tuning estimate via `estimate_tuning`.\n\nA possible fix: skip the redundant `np.abs(S)` copy when the caller can guarantee non-negative input (e.g. a `power=2` spectrogram), and/or give `estimate_tuning`/`chroma_stft` a lighter-weight path that doesn't require full pitch/magnitude maps when only a scalar tuning value is needed. Happy to help prototype either approach if a maintainer can weigh in on which direction is preferred — didn't want to open a PR for a behavior/design change like this without checking first.\n\nThis may be related to #1286, which reported a similar RSS-growth pattern in `librosa.load()` — that thread concluded librosa's own code holds no cross-call state, consistent with what we found here: it's not a logic bug, it's an allocator-interaction side effect of allocating more scratch memory than the task strictly needs.\n\n### Operating system\n\nLinux (Ubuntu-based, WSL2) — `Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39`\n\n### software versions\n\n```\npython: 3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]\nlibrosa: 0.11.0\nnumpy: 2.2.6\nscipy: 1.18.0\nnumba: 0.66.0\nsoundfile: 0.14.0\njoblib: 1.5.3\n```\n\n### Installation\n\nconda"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4964858649,
+   "author_login": "bmcfee",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-07-14T02:34:53Z",
+   "updated_utc": "2026-07-14T02:34:53Z",
+   "permalink": "https://github.com/librosa/librosa/issues/2076#issuecomment-4964858649",
+   "body_markdown": "Thanks for the deep dive on this.  If I can simplify / summarize a bit here:\n\n1. The problem isn't anything to do with `chroma_stft`, it's just `estimate_tuning`.\n2. `estimate_tuning` is not directly to blame, as it's really just a wrapper around piptrack and pitch_tuning.  (This being an expedient way to implement a simple tuning estimator.)\n3. The entire problem with piptrack boils down to intermediate array allocations.\n\nIn short, this is the kind of thing that is likely to happen when you port matlab code to python. 😬\n\nAnyway, to your proposed solutions:\n\n\n\n> skip the redundant `np.abs(S)` copy when the caller can guarantee non-negative input (e.g. a `power=2` spectrogram),\n\nSure.  In general we don't really trust the user that much on these things, and it's better to just guard it with an `if S.min() <= 0: ...` but yeah this would save one allocation.\n\n\n\n> or give `estimate_tuning`/`chroma_stft` a lighter-weight path that doesn't require full pitch/magnitude maps when only a scalar tuning value is needed.\n\nI'm definitely open to suggestions on how to improve this algorithm, as I've always been rather suspicious of it.  If for no reason other than it's going to leak information from high-energy partials that may tell you nothing about the actual intonation of f0s.  \n\nThat said, I don't see a direct way to do this without doing something of comparable complexity here.  Really what it should be doing is some kind of mulitple f0 estimation and then run pitch_tuning on *those* outputs.  But I really don't want to put a multi-f0 estimator in the critical path here either, since that's a real chicken-and-egg problem if our entire goal is to produce chroma features (ie, octave-reduced multi-f0s).\n\nA third option, which you didn't mention, is just to streamline the piptrack implementation.  It could be done much more efficiently with a vectorized numba stencil.  In fact, we have almost all of this already written in the `_parabolic_interpolation` helper used by yin/pyin elsewhere in the same module.\n\nThe downside to this approach is that it will not port over to array-api very nicely, so we'd probably end up just re-implementing the existing version in a separate code path when we get to #1743 ."
+  }
+ ]
+}

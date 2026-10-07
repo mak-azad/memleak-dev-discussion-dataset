@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lvntky/nexus.c/issues/2",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "malloc(): corrupted top size",
+ "author_login": "yuppox",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:11Z",
+ "final_url": "https://github.com/lvntky/nexus.c/issues/2",
+ "repo": "lvntky/nexus.c",
+ "repo_language": "C",
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-08-22T04:16:35Z",
+ "updated_at": "2024-08-22T06:15:19Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "HEAPCORRUPT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "yuppox",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-08-22T04:16:35Z",
+   "updated_utc": "2024-08-22T06:15:19Z",
+   "permalink": "https://github.com/lvntky/nexus.c/issues/2",
+   "body_markdown": "I tried using `wget` to get `index.html` and the server exited with the error:\r\n```\r\nmalloc(): corrupted top size\r\n```\r\n\r\nIf I don't pass anything in the path of the URL, it works.\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2303866163,
+   "author_login": "lvntky",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2024-08-22T06:15:12Z",
+   "updated_utc": "2024-08-22T06:15:12Z",
+   "permalink": "https://github.com/lvntky/nexus.c/issues/2#issuecomment-2303866163",
+   "body_markdown": "That's interesting, Thank you for reporting @yuppox . I think we can fix this with updating the get request handler. I can assign it to if you are interested."
+  }
+ ]
+}

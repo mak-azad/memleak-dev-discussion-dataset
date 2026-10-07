@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Canotas/rsyslog/issues/12",
+ "passes": [
+  "main"
+ ],
+ "title": "[omsentinel][CRITICAL] free() on string literals: scope, grant_type, auth_domain crash on shutdown",
+ "author_login": "bd0c",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:41Z",
+ "final_url": "https://github.com/Canotas/rsyslog/issues/12",
+ "repo": "Canotas/rsyslog",
+ "repo_language": null,
+ "number": 12,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-03-19T14:36:55Z",
+ "updated_at": "2026-03-19T15:49:49Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "bd0c",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-19T14:36:55Z",
+   "updated_utc": "2026-03-19T15:49:49Z",
+   "permalink": "https://github.com/Canotas/rsyslog/issues/12",
+   "body_markdown": "## Description\n\nIn `setInstParamDefaults()`, three fields are initialized with string literals. `freeInstance()` calls `free()` on all three unconditionally, even when the user has not provided them in the config. Freeing a string literal is undefined behaviour — in practice a crash or heap corruption.\n\n## Affected locations\n\n**File:** `plugins/omsentinel/omsentinel.c`\n\n`setInstParamDefaults()` (lines ~1643-1645):\n```c\npData->scope      = (uchar*)\"https://monitor.azure.com/.default\"; // string literal\npData->grant_type = (uchar*)\"client_credentials\";                 // string literal\npData->auth_domain= (uchar*)\"login.microsoftonline.com\";          // string literal\n```\n\n`freeInstance()` (lines ~363-366):\n```c\nfree(pData->scope);       // UB if user didn't set 'scope'\nfree(pData->grant_type);  // UB if user didn't set 'grant_type'\nfree(pData->auth_domain); // UB if user didn't set 'auth_domain'\n```\n\nAll three parameters are **optional** in the config descriptor. A typical deployment omitting them will crash on module unload or rsyslog restart.\n\n## Impact\n\nUndefined behaviour (likely SIGSEGV or heap corruption) during shutdown or config reload whenever any of these three optional parameters is omitted from the config.\n\n## Fix\n\nReplace the literal assignments in `setInstParamDefaults` with `strdup()`:\n```c\npData->scope       = (uchar*)strdup(\"https://monitor.azure.com/.default\");\npData->grant_type  = (uchar*)strdup(\"client_credentials\");\npData->auth_domain = (uchar*)strdup(\"login.microsoftonline.com\");\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4091172222,
+   "author_login": "bd0c",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-19T15:49:49Z",
+   "updated_utc": "2026-03-19T15:49:49Z",
+   "permalink": "https://github.com/Canotas/rsyslog/issues/12#issuecomment-4091172222",
+   "body_markdown": "Pull Request associée : #31"
+  }
+ ]
+}

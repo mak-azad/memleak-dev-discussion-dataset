@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 13238192,
+ "url": "https://stackoverflow.com/questions/13238192/global-pyobject-variable-in-c-python-extension",
+ "title": "Global PyObject* variable in C-Python extension",
+ "tags": [
+  "python",
+  "c"
+ ],
+ "score": 3,
+ "view_count": 1275,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 13238307,
+ "created_utc": "2012-11-05T18:35:20Z",
+ "last_activity_utc": "2012-11-05T20:02:07Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 649230,
+ "author_display_name": "dpitch40",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/13238192/global-pyobject-variable-in-c-python-extension",
+ "body_html": "<p>In a C extension to my Python program, I am trying to improve performance by setting two of the inputs to the main C function (which is called millions of times) as global variables, as they don't change often, so that I don't have to keep supplying them from Python using a lambda wrapper to the C function (which wastes a nontrivial amount of time). My code looks like this. First I declare the global variables at the top of the file:</p>\n\n<pre><code>unsigned char* splitArray;\nPyObject* wordCmp;\n</code></pre>\n\n<p>Then the Python API function to set them:</p>\n\n<pre><code>static PyObject* py_set_globals(PyObject *self, PyObject *args)\n{\n    free(wordCmp);\n    free(splitArray);\n\n    char* splitChars;\n    PyObject* wordC;\n\n    if (!PyArg_ParseTuple(args, \"sO\", &amp;splitChars, &amp;wordC))\n        return NULL;\n\n    wordCmp = (PyObject*)malloc(sizeof(PyObject));\n    memcpy(wordCmp, wordC, sizeof(PyObject));\n    splitArray = splitchars_to_mapping(splitChars);\n\n    return Py_BuildValue(\"\");\n}\n</code></pre>\n\n<p>In this case, splitArray is assigned to a 128-character array which is malloc'ed in the function splitchars_to_mapping, and wordCmp is a Python function object that is passed to C. Anyway, as far as I can tell, the char* splitArray works fine as a global variable, but when I later try to call wordCmp using PyEval_CallObject, Python/C crashes. So I have two questions:</p>\n\n<ol>\n<li>Why doesn't C crash immediately when I try to free the uninitialized pointers wordCmp and splitArray at the beginning of the function?</li>\n<li>Why am I unable to call wordCmp later when I have properly stored it on the heap and saved a reference to it as a global?</li>\n</ol>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 13238307,
+   "parent_id": 13238192,
+   "author_user_id": 1157444,
+   "author_display_name": "iabdalkader",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/13238307",
+   "score": 3,
+   "created_utc": "2012-11-05T18:43:08Z",
+   "last_edit_utc": "2017-05-23T10:25:11Z",
+   "last_activity_utc": "2012-11-05T20:02:07Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>As to the first question, why it doesn't crash when free'ing uninitialized global variables, that's because global (and static) variables are initialized to <code>zero</code> when the program is loaded (<a href=\"https://stackoverflow.com/a/6212973/1157444\">guaranteed by the standard</a>) and when you call <code>free()</code> with <code>NULL</code> (or zero) it does nothing.</p>\n\n<p>From man <a href=\"http://linux.die.net/man/1/free\" rel=\"nofollow noreferrer\">free(1)</a>:</p>\n\n<blockquote>\n  <p>free(ptr) has already been called before, undefined behavior occurs. \n  <strong>If ptr is NULL, no operation is performed.</strong></p>\n</blockquote>\n\n<p><strong>Edit</strong>:\nYour second question is related to fact that you're trying to copy a <code>PyObject</code> and you shouldn't do that, as the <code>PyObject</code> structure could contain pointers and you can't do <em>deep</em> copying because you don't have access to that structure, you should however increment the reference count and keep the reference around for later use, note that when you use <code>O</code> the reference count is <em>not</em> incremented, from the <a href=\"http://docs.python.org/2/c-api/arg.html\" rel=\"nofollow noreferrer\">docs</a>:</p>\n\n<blockquote>\n  <p>O (object) [PyObject *]\n      Store a Python object (without any conversion) in a C object pointer. The C program thus receives the actual object that was\n  passed. <strong>The object’s reference count is not increased.</strong></p>\n</blockquote>\n\n<p>So you should increment the reference yourself, see this <a href=\"http://docs.python.org/2/extending/extending.html#calling-python-functions-from-c\" rel=\"nofollow noreferrer\">example</a></p>\n\n<pre><code>static PyObject *my_callback = NULL;\n\nstatic PyObject* my_set_callback(PyObject *dummy, PyObject *args)\n{\n    PyObject *result = NULL;    \n    if (PyArg_ParseTuple(args, \"O:set_callback\", &amp;my_callback)) {\n        if (!PyCallable_Check(my_callback)) {\n            PyErr_SetString(PyExc_TypeError, \"parameter must be callable\");\n            return NULL;\n        }\n        Py_XINCREF(my_callback); /* Add a reference to new callback */           \n        Py_INCREF(Py_None);      /* Boilerplate to return \"None\" */\n        result = Py_None;\n    }\n    return result;\n}\n</code></pre>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 18036325,
+   "parent_id": 13238307,
+   "parent_type": "answer",
+   "author_user_id": 649230,
+   "author_display_name": "dpitch40",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/13238192/#comment18036325_13238307",
+   "score": 0,
+   "created_utc": "2012-11-05T19:21:57Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Okay, thanks for that. So my declarations are equivalent to &quot;unsigned char* splitArray = NULL; PyObject* wordCmp = NULL;&quot;?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 18036548,
+   "parent_id": 13238307,
+   "parent_type": "answer",
+   "author_user_id": 1157444,
+   "author_display_name": "iabdalkader",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/13238192/#comment18036548_13238307",
+   "score": 0,
+   "created_utc": "2012-11-05T19:30:16Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "@dpitch40 yes it&#39;s guaranteed by the standard, see this answer <a href=\"http://stackoverflow.com/a/6212973/1157444\">stackoverflow.com/a/6212973/1157444</a>"
+  }
+ ]
+}

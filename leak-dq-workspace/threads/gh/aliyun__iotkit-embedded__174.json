@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/aliyun/iotkit-embedded/issues/174",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "File descriptor leak in `HAL_AT_Uart_Init()` error paths",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:49Z",
+ "final_url": "https://github.com/aliyun/iotkit-embedded/issues/174",
+ "repo": "aliyun/iotkit-embedded",
+ "repo_language": "C",
+ "number": 174,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-12T12:03:30Z",
+ "updated_at": "2026-07-12T12:03:30Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-12T12:03:30Z",
+   "updated_utc": "2026-07-12T12:03:30Z",
+   "permalink": "https://github.com/aliyun/iotkit-embedded/issues/174",
+   "body_markdown": "I found a possible file descriptor leak in the Ubuntu HAL UART initialization code. If the UART device is opened successfully but a later termios setup stepcfails, the function returns without closing the descriptor.\n\nFile: `wrappers/os/ubuntu/HAL_UART_linux.c`\n\nFunction: `HAL_AT_Uart_Init`\n\nRelevant code:\n\n```c\nif ((at_uart_fd = open(AT_UART_LINUX_DEV,\n                       O_RDWR | O_NOCTTY | O_NDELAY)) == -1) {\n    printf(\"open at uart failed\\r\\n\");\n    return -1;\n}\n\nfd = at_uart_fd;\n/* set the serial port parameters */\nfcntl(fd, F_SETFL, 0);\nif (0 != tcgetattr(fd, &t_opt)) {\n    return -1;\n}\n\nif (0 != cfsetispeed(&t_opt, baud)) {\n    return -1;\n}\n\nif (0 != cfsetospeed(&t_opt, baud)) {\n    return -1;\n}\n\n...\n\nif (0 != tcsetattr(fd, TCSANOW, &t_opt)) {\n    return -1;\n}\n```\n\nAfter `open()` succeeds, these failure paths return directly:\n\n- `tcgetattr(fd, &t_opt)` failure\n- `cfsetispeed(&t_opt, baud)` failure\n- `cfsetospeed(&t_opt, baud)` failure\n- `tcsetattr(fd, TCSANOW, &t_opt)` failure\n\nNone of those paths closes `at_uart_fd`, and the global descriptor is not reset\nto `-1`. `HAL_AT_Uart_Deinit()` closes the descriptor on the normal lifecycle,\nbut it is not reached when initialization itself fails.\n\nThis can leak one UART file descriptor per failed initialization attempt.\n\nSuggested fix: route the post-open failures through a common cleanup path that\ncloses `at_uart_fd`, resets it to `-1`, and then returns `-1`.\n"
+  }
+ ]
+}

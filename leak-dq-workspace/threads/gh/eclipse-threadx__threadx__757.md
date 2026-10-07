@@ -1,0 +1,28 @@
+# ThreadX SMP Linux port leaks a critical section level on unprotect, wedging the process while the tick keeps running
+
+- URL: https://github.com/eclipse-threadx/threadx/issues/757
+- Repo: eclipse-threadx/threadx (language: C)
+- State: open; created 2026-09-18T16:55:47Z; status ok; passes offcwe
+
+## Issue body
+
+reporter (CONTRIBUTOR) · fdesbiens · 2026-09-18T16:55:47Z · https://github.com/eclipse-threadx/threadx/issues/757
+
+`_tx_thread_smp_unprotect` in `ports_smp/linux/gnu` takes `_tx_linux_mutex` on entry and releases it twice when `_tx_thread_smp_protection.tx_thread_smp_protect_core` names the calling core, but only once when it does not. The matching `_tx_thread_smp_protect` took it once in either case, so an unprotect that finds the protection no longer naming its core returns having released one nesting level fewer than were taken.
+
+The protection can stop naming the core while that core still holds the critical section. `_tx_thread_system_return` clears the whole protection structure, and `_tx_thread_context_restore` releases the mutex outright across its wait on `_tx_linux_isr_semaphore` and re-obtains it afterwards, which is exactly the window in which another core can run.
+
+A leaked level is drained by the next `_tx_linux_mutex_release_all` the thread reaches, and application threads reach one on their next system return. The timer interrupt thread has none on its tick path unless a thread was preempted on core 0. So a level leaked on that thread while core 0 is idle is never recovered, and since `_tx_linux_mutex_release` only calls `pthread_mutex_unlock` when the nesting count reaches zero, the mutex is never handed back to Linux again. Every other thread, the scheduler included, then waits on it for the life of the process. The tick keeps arriving throughout, so the process looks alive while nothing is ever scheduled.
+
+Two hung processes were captured untraced, in different tests, and they are identical in every participant: `_tx_linux_mutex` held with `tx_linux_mutex_owner` equal to `_tx_linux_timer_id` and a nesting count of one, the timer thread parked in its own periodic tick wait while holding it, the scheduler blocked in `pthread_mutex_timedlock` from `_tx_thread_schedule`, application threads blocked in the same call from `_tx_thread_system_return` and `_tx_thread_smp_current_state_get`, the SMP protection not held, and `_tx_thread_current_ptr[0]` null. Across a ten second sample the system clock advanced 99 ticks a second and every other value was byte-identical.
+
+The port's own 400-entry debug ring in one of those captures holds 57 identical tick cycles and nothing else, and the nesting count each entry records reconciles with the code only if the cycle is entered with one level already held.
+
+Two measurements bound it. On a healthy run of `threadx_byte_memory_thread_contention_test` the short path is taken 0 times in 26,546 calls to `_tx_thread_smp_unprotect`, and the timer thread owns the mutex at 0 of 1,287 entries to `_tx_thread_context_save`. Taking the short path once is enough, which is why this is rare rather than constant.
+
+Forcing the path under a debugger, at the same call in the same thread, leaks exactly one level before the change and balances after it.
+
+The fix is to release the level the matching protect took whether or not the protection still names this core. The protection bookkeeping is unchanged, no scheduling decision changes, and releasing beyond what a thread holds was already a no-op because `_tx_linux_mutex_release` decrements only while the caller is the recorded owner and the count is non-zero.
+
+This is a second and independent defect from the lost mutex wake-up reported earlier: that one leaves the mutex free with waiters parked on it, this one leaves it held with a nesting count that never returns to zero.
+

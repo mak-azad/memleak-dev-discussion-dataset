@@ -1,0 +1,66 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 63789313,
+ "url": "https://stackoverflow.com/questions/63789313/grpc-c-addresssanitizer-bad-free",
+ "title": "gRPC C++: AddressSanitizer: bad-free",
+ "tags": [
+  "c++",
+  "grpc"
+ ],
+ "score": 1,
+ "view_count": 2216,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 63816275,
+ "created_utc": "2020-09-08T07:44:03Z",
+ "last_activity_utc": "2020-09-09T17:02:48Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 10898753,
+ "author_display_name": "Raghav Thakkar",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/63789313/grpc-c-addresssanitizer-bad-free",
+ "body_html": "<p>gRPC v1.30.0\nI created a grpc service and tried to run it. The execution goes smooth till the last return statement at server side.</p>\n<pre><code>Status theService(ServerContext *context, const Request* req, Response* res)\n{\n        Status status = actualLogic(req,res);   \n        //execution goes fine till here \n        return status;\n} \n\n\nStatus actualLogic(req,res)\n{\n        Response_NestedMsg msg;\n        msg.set_something(...);\n        res-&gt;mutable_nestedmsg()-&gt;CopyFrom(msg);\n        return Status::OK\n}\n\n//server startup code\nServerBuilder builder;        \nbuilder.AddListeningPort((address),grpc::InsecureServerCredentials());\nbuilder.RegisterService(&amp;serviceClassObj);\nstd::unique_ptr&lt;Server&gt; server(builder.BuildAndStart());\nserver-&gt;Wait();\n</code></pre>\n<p>Running this code, I get following runtime error</p>\n<pre><code>==14394==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x61b00000fcc8 in thread T5 (grpcpp_sync_ser)\n    #0 0x7fe9d35602c0 in operator delete(void*) (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xe12c0)\n    #1 0x55cb87299afd in __gnu_cxx::new_allocator&lt;std::_List_node&lt;grpc_impl::Server const*&gt; &gt;::deallocate(std::_List_node&lt;grpc_impl::Server const*&gt;*, unsigned long) (/home/john/Desktop/my_executable+0xd0afd)\n    #2 0x55cb87297ba1 in std::allocator_traits&lt;std::allocator&lt;std::_List_node&lt;grpc_impl::Server const*&gt; &gt; &gt;::deallocate(std::allocator&lt;std::_List_node&lt;grpc_impl::Server const*&gt; &gt;&amp;, std::_List_node&lt;grpc_impl::Server const*&gt;*, unsigned long) (/home/john/Desktop/my_executable+0xceba1)\n    #3 0x55cb8729448d in std::__cxx11::_List_base&lt;grpc_impl::Server const*, std::allocator&lt;grpc_impl::Server const*&gt; &gt;::_M_put_node(std::_List_node&lt;grpc_impl::Server const*&gt;*) (/home/john/Desktop/my_executable+0xcb48d)\n    #4 0x55cb8728bb5a in std::__cxx11::_List_base&lt;grpc_impl::Server const*, std::allocator&lt;grpc_impl::Server const*&gt; &gt;::_M_clear() (/home/john/Desktop/my_executable+0xc2b5a)\n    #5 0x55cb87287307 in std::__cxx11::_List_base&lt;grpc_impl::Server const*, std::allocator&lt;grpc_impl::Server const*&gt; &gt;::~_List_base() (/home/john/Desktop/my_executable+0xbe307)\n    #6 0x55cb87278d29 in std::__cxx11::list&lt;grpc_impl::Server const*, std::allocator&lt;grpc_impl::Server const*&gt; &gt;::~list() (/home/john/Desktop/my_executable+0xafd29)\n    #7 0x55cb87278e2c in grpc_impl::CompletionQueue::~CompletionQueue() (/home/john/Desktop/my_executable+0xafe2c)\n    #8 0x7fe9d1826998 in grpc_impl::Server::SyncRequest::CallData::ContinueRunAfterInterception() (/usr/local/lib/libgrpc++.so.1+0x6f998)\n    #9 0x7fe9d18278ee in grpc_impl::Server::SyncRequestThreadManager::DoWork(void*, bool, bool) (/usr/local/lib/libgrpc++.so.1+0x708ee)\n    #10 0x7fe9d182c4ca in grpc::ThreadManager::MainWorkLoop() (/usr/local/lib/libgrpc++.so.1+0x754ca)\n    #11 0x7fe9d182c68b in grpc::ThreadManager::WorkerThread::Run() (/usr/local/lib/libgrpc++.so.1+0x7568b)\n    #12 0x7fe9cf5a78d2 in grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&amp;)::{lambda(void*)#1}::_FUN(void*) (/usr/local/lib/libgpr.so.10+0x118d2)\n    #13 0x7fe9d1eef6da in start_thread (/lib/x86_64-linux-gnu/libpthread.so.0+0x76da)\n    #14 0x7fe9d0ba8a3e in __clone (/lib/x86_64-linux-gnu/libc.so.6+0x121a3e)\n\n0x61b00000fcc8 is located 72 bytes inside of 1448-byte region [0x61b00000fc80,0x61b000010228)\nallocated by thread T5 (grpcpp_sync_ser) here:\n    #0 0x7fe9d355f448 in operator new(unsigned long) (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xe0448)\n    #1 0x7fe9d18274f2 in grpc_impl::Server::SyncRequestThreadManager::DoWork(void*, bool, bool) (/usr/local/lib/libgrpc++.so.1+0x704f2)\n\nThread T5 (grpcpp_sync_ser) created by T0 here:\n    #0 0x7fe9d34b6d2f in __interceptor_pthread_create (/usr/lib/x86_64-linux-gnu/libasan.so.4+0x37d2f)\n    #1 0x7fe9cf5a7a92 in grpc_core::Thread::Thread(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&amp;) (/usr/local/lib/libgpr.so.10+0x11a92)\n\nSUMMARY: AddressSanitizer: bad-free (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xe12c0) in operator delete(void*)\n==14394==ABORTING\n</code></pre>\n<p>None of my code tries to free any pointer and error seems to be coming from some auto generated file only. Please suggest if some more code/details needed.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 63816275,
+   "parent_id": 63789313,
+   "author_user_id": 12757683,
+   "author_display_name": "Esun Kim",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/63816275",
+   "score": 0,
+   "created_utc": "2020-09-09T17:02:48Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2020-09-09T17:02:48Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>I briefly checked the error message and code but it looks strange to me because both allocation and destruction were done by C++ new &amp; delete. This is also consistent with your error message.</p>\n<pre><code>### Destruction (with operator delete)\n#0 0x7fe9d35602c0 in operator delete(void*) (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xe12c0)\n\n### Allocation (with operator new)\n#0 0x7fe9d355f448 in operator new(unsigned long) (/usr/lib/x86_64-linux-gnu/libasan.so.4+0xe0448)\n</code></pre>\n<p>This might be caused by other issues like buggy ASAN or customized memory allocator.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 112931076,
+   "parent_id": 63816275,
+   "parent_type": "answer",
+   "author_user_id": 10898753,
+   "author_display_name": "Raghav Thakkar",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/63789313/#comment112931076_63816275",
+   "score": 0,
+   "created_utc": "2020-09-12T17:31:03Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Thanks. Although default AddressSanitizer was used, disabling it solved the issue"
+  }
+ ]
+}

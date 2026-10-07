@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/chriskohlhoff/asio/issues/1391",
+ "passes": [
+  "main"
+ ],
+ "title": "co_composed produces mismatched new/delete",
+ "author_login": "justend29",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:18Z",
+ "final_url": "https://github.com/chriskohlhoff/asio/issues/1391",
+ "repo": "chriskohlhoff/asio",
+ "repo_language": "C++",
+ "number": 1391,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-12-05T18:46:11Z",
+ "updated_at": "2023-12-05T18:46:11Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "justend29",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-12-05T18:46:11Z",
+   "updated_utc": "2023-12-05T18:46:11Z",
+   "permalink": "https://github.com/chriskohlhoff/asio/issues/1391",
+   "body_markdown": "Forward: asio is a gift to humanity.\r\n\r\n## Issue\r\n\r\nGCC's `-Wmismatched-new-delete` warns on usages of co_composed. Although this may be spurious, it could indicate an intrinsic issue.\r\nThe warnings can be reproduced with asio's native tests of co_composed.\r\n\r\n## Reproduction\r\n\r\nI'm not sure how to compile & run individual tests in asio, but the tests of concern are those in `asio/src/tests/unit/experimental/co_composed.cpp`. Reproducing these warnings was accomplished with GCC 13.2.1 through:\r\n\r\n```bash\r\ngit clone https://github.com/chriskohlhoff/asio.git\r\ncd asio/asio\r\n./autogen.sh\r\n./configure CXXFLAGS='-std=c++20 -Wmismatche-new-delete'\r\nmake check\r\n```\r\n\r\n## Sample Warning\r\n\r\n```\r\nunit/experimental/co_composed.cpp: In lambda function:\r\nunit/experimental/co_composed.cpp:169:9: warning: ‘static void asio::experimental::detail::co_composed_promise<Execu\r\ntors, Handler, Return>::operator delete(void*, std::size_t) [with Executors = void(asio::io_context::basic_executor_type<std::allocator<void>, 0>); Handler = asio::experimental::detail::co_composed_handler<void(asio::io_context::basic_executor_type<std::allocator<void>, 0>), test_nested_post_loop()::<lambda(int)>, asio::experimental::detail::co_composed_returns<>, void()>; Return = asio::experimental::detail::co_composed_returns<>]’ called on pointer returned from a mismatched allocation function [-Wmismatched-new-delete]\r\n  169 |         [](auto state, asio::io_context& ctx) -> void\r\n      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n  170 |         {\r\n      |         ~\r\n  171 |           co_await asio::post(ctx, asio::deferred);\r\n      |           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n  172 |           co_yield state.complete();\r\n      |           ~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n  173 |         }, ctx), token, std::ref(ctx));\r\n      |         ~\r\nunit/experimental/co_composed.cpp:169:9: note: returned from ‘static void* asio::experimental::detail::co_composed_promise<Executors, Handler, Return>::operator new(std::size_t, C&&, asio::experimental::detail::co_composed_state<Executors, Handler, Return>&, Args&& ...) [with C = const nested_post<const asio::deferred_t&>(asio::io_context&, const asio::deferred_t&)::<lambda(auto:51, asio::io_context&)>&; Args = {asio::io_context&}; Executors = void(asio::io_context::basic_executor_type<std::allocator<void>, 0>); Handler = asio::experimental::detail::co_composed_handler<void(asio::io_context::basic_executor_type<std::allocator<void>, 0>), test_nested_post_loop()::<lambda(int)>, asio::experimental::detail::co_composed_returns<>, void()>; Return = asio::experimental::detail::co_composed_returns<>]’\r\n  169 |         [](auto state, asio::io_context& ctx) -> void\r\n      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n  170 |         {\r\n      |         ~\r\n  171 |           co_await asio::post(ctx, asio::deferred);\r\n      |           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n  172 |           co_yield state.complete();\r\n      |           ~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n  173 |         }, ctx), token, std::ref(ctx));\r\n      |         ~\r\n```"
+  }
+ ]
+}

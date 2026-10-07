@@ -1,0 +1,81 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug]: UX_MEMORY_CORRUPTED return from error callback when using H5 interrupt IN transaction",
+ "author_login": "leejugy",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:10Z",
+ "final_url": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6",
+ "repo": "STMicroelectronics/stm32-mw-usbx",
+ "repo_language": "C",
+ "number": 6,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-19T09:04:40Z",
+ "updated_at": "2026-09-02T23:53:14Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "mw",
+  "usb",
+  "usbx",
+  "internal bug tracker"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "leejugy",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-19T09:04:40Z",
+   "updated_utc": "2026-09-02T23:53:14Z",
+   "permalink": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6",
+   "body_markdown": "### Bug Summary\n\nDouble free and use-after-free of ux_transfer_request_data_pointer\n\n### Detailed Description\n\n## 1. Describe the bug\n\nUX_MEMORY_CORRUPTED occurs when a USB hub is connected and then a single MSC device is plugged into the hub.\nCode is attempting to free memory areas that should not be freed and is attempting to free memory twice.\nAs a result, the device is not recognized through the hub.\nAlso it has use-after-free bug.\n\n## 2. Expected Behavior\n\nAfter usb hub detected, usb msc class is detected with no error.\n\n## 3. Actual Behavior\n\nAfter usb hub detected, usb msc class is not detected with UX_MEMORY_CORRUPTED.\n\n## 4. Environment\n> Board: stm32h563zit6\nUSBX Version: 6.4.0\nCubemX H5 Package Info: 1.7.0\nUSBX Version: usbx-6.4.0.260508\nUSB bus connection: Stm32 Root Hub <-> GL850 Expansion Hub <-> 1 USB MSC Device\n\nThere is still code remaining in the current master branch that could be problematic.\n\n## 5. Detailed Description\n\nThe bug occurs when an Interrupt IN transaction occurs.\n\nThe usb hub class allocates ux_transfer_request_data_pointer through the call stack below.\n**Execution flow**\n```txt\n_ux_host_stack_rh_change_process()\n    ↓\n_ux_host_stack_rh_device_insertion()\n    ↓\n_ux_host_stack_new_device_create()\n    ↓\n_ux_host_stack_class_device_scan()\n    ↓\nux_host_class_hub_entry()\n      command_request = UX_HOST_CLASS_COMMAND_ACTIVATE\n    ↓\n_ux_host_class_hub_activate()\n    ↓\n_ux_host_class_hub_interrupt_endpoint_start()\n```\n\n**ux_host_class_hub_intterupt_endpoint_start.c:121**\n```c\n        /* Obtain a buffer for this transaction. The buffer will always be reused.  */\n        transfer_request -> ux_transfer_request_data_pointer =  _ux_utility_memory_allocate(UX_SAFE_ALIGN, UX_CACHE_SAFE_MEMORY, \n                                                                transfer_request -> ux_transfer_request_requested_length);\n```\n\nThe comment states that the buffer can be reused. Under normal operation, the buffer's lifecycle is until `ux_host_class_hub_deactivate` is called.\n\n**ux_host_class_hub_deactivate.c:144**\n```c\n    _ux_utility_memory_free(transfer_request -> ux_transfer_request_data_pointer);\n```\n\nNow, here is the problematic code section.\n\nThe call stack for the code section that must not be freed or deallocated is as follows:\n**Execution flow**\n```txt\nHAL_HCD_SOF_Callback()\n    ↓\n_ux_host_semaphore_put(&_ux_system_host -> ux_system_host_hcd_semaphore);\n    ↓\n_ux_host_stack_hcd_thread_entry()\n      _ux_host_semaphore_get_norc(&_ux_system_host -> ux_system_host_hcd_semaphore, UX_WAIT_FOREVER);\n    ↓\n hcd -> ux_hcd_entry_function()\n      UX_HCD_PROCESS_DONE_QUEUE\n    ↓\n _ux_hcd_stm32_entry()\n    ↓\n _ux_hcd_stm32_periodic_schedule()\n if ((frame_index & ed -> ux_stm32_ed_interval_mask) == ed -> ux_stm32_ed_interval_position) \n    ↓\n _ux_hcd_stm32_request_trans_prepare()\n```\n\nIn my case, an interrupt-IN transaction occurs every 128ms (every 128 SOF intervals).\n\n1. In the case of the first interrupt IN transaction\n`ed->ux_stm32_ed_data` is NULL at first. so this line is ignored\n**ux_hcd_stm32_periodic_schedule.c:220**\n```c\n            if (ed -> ux_stm32_ed_data != NULL)\n            {\n              ed -> ux_stm32_ed_data_free = UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_PENDING_FREE;\n            }\n```\n\n2. `_ux_hcd_stm32_request_trans_prepare` is invoked. Because `ed->ux_stm32_ed_data` is NULL, this line is also ignored.\n**ux_hcd_stm32_request_trans_prepare.c:78**\n```c\n    if ((ed -> ux_stm32_ed_data != UX_NULL) && (ed -> ux_stm32_ed_type != EP_TYPE_ISOC) &&\n        (ed ->ux_stm32_ed_data_free == UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_PENDING_FREE))\n    {\n      _ux_utility_memory_free(ed -> ux_stm32_ed_data);\n      ed -> ux_stm32_ed_data = UX_NULL;\n      ed ->ux_stm32_ed_data_free = UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_FREE_DONE;\n    }\n```\n\n3. Code sets `ed->ux_stm32_ed_data` to reusable buffer `transfer -> ux_transfer_request_data_pointer`\n**ux_hcd_stm32_request_trans_prepare.c:87**\n```c\ned -> ux_stm32_ed_data = transfer -> ux_transfer_request_data_pointer;\n```\n\n4. stmh5 is not using dma so, return function with UX_SUCCESS.\n**ux_hcd_stm32_request_trans_prepare.c:90**\n```c\n    /* If DMA not enabled, nothing to do.  */\n    if (!hcd_stm32 -> hcd_handle -> Init.dma_enable)\n        return(UX_SUCCESS);\n```\n\n5. After 128ms, second interrupt IN transaction is started. `ed -> ux_stm32_ed_data` still has same address with `transfer -> ux_transfer_request_data_pointer`.\nBecause `ed -> ux_stm32_ed_data` is not NULL. Below code line is executed.\n**ux_hcd_stm32_periodic_schedule.c:220**\n```c\n            if (ed -> ux_stm32_ed_data != NULL)\n            {\n              ed -> ux_stm32_ed_data_free = UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_PENDING_FREE;\n            }\n```\nThe reusable buffer address that has a lifetime until `ux_host_class_hub_deactivate` is called is treated as pending-free region at interrupt IN transaction.\n\n6. Free `ed -> ux_stm32_ed_data` and use deallocated address `transfer -> ux_transfer_request_data_pointer` for transfer.\n**ux_hcd_stm32_request_trans_prepare.c:78**\n```c\n    if ((ed -> ux_stm32_ed_data != UX_NULL) && (ed -> ux_stm32_ed_type != EP_TYPE_ISOC) &&\n        (ed ->ux_stm32_ed_data_free == UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_PENDING_FREE))\n    {\n      _ux_utility_memory_free(ed -> ux_stm32_ed_data);\n      ed -> ux_stm32_ed_data = UX_NULL;\n      ed ->ux_stm32_ed_data_free = UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_FREE_DONE;\n    }\n\n    /* Save transfer data pointer.  */\n    ed -> ux_stm32_ed_data = transfer -> ux_transfer_request_data_pointer;\n```\n\n7. After 128ms, third interrupt IN transaction is started. Also, deallocated address `transfer -> ux_transfer_request_data_pointer` is handled as pending-free region.\nIn `ux_hcd_stm32_request_trans_prepare` function, `ed -> ux_stm32_ed_data` region is deallocated again.\nAs a result UX_MEMORY_CORRUPTED error code is passed to error handler\n**_ux_utility_memory_free.c:172**\n```\n            _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD,\n                                     UX_SYSTEM_CONTEXT_UTILITY, UX_MEMORY_CORRUPTED);\n```\n\n## 6. Solution of this problem\n\nI edit the code below.\n**ux_hcd_stm32_periodic_schedule.c:173**\n```c\n            if (ed -> ux_stm32_ed_data != NULL && ed -> ux_stm32_ed_data != transfer_request -> ux_transfer_request_data_pointer)\n            {\n              ed -> ux_stm32_ed_data_free = UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_PENDING_FREE;\n            }\n```\n\n**ux_hcd_stm32_periodic_schedule.c:220**\n```c\n            if (ed -> ux_stm32_ed_data != NULL && ed -> ux_stm32_ed_data != transfer_request -> ux_transfer_request_data_pointer)\n            {\n              ed -> ux_stm32_ed_data_free = UX_HCD_STM32_ED_STATUS_ALIGNED_BUFFER_PENDING_FREE;\n            }\n```\n\nCode is now ignored to free reusable region of `transfer -> ux_transfer_request_data_pointer`.\n\nNo double free occurs, also after first interrupt IN transaction, allocated region is used.\n\nThis bug also occurs when the transfer buffer is 4-byte aligned."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5396497646,
+   "author_login": "MKISTM",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-08-24T14:16:47Z",
+   "updated_utc": "2026-08-24T14:16:47Z",
+   "permalink": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6#issuecomment-5396497646",
+   "body_markdown": "Hello @leejugy,\n\nThank you for this report, this point will be tracked internally.\nI'll keep you informed about last update.\n\nBest Regards,\nKIWA Mohamed Chaker.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5396501983,
+   "author_login": "MKISTM",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-08-24T14:17:06Z",
+   "updated_utc": "2026-08-24T14:17:06Z",
+   "permalink": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6#issuecomment-5396501983",
+   "body_markdown": "ST Internal Reference: 42c389938372c714c09687402fda1ed4"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5518150893,
+   "author_login": "halytech-dm",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-09-02T23:53:14Z",
+   "updated_utc": "2026-09-02T23:53:14Z",
+   "permalink": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6#issuecomment-5518150893",
+   "body_markdown": "Independent reproduction of the same bug on a different controller and device\nclass, for the internal ticket's record:\n\n- **STM32U575** (OTG_FS host, `Init.dma_enable = DISABLE`), STM32CubeU5 **1.9.0**\n  (USBX 6.4.0 / `v6.4.0_260508` host-controller glue). Not present on CubeU5 1.8.0,\n  whose glue predates the `ux_stm32_ed_data_free` deferred-free scheme.\n- Device: Telit LE910C1 / ME910G1 cellular modem (CDC-ECM composition); the\n  vendor AT interface has a 64-byte **interrupt IN** endpoint polled by our host\n  class. No hub, no isochronous endpoints.\n- Symptom: `UX_MEMORY_CORRUPTED` (0x19) from the error callback on **every**\n  periodic submission — about 340 per second (15,022 in a 45 s session).\n\nSame mechanism as described above: in a non-DMA build\n`_ux_hcd_stm32_request_trans_prepare()` always leaves `ed->ux_stm32_ed_data` set\nto `transfer->ux_transfer_request_data_pointer` (it returns before any bounce\nallocation), so both `PENDING_FREE` sites in `_ux_hcd_stm32_periodic_schedule()`\nmark the class's own buffer and the next `trans_prepare` frees it.\n`_ux_hcd_stm32_request_trans_finish()` already has the correct guards (early\nreturn on `!dma_enable` and on `ed_data == transfer->data_pointer`); the two\nperiodic-schedule sites are the only markers without them.\n\nThe fix in PR #8 (`ed_data != transfer_request->ux_transfer_request_data_pointer`)\nis the right shape — it also covers DMA-enabled builds whose class buffer is\nalready 4-byte aligned, where `trans_prepare` likewise skips the bounce allocation.\nWe are shipping an equivalent local patch (gated on `Init.dma_enable`, which is\nsufficient for OTG_FS) until a CubeU5 pack carries the fix. Happy to test a\ncandidate pack/tag on the U575 if useful.\n"
+  }
+ ]
+}

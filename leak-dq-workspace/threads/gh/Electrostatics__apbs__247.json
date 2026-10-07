@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Electrostatics/apbs/issues/247",
+ "passes": [
+  "main"
+ ],
+ "title": "munmap_chunk(): invalid pointer",
+ "author_login": "yuntaoyang",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:49Z",
+ "final_url": "https://github.com/Electrostatics/apbs/issues/247",
+ "repo": "Electrostatics/apbs",
+ "repo_language": "C",
+ "number": 247,
+ "state": "open",
+ "state_reason": "reopened",
+ "created_at": "2022-10-04T20:06:13Z",
+ "updated_at": "2022-10-05T17:42:06Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "yuntaoyang",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-10-04T20:06:13Z",
+   "updated_utc": "2022-10-05T17:42:06Z",
+   "permalink": "https://github.com/Electrostatics/apbs/issues/247",
+   "body_markdown": "Hi APBS developers,\r\n\r\n**Describe the bug**\r\nI ran APBS using a PDB file for a protein complex. But APBS was aborted and got the following error message. How to fix this issue?\r\n\r\n**log file**\r\nThis executable compiled on May 30 2019 at 19:36:46\r\nParsing input file Myo1_Myo1.in...\r\nrank 0 size 1...\r\nread\r\nParsed input file.\r\nGot paths for 1 molecules\r\nReading PQR-format atom data from Myo1_Myo1.pqr.\r\n  63126 atoms\r\n  Centered at (5.216e+01, 5.426e+01, -7.410e+00)\r\n  Net charge -4.00e+01 e\r\nPreparing to run 2 PBE calculations.\r\nCALCULATION #1: MULTIGRID\r\n  Setting up problem...\r\n  Vpbe_ctor:  Using max ion radius (0 A) for exclusion function\r\n  Debye length:  0 A\r\n  Current memory usage:  93259.980 MB total, 93259.980 MB high water\r\n  Using cubic spline charge discretization.\r\n  Grid dimensions: 545 x 801 x 929\r\n  Grid spacings: 0.777 x 0.807 x 0.811\r\n  Grid lengths: 422.617 x 645.682 x 752.906\r\n  Grid center: (52.160, 54.262, -7.410)\r\n  Multigrid levels: 4\r\n  Molecule ID: 1\r\n  Linearized traditional PBE\r\n  Single Debye-Huckel sphere boundary conditions\r\n  0 ion species (0.000 M ionic strength):\r\n  Solute dielectric: 2.000\r\n  Solvent dielectric: 78.540\r\n  Using \"molecular\" surface definition;harmonic average smoothing\r\n  Solvent probe radius: 1.400 A\r\n  Temperature:  298.150 K\r\n  Electrostatic energies will be calculated\r\nVbuildband: dpbfa problem: 1\r\nVbuildband: leading principle minor not PD...\r\nVbuildops: Changing your mgsolv to iterative\r\n  Total electrostatic energy = -NAN kJ/mol\r\n  Calculating forces...\r\nCALCULATION #2: MULTIGRID\r\n  Setting up problem...\r\n  Vpbe_ctor:  Using max ion radius (0 A) for exclusion function\r\nmunmap_chunk(): invalid pointer\r\nAborted (core dumped)\r\n\r\n**To Reproduce**\r\nSteps to reproduce the behavior:\r\n1. pdb2pqr30 --apbs-input Myo1_Myo1.in --whitespace Myo1_Myo1.pdb Myo1_Myo1.pqr\r\n2. apbs Myo1_Myo1.in\r\n\r\n**Server: CentOS**\r\n\r\nThank you so much for your help!\r\n\r\nBest,\r\nYuntao Yang\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1268482367,
+   "author_login": "sobolevnrm",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2022-10-05T14:04:45Z",
+   "updated_utc": "2022-10-05T14:04:45Z",
+   "permalink": "https://github.com/Electrostatics/apbs/issues/247#issuecomment-1268482367",
+   "body_markdown": "Hello --\r\n\r\nHow much memory does the server have?\r\n\r\nThank you"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1268486184,
+   "author_login": "yuntaoyang",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-10-05T14:07:46Z",
+   "updated_utc": "2022-10-05T14:07:46Z",
+   "permalink": "https://github.com/Electrostatics/apbs/issues/247#issuecomment-1268486184",
+   "body_markdown": "> Hello --\r\n> \r\n> How much memory does the server have?\r\n> \r\n> Thank you\r\n\r\nHi Nathan,\r\n\r\nThe total memory is about 6000 GB. The available memory was about 3000 GB when I ran the program.\r\n\r\nBest,\r\nYuntao"
+  }
+ ]
+}

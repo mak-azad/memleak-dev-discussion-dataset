@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 34239797,
+ "url": "https://stackoverflow.com/questions/34239797/cpputest-memory-deletion",
+ "title": "CPPUTEST memory deletion",
+ "tags": [
+  "c++",
+  "unit-testing",
+  "cpputest"
+ ],
+ "score": 0,
+ "view_count": 277,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2015-12-12T12:24:26Z",
+ "last_activity_utc": "2016-01-09T15:20:51Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 5509699,
+ "author_display_name": "TRINH.NGUYEN",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/34239797/cpputest-memory-deletion",
+ "body_html": "<p>I have the code as below: </p>\n\n<pre><code>char* Add()\n{\n    p = new char[10];\n    return p;\n}\n</code></pre>\n\n<p>and I use CPPUTEST with the test code as below:</p>\n\n<pre><code>TEST(MyTestGroup, TestAdd_1)\n{\n    p = Add(); // the above function\n    delete p;\n}\n</code></pre>\n\n<p>But the error is: \"Allocation/deallocation type mismatch\"</p>\n\n<p>I don't know why, please help.\nThanks in advance!</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 56222049,
+   "parent_id": 34239797,
+   "parent_type": "question",
+   "author_user_id": 448932,
+   "author_display_name": "500 - Internal Server Error",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/34239797/#comment56222049_34239797",
+   "score": 0,
+   "created_utc": "2015-12-12T12:47:48Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Which programming language is this? (How) is <code>p</code> declared?"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 34695256,
+   "parent_id": 34239797,
+   "author_user_id": 1622894,
+   "author_display_name": "ollo",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/34695256",
+   "score": 3,
+   "created_utc": "2016-01-09T15:20:51Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2016-01-09T15:20:51Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<blockquote>\n  <p>But the error is: \"Allocation/deallocation type mismatch\"</p>\n</blockquote>\n\n<p>That's because you allocate an array, but deallocate a single object.</p>\n\n<pre><code>TEST(MyTestGroup, TestAdd_1)\n{\n    p = Add(); // the above function\n    delete[] p; // &lt;--- Use correct delete for arrays\n}\n</code></pre>\n"
+  }
+ ]
+}

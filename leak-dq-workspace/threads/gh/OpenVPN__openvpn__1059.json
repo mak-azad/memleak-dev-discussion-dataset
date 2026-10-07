@@ -1,0 +1,54 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/OpenVPN/openvpn/issues/1059",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in dns_server_addr_parse(): addrinfo not freed when the DNS server address table is full (9th `--dns` address)",
+ "author_login": "OwenSanzas",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:13Z",
+ "final_url": "https://github.com/OpenVPN/openvpn/issues/1059",
+ "repo": "OpenVPN/openvpn",
+ "repo_language": "C",
+ "number": 1059,
+ "state": "closed",
+ "state_reason": "not_planned",
+ "created_at": "2026-06-20T05:38:09Z",
+ "updated_at": "2026-06-20T09:57:11Z",
+ "closed_at": "2026-06-20T09:57:11Z",
+ "labels": [
+  "duplicate",
+  "DNS"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "OwenSanzas",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-06-20T05:38:09Z",
+   "updated_utc": "2026-06-20T09:57:11Z",
+   "permalink": "https://github.com/OpenVPN/openvpn/issues/1059",
+   "body_markdown": "\n## Summary\n\n`dns_server_addr_parse()` in `src/openvpn/dns.c` allocates an `addrinfo`\nstructure via `openvpn_getaddrinfo()` and then checks whether the per-server\naddress table (`struct dns_server::addr[8]`, capacity 8) is already full. When\nit is full the function returns `false` immediately, **without** calling\n`freeaddrinfo()` on the structure it just allocated. Every `--dns server <prio>\naddress <addr...>` option that supplies a 9th (or later) valid address therefore\nleaks one `addrinfo` allocation.\n\nThe option is parsed by the normal configuration parser\n(`read_config_string()` / `parse_line()` → `add_option()` →\n`check_dns_option()` → `dns_server_addr_parse()`), so the leak is reachable both\nfrom a local configuration file and from a `--dns` option pushed by the peer\n(`--dns` belongs to the `OPT_P_DHCPDNS` pushable class), i.e. a server can leak\nclient memory through a crafted `PUSH_REPLY`.\n\n## Root Cause\n\n`src/openvpn/dns.c`, `dns_server_addr_parse()`:\n\n```c\n    struct addrinfo *ai = NULL;\n    if (openvpn_getaddrinfo(0, addr, NULL, 0, NULL, af, &ai) != 0)   /* line 118: allocates *ai */\n    {\n        return false;\n    }\n\n    if (server->addr_count >= SIZE(server->addr))                    /* line 123: addr[8] is full */\n    {\n        return false;                                                /* line 125: BUG -- leaks ai */\n    }\n\n    /* ... use ai ... */\n\n    server->addr_count += 1;\n\n    freeaddrinfo(ai);                                                /* line 143: only on success */\n    return true;\n```\n\n`ai` is a local variable. On the `addr_count >= 8` early return at line 125 it is\nneither stored anywhere nor freed, so the allocation is unreachable and leaks.\n`freeaddrinfo()` is only reached on the success path at line 143.\n\n`check_dns_option()` (`src/openvpn/options.c`) feeds every address token of a\nsingle `--dns server ... address ...` option into this function in a loop, so a\nsingle option line with more than 8 valid addresses triggers the leak:\n\n```c\n        if (streq(p[3], \"address\"))\n        {\n            for (int i = 4; p[i]; ++i)\n            {\n                if (!dns_server_addr_parse(server, p[i]))   /* 9th valid addr leaks */\n                {\n                    msg(msglevel, \"--dns server %ld: malformed address or maximum exceeded '%s'\",\n                        priority, p[i]);\n                    return false;\n                }\n            }\n        }\n```\n\n## PoC\n\nA single configuration/option line carrying nine valid DNS server addresses\n(the first eight fill `addr[0..7]`; the ninth leaks):\n\n```\ndns server 5 address 9.9.9.9 2620:: 2620:fe:: 2620:fe::29 2620:fe::fe9 9.9.9.9 2620:: 2620:fe:: 9.9.9.9\n```\n\nThe same condition is reachable from a peer-pushed option, e.g. a `PUSH_REPLY`\nthat contains `dns server 5 address <nine or more valid addresses>`.\n\n## Reproduction\n\nStandalone program `dns_repro.c` (full source below) hands the crafted option\nline to OpenVPN's own configuration parser `read_config_string()` and then\nperforms a complete caller-side cleanup (`env_set_destroy()`,\n`uninit_options()`). LeakSanitizer still reports the leak, proving the\nallocation is lost inside `dns_server_addr_parse()` rather than by the caller.\n\n```c\n#include \"config.h\"\n#include \"syshead.h\"\n#include \"options.h\"\n#include \"env_set.h\"\n#include \"error.h\"\n\nint main(void)\n{\n    static const char *config =\n        \"dns server 5 address \"\n        \"9.9.9.9 2620:: 2620:fe:: 2620:fe::29 2620:fe::fe9 \"\n        \"9.9.9.9 2620:: 2620:fe:: 9.9.9.9\\n\";   /* 9 valid addresses */\n\n    struct options options;\n    init_options(&options);\n    struct env_set *es = env_set_create(&options.gc);\n\n    uint64_t option_types_found = 0;\n    read_config_string(\"[CONFIG-STRING]\", &options, config,\n                        M_WARN, OPT_P_DEFAULT, &option_types_found, es);\n\n    env_set_destroy(es);     /* release everything the caller owns */\n    uninit_options(&options);\n    return 0;\n}\n```\n\nBuild flags (LeakSanitizer is part of AddressSanitizer on Linux):\n\n```\n# OpenVPN configured/built with:\nCC=clang\nCFLAGS=\"-fsanitize=address -g -O1 -fno-omit-frame-pointer\"\nLDFLAGS=\"-fsanitize=address\"\n./configure --disable-lz4 --disable-plugins --disable-management \\\n            --disable-dco --disable-systemd --with-crypto-library=openssl\nmake\n\n# link the reproduction (objects bundled into libopenvpn.a):\nclang -fsanitize=address -g -O1 -fno-omit-frame-pointer -DHAVE_CONFIG_H \\\n  -Isrc/openvpn -Iinclude -Isrc/compat -std=c11 dns_repro.c \\\n  src/openvpn/libopenvpn.a src/compat/.libs/libcompat.a \\\n  -lssl -lcrypto -ldl -lnsl -lresolv -lcap-ng -llzo2 -o dns_repro\n```\n\nObserved LeakSanitizer output:\n\n```\n==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 64 byte(s) in 1 object(s) allocated from:\n    #0 ... in malloc\n    #1 ... in generate_addrinfo posix/../sysdeps/posix/getaddrinfo.c:1075\n    #3 ... in getaddrinfo posix/../sysdeps/posix/getaddrinfo.c:2397\n    #5 ... in openvpn_getaddrinfo src/openvpn/socket_util.c:598\n    #6 ... in dns_server_addr_parse src/openvpn/dns.c:118\n    #7 ... in check_dns_option src/openvpn/options.c:5311\n    #8 ... in add_option src/openvpn/options.c:7926\n    #9 ... in read_config_string src/openvpn/options_parse.c:440\n    #10 ... in main dns_repro.c:63\n\nSUMMARY: AddressSanitizer: 64 byte(s) leaked in 1 allocation(s).\n```\n\n## Suggested Fix\n\nFree `ai` before the early `return false` when the address table is full\n(or, equivalently, restructure so `freeaddrinfo(ai)` runs on every exit path):\n\n```c\n    if (server->addr_count >= SIZE(server->addr))\n    {\n        freeaddrinfo(ai);   /* fix: release before bailing out */\n        return false;\n    }\n```\n\n## PoC bytes (self-contained)\nSelf-contained base64 of the crafted option line (decode to a file and feed it\nto a build that parses it as a configuration line, or push it inside a\n`PUSH_REPLY`):\n\n```\nZG5zIHNlcnZlciA1IGFkZHJlc3MgOS45LjkuOSAyNjIwOjogMjYyMDpmZTo6IDI2MjA6ZmU6OjI5IDI2MjA6ZmU6OmZlOSA5LjkuOS45IDI2MjA6OiAyNjIwOmZlOjogOS45LjkuOQo=\n```\n\nOne-liner to materialize it:\n\n```\necho 'ZG5zIHNlcnZlciA1IGFkZHJlc3MgOS45LjkuOSAyNjIwOjogMjYyMDpmZTo6IDI2MjA6ZmU6OjI5IDI2MjA6ZmU6OmZlOSA5LjkuOS45IDI2MjA6OiAyNjIwOmZlOjogOS45LjkuOQo=' | base64 -d > dns_poc.txt\n```\n\n## Credit\n\nAisle Research (Ze Sheng (O2Lab & TAMU), Dmitrijs Trizna, Luigino Camastra, Guido Vranken).\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4757243397,
+   "author_login": "cron2",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-06-20T09:56:27Z",
+   "updated_utc": "2026-06-20T09:56:27Z",
+   "permalink": "https://github.com/OpenVPN/openvpn/issues/1059#issuecomment-4757243397",
+   "body_markdown": "Seems there is a new generation of AI tools that finds this particular issue...  and just maybe you should run that tool against current master, because we fixed it two days ago.\n\ncommit 154e8a520b3bd639fb137c1ba73ce8a80818d08d (master)\nAuthor: saddamr3e <saddamr3e@gmail.com>\nDate:   Thu Jun 18 08:18:28 2026 +0200\n\n    dns: Fix memory leak in dns_server_addr_parse\n\n    When the DNS server's address count is already full (exceeds the\n    limit of 8), the function returned early without freeing the\n    successfully resolved addrinfo struct. Fix this by checking the\n    limit before executing the DNS lookup.\n\n    Github: OpenVPN/openvpn#1055\n\nswamping projects' bug trackers with elaborate multipage reports for already-known issues is not helping anything. "
+  }
+ ]
+}

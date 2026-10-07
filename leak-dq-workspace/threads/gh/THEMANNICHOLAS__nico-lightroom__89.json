@@ -1,0 +1,44 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/THEMANNICHOLAS/nico-lightroom/issues/89",
+ "passes": [
+  "main"
+ ],
+ "title": "[F11/R12] demosaic: high_image leaked on the dual-Markesteijn error path",
+ "author_login": "THEMANNICHOLAS",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:00Z",
+ "final_url": "https://github.com/THEMANNICHOLAS/nico-lightroom/issues/89",
+ "repo": "THEMANNICHOLAS/nico-lightroom",
+ "repo_language": "C",
+ "number": 89,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-16T00:30:47Z",
+ "updated_at": "2026-09-16T00:30:47Z",
+ "closed_at": null,
+ "labels": [
+  "severity: low",
+  "type: leak",
+  "status: verified",
+  "source: static-audit"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "THEMANNICHOLAS",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-16T00:30:47Z",
+   "updated_utc": "2026-09-16T00:30:47Z",
+   "permalink": "https://github.com/THEMANNICHOLAS/nico-lightroom/issues/89",
+   "body_markdown": "**Severity:** Low (was filed Low-Medium) | **Verdict:** CONFIRMED | **Type:** GPU memory leak\n**Source:** split from the #41 static memory-safety audit; independently re-verified against source.\n\n### Where\n`src/iop/demosaic.c:1825-1834` (cleanup at `finish:` `:1904-1905`).\n\n### What\n```c\nhigh_image = dt_opencl_alloc_device(...);\nif(IS_NULL_PTR(high_image)) return FALSE;\nif(!process_markesteijn_cl(self, pipe, piece, dev_in, high_image, roi_in, roi_in, FALSE)) return FALSE;   // :1829\n...\nfinish:\n  dt_opencl_release_mem_object(high_image);\n```\n\n### Why it matters\n`process_markesteijn_cl` has dozens of `goto error` paths (device-buffer allocations, kernel enqueues) ending in `return FALSE`, and its `error:` label deliberately does not release its `dev_out` argument. The caller's direct `return FALSE` orphans the full-size `cl_mem`, which stays in device memory until context teardown. The RCD dual sibling at `:1811` correctly uses `goto finish`, confirming an oversight.\n\n### Trigger\nA kernel/device failure during a Markesteijn demosaic run; repeats if the failure recurs.\n\n### Suggested fix\nReplace `return FALSE` at line 1829 with `goto finish;` (`high_image` is initialized NULL and released unconditionally at `finish:`).\n\n### Verification note\nNo refutation found. Not \"per-tile\": a FALSE return aborts the pipe, so it is one buffer per failed run."
+  }
+ ]
+}

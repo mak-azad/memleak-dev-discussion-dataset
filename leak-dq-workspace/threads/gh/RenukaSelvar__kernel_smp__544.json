@@ -1,0 +1,89 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/RenukaSelvar/kernel_smp/issues/544",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "CVE-2021-45095 (Medium) detected in linuxlinux-4.19.313",
+ "author_login": "mend-bolt-for-github[bot]",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:42Z",
+ "final_url": "https://github.com/RenukaSelvar/kernel_smp/issues/544",
+ "repo": "RenukaSelvar/kernel_smp",
+ "repo_language": "C",
+ "number": 544,
+ "state": "open",
+ "state_reason": "reopened",
+ "created_at": "2024-05-16T00:47:52Z",
+ "updated_at": "2026-09-08T19:25:59Z",
+ "closed_at": null,
+ "labels": [
+  "Mend: dependency security vulnerability"
+ ],
+ "comments_reported": 4,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-05-16T00:47:52Z",
+   "updated_utc": "2026-09-08T19:25:59Z",
+   "permalink": "https://github.com/RenukaSelvar/kernel_smp/issues/544",
+   "body_markdown": "## CVE-2021-45095 - Medium Severity Vulnerability\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Library - <b>linuxlinux-4.19.313</b></summary>\n<p>\n\n<p>The Linux Kernel</p>\n<p>Library home page: <a href=https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/?wsslib=linux>https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/?wsslib=linux</a></p>\n\n<p>Found in base branch: <b>master</b></p></p>\n</details>\n</p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Source Files (1)</summary>\n<p></p>\n<p>\n\n  <img src='https://s3.amazonaws.com/wss-public/bitbucketImages/xRedImage.png' width=19 height=20> <b>/net/phonet/pep.c</b>\n</p>\n</details>\n<p></p>\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/medium_vul.png?' width=19 height=20> Vulnerability Details</summary>\n<p>  \n  \npep_sock_accept in net/phonet/pep.c in the Linux kernel through 5.15.8 has a refcount leak.\n\n<p>Publish Date: 2021-12-16\n<p>URL: <a href=https://www.mend.io/vulnerability-database/CVE-2021-45095>CVE-2021-45095</a></p>\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/cvss3.png' width=19 height=20> CVSS 3 Score Details (<b>5.5</b>)</summary>\n<p>\n\nBase Score Metrics:\n- Exploitability Metrics:\n  - Attack Vector: Local\n  - Attack Complexity: Low\n  - Privileges Required: Low\n  - User Interaction: None\n  - Scope: Unchanged\n- Impact Metrics:\n  - Confidentiality Impact: High\n  - Integrity Impact: None\n  - Availability Impact: None\n</p>\nFor more information on CVSS3 Scores, click <a href=\"https://www.first.org/cvss/calculator/3.0\">here</a>.\n</p>\n</details>\n<p></p>\n\n***\nStep up your Open Source Security Game with Mend [here](https://www.whitesourcesoftware.com/full_solution_bolt_github)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3938339841,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-21T07:13:24Z",
+   "updated_utc": "2026-02-21T07:13:24Z",
+   "permalink": "https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-3938339841",
+   "body_markdown": ":heavy_check_mark: This issue was automatically closed by Mend because the vulnerable library in the specific branch(es) was either marked as ignored or it is no longer part of the Mend inventory."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4324619994,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-04-27T06:23:35Z",
+   "updated_utc": "2026-04-27T06:23:35Z",
+   "permalink": "https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-4324619994",
+   "body_markdown": ":information_source: This issue was automatically re-opened by Mend because the vulnerable library in the specific branch(es) has been detected in the Mend inventory."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4427878750,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-12T06:25:40Z",
+   "updated_utc": "2026-05-12T06:25:40Z",
+   "permalink": "https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-4427878750",
+   "body_markdown": ":heavy_check_mark: This issue was automatically closed by Mend because the vulnerable library in the specific branch(es) was either marked as ignored or it is no longer part of the Mend inventory."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5590616224,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-08T19:25:59Z",
+   "updated_utc": "2026-09-08T19:25:59Z",
+   "permalink": "https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-5590616224",
+   "body_markdown": ":information_source: This issue was automatically re-opened by Mend because the vulnerable library in the specific branch(es) has been detected in the Mend inventory."
+  }
+ ]
+}

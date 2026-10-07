@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/saghul/txiki.js/issues/1078",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "wasm: heap use-after-free when export wrapper outlives Module",
+ "author_login": "xmzyshypnc",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:01Z",
+ "final_url": "https://github.com/saghul/txiki.js/issues/1078",
+ "repo": "saghul/txiki.js",
+ "repo_language": "C",
+ "number": 1078,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-31T02:09:43Z",
+ "updated_at": "2026-08-31T02:09:43Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "xmzyshypnc",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-31T02:09:43Z",
+   "updated_utc": "2026-08-31T02:09:43Z",
+   "permalink": "https://github.com/saghul/txiki.js/issues/1078",
+   "body_markdown": "The Wasm export wrapper returned by `Instance.exports` binds to the C-level native instance object (from `buildInstance`), not to the JS `Instance`. If only the export function is retained, the JS `Instance` becomes garbage, its `#moduleRef` is released, and the `Module` finalizer runs `wasm_runtime_unload` — but the C-level `TJSWasmInstance` is still alive (pinned by `.bind()`). The next call to the export reaches `wasm_runtime_lookup_function`, which `strcmp`s over the freed module's export table. Same class of bug as #1051 (FFI dlopen UAF).\n\n### Reproducer\n\n```js\nconst bytes = new Uint8Array([\n  0,97,115,109,1,0,0,0,\n  1,6,1,96,1,127,1,127,\n  2,10,1,3,101,110,118,2,99,98,0,0,\n  3,2,1,0,\n  7,7,1,3,114,117,110,0,1,\n  10,8,1,6,0,32,0,16,0,11\n]);\n\nfunction getExport() {\n  const mod = new WebAssembly.Module(bytes);\n  const inst = new WebAssembly.Instance(mod, { env: { cb: x => x } });\n  return inst.exports.run;\n}\n\nconst run = getExport();\nfor (let i = 0; i < 100; i++) new ArrayBuffer(1024 * 1024);\nrun();\n```\n\n```\n$ ./build/tjs run repro.js\nSegmentation fault: 11\n```\n\nProbabilistic (~30%), depends on whether the GC collects the Module before `run()` is called. ASan reports a heap-use-after-free read in `strcmp` → `cmp_export_func_inst` → `wasm_lookup_function` → `tjs_wasm_callfunction`.\n\n### Cause\n\n`src/js/polyfills/wasm.js:343` creates export wrappers as:\n\n```js\nfn = callWasmFunction.bind(instance, item.name);\n```\n\n`instance` is the C-level native object returned by `buildInstance()`. The JS `Instance` class (line 374) stores `this.#moduleRef = module` to keep the Module alive, but the export wrapper does not reference the JS `Instance` — only the C native object. So:\n\n1. User keeps only the export: `const run = new Instance(mod, imports).exports.run`\n2. JS `Instance` is unreachable → GC'd → `#moduleRef` released\n3. `Module` is unreachable → GC'd → `tjs_wasm_module_finalizer` → `wasm_runtime_unload` (frees WAMR module)\n4. C `TJSWasmInstance` is still alive (held by `.bind()`) with a dangling `module_inst`\n5. `run()` → `wasm_runtime_lookup_function` → `strcmp` on freed export name → **heap UAF**\n\nThe C struct `TJSWasmInstance` (`src/wasm.c`) does not store a `JSValue` reference to the Module, so WAMR's requirement that the module outlive its instances is not enforced.\n\n### Suggested fix\n\nAdd a `JSValue module_ref` to `TJSWasmInstance`. `JS_DupValue` it in `tjs_wasm_buildinstance`, `JS_FreeValueRT` it in `tjs_wasm_instance_finalizer`.\n\n**Reported by**: [@xmzyshypnc](https://github.com/xmzyshypnc), [@carol233](https://github.com/carol233), [@lyyffee](https://github.com/lyyffee)\n"
+  }
+ ]
+}

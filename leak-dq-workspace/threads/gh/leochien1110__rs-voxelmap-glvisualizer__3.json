@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/leochien1110/rs-voxelmap-glvisualizer/issues/3",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "readvoxel GPU memory leak",
+ "author_login": "leochien1110",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:19Z",
+ "final_url": "https://github.com/leochien1110/rs-voxelmap-glvisualizer/issues/3",
+ "repo": "leochien1110/rs-voxelmap-glvisualizer",
+ "repo_language": "C++",
+ "number": 3,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-10-24T16:56:26Z",
+ "updated_at": "2021-10-24T17:02:18Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "memory leak"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "leochien1110",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-24T16:56:26Z",
+   "updated_utc": "2021-10-24T17:02:18Z",
+   "permalink": "https://github.com/leochien1110/rs-voxelmap-glvisualizer/issues/3",
+   "body_markdown": "GPU memory leak in legacy branch-> `readvoxel`\r\nOutput of `nvidia-smi`:\r\n\r\n```bash\r\n+-----------------------------------------------------------------------------+\r\n| NVIDIA-SMI 470.42.01    Driver Version: 470.42.01    CUDA Version: 11.4     |\r\n|-------------------------------+----------------------+----------------------+\r\n| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |\r\n| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |\r\n|                               |                      |               MIG M. |\r\n|===============================+======================+======================|\r\n|   0  NVIDIA GeForce ...  Off  | 00000000:3C:00.0  On |                  N/A |\r\n| 33%   61C    P0    45W / 151W |    884MiB /  8119MiB |     23%      Default |\r\n|                               |                      |                  N/A |\r\n+-------------------------------+----------------------+----------------------+\r\n                                                                               \r\n+-----------------------------------------------------------------------------+\r\n| Processes:                                                                  |\r\n|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |\r\n|        ID   ID                                                   Usage      |\r\n|=============================================================================|\r\n|    0   N/A  N/A      1590      G   /usr/lib/xorg/Xorg                160MiB |\r\n|    0   N/A  N/A      2457      G   /usr/lib/xorg/Xorg                390MiB |\r\n|    0   N/A  N/A      2580      G   /usr/bin/gnome-shell              134MiB |\r\n|    0   N/A  N/A      3225      G   ...AAAAAAAAA= --shared-files       97MiB |\r\n|    0   N/A  N/A     18800      G   ./read_voxel                       22MiB |\r\n+-----------------------------------------------------------------------------+\r\n```"
+  }
+ ]
+}

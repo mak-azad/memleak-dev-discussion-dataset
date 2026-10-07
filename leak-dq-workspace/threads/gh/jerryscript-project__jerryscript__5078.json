@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/jerryscript-project/jerryscript/issues/5078",
+ "passes": [
+  "main"
+ ],
+ "title": "AddressSanitizer: attempting free on address which was not malloc()-ed",
+ "author_login": "Ye0nny",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:21Z",
+ "final_url": "https://github.com/jerryscript-project/jerryscript/issues/5078",
+ "repo": "jerryscript-project/jerryscript",
+ "repo_language": "C",
+ "number": 5078,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-04-29T05:48:44Z",
+ "updated_at": "2023-04-29T05:48:44Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Ye0nny",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-04-29T05:48:44Z",
+   "updated_utc": "2023-04-29T05:48:44Z",
+   "permalink": "https://github.com/jerryscript-project/jerryscript/issues/5078",
+   "body_markdown": "###### JerryScript revision\r\nCommit: https://github.com/jerryscript-project/jerryscript/commit/05dbbd134c3b9e2482998f267857dd3722001cd7\r\nVersion: v3.0.0\r\n\r\n###### Build platform\r\nUbuntu 20.04.5 LTS (Linux 5.4.0-144-generic x86_64)\r\n\r\n###### Build steps\r\n```sh\r\npython ./tools/build.py --clean --compile-flag=-m32 --compile-flag=-fno-omit-frame-pointer --compile-flag=-fno-common --compile-flag=-fsanitize=address --compile-flag=-g --strip=off --lto=off --error-messages=on --system-allocator=on --logging=on --line-info=on --stack-limit=20\r\n```\r\n\r\n###### Test case\r\n```javascript\r\n// poc.js\r\nclass s { static { ( ) => { class s { static { } ; } } ; } }\r\n```\r\n\r\n###### Execution steps & Output\r\n```\r\n$ ./jerryscript/build/bin/jerry poc.js\r\n=================================================================\r\n==2012485==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0xff975ce0 in thread T0\r\n    #0 0xf79dd414 in __interceptor_free ../../../../../src/libsanitizer/asan/asan_malloc_linux.cc:122\r\n    #1 0x56648b87 in jmem_heap_free_block_internal ./jerryscript/jerry-core/jmem/jmem-heap.c:477\r\n    #2 0x566bca69 in scanner_release_next ./jerryscript/jerry-core/parser/js/js-scanner-util.c:262\r\n    #3 0x5672aac8 in parser_parse_class_body ./jerryscript/jerry-core/parser/js/js-parser-expr.c:825\r\n    #4 0x5672aac8 in parser_parse_class ./jerryscript/jerry-core/parser/js/js-parser-expr.c:1110\r\n    #5 0x56734f84 in parser_parse_statements ./jerryscript/jerry-core/parser/js/js-parser-statm.c:2787\r\n    #6 0x566bab25 in parser_parse_source ./jerryscript/jerry-core/parser/js/js-parser.c:2280\r\n    #7 0x5664d3cf in jerry_parse_common ./jerryscript/jerry-core/api/jerryscript.c:412\r\n    #8 0x5664d631 in jerry_parse ./jerryscript/jerry-core/api/jerryscript.c:480\r\n    #9 0x56742644 in jerryx_source_parse_script ./jerryscript/jerry-ext/util/sources.c:52\r\n    #10 0x56742701 in jerryx_source_exec_script ./jerryscript/jerry-ext/util/sources.c:63\r\n    #11 0x56645d04 in main ./jerryscript/jerry-main/main-desktop.c:156\r\n    #12 0xf75f4ed4 in __libc_start_main (/lib32/libc.so.6+0x1aed4)\r\n    #13 0x56648fb4 in _start (./jerryscript/build/bin/jerry+0x12fb4)\r\n\r\nAddress 0xff975ce0 is located in stack of thread T0 at offset 1584 in frame\r\n    #0 0x5673438c in parser_parse_statements ./jerryscript/jerry-core/parser/js/js-parser-statm.c:2601\r\n\r\n  This frame has 44 object(s):\r\n    [32, 36) 'do_while_statement' (line 2827)\r\n    [48, 52) 'loop' (line 2828)\r\n    [64, 68) 'loop' (line 3106)\r\n    [80, 84) 'loop' (line 3232)\r\n    [96, 100) 'loop' (line 954)\r\n    [112, 116) 'loop' (line 1110)\r\n    [128, 132) 'loop' (line 2128)\r\n    [144, 148) 'loop' (line 2180)\r\n    [160, 164) 'loop' (line 2226)\r\n    [176, 180) 'loop' (line 895)\r\n    [192, 196) 'do_while_statement' (line 930)\r\n    [208, 216) 'else_statement' (line 3195)\r\n    [240, 248) 'if_statement' (line 776)\r\n    [272, 280) 'branch' (line 1316)\r\n    [304, 312) 'with_statement' (line 834)\r\n    [336, 344) 'iterator' (line 1990)\r\n    [368, 376) 'iterator' (line 2017)\r\n    [400, 408) 'iterator' (line 2065)\r\n    [432, 440) 'iterator' (line 2147)\r\n    [464, 472) 'loop_iterator' (line 2156)\r\n    [496, 504) 'iterator' (line 2549)\r\n    [528, 536) 'iterator' (line 1809)\r\n    [560, 568) 'if_statement' (line 796)\r\n    [592, 600) 'else_statement' (line 797)\r\n    [624, 632) 'iterator' (line 798)\r\n    [656, 664) 'iterator' (line 904)\r\n    [688, 696) 'with_statement' (line 864)\r\n    [720, 732) 'lit_location' (line 2618)\r\n    [752, 764) 'switch_statement' (line 3107)\r\n    [784, 796) 'for_in_of_statement' (line 3231)\r\n    [816, 828) 'location' (line 2385)\r\n    [848, 860) 'for_in_of_statement' (line 1139)\r\n    [880, 892) 'start_location' (line 1140)\r\n    [912, 924) 'end_location' (line 1140)\r\n    [944, 956) 'switch_statement' (line 1991)\r\n    [976, 988) 'switch_statement' (line 2018)\r\n    [1008, 1024) 'try_statement' (line 2863)\r\n    [1040, 1056) 'label' (line 3174)\r\n    [1072, 1088) 'label_statement' (line 2090)\r\n    [1104, 1120) 'label_statement' (line 2173)\r\n    [1136, 1152) 'label_statement' (line 2550)\r\n    [1168, 1184) 'try_statement' (line 1808)\r\n    [1200, 1224) 'while_statement' (line 953)\r\n    [1264, 1300) 'for_statement' (line 1506) <== Memory access at offset 1584 overflows this variable\r\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\r\n      (longjmp and C++ exceptions *are* supported)\r\nSUMMARY: AddressSanitizer: bad-free ../../../../../src/libsanitizer/asan/asan_malloc_linux.cc:122 in __interceptor_free\r\n==2012485==ABORTING\r\n```\r\n\r\n---\r\nwith debugging mode(--debug)\r\n###### Outputs\r\n```\r\nICE: Assertion 'context_p->next_scanner_info_p->type == SCANNER_TYPE_CLASS_STATIC_BLOCK_END' failed at ./jerryscript/jerry-core/parser/js/js-parser-expr.c(parser_parse_class_body):822.\r\nError: JERRY_FATAL_FAILED_ASSERTION\r\nAborted\r\n```\r\n\r\n\r\n\r\nCredits: @Ye0nny, @EJueon of the seclab-yonsei.\r\n\r\n"
+  }
+ ]
+}

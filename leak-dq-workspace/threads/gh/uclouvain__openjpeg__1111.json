@@ -1,0 +1,87 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/uclouvain/openjpeg/issues/1111",
+ "passes": [
+  "main"
+ ],
+ "title": "Excessive memory allocation",
+ "author_login": "dlemstra",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:23Z",
+ "final_url": "https://github.com/uclouvain/openjpeg/issues/1111",
+ "repo": "uclouvain/openjpeg",
+ "repo_language": "C",
+ "number": 1111,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2018-04-07T16:37:33Z",
+ "updated_at": "2018-04-08T10:16:57Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 4,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dlemstra",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-04-07T16:37:33Z",
+   "updated_utc": "2018-04-08T10:16:57Z",
+   "permalink": "https://github.com/uclouvain/openjpeg/issues/1111",
+   "body_markdown": "The @ImageMagick project is using https://github.com/google/oss-fuzz to find bugs in our own library and in libraries that we use. Attached is a test file that will result in an excessive memory allocation due to this line: https://github.com/uclouvain/openjpeg/blob/98cfdd31340509895f3e2a36f667f66bb3cf1ff2/src/lib/openjp2/j2k.c#L2320\r\n\r\nAdn this makes `l_nb_tiles = 1337 * 48 = 64176`. We don't know enough about the format but we suspect that a check could be added to do an early exit instead of allocation below\r\n\r\n```c\r\n    l_cp->tcps = (opj_tcp_t*) opj_calloc(l_nb_tiles, sizeof(opj_tcp_t));\r\n```\r\n\r\nand the allocations inside the loop\r\n\r\n```c\r\n    l_current_tile_param = l_cp->tcps;\r\n    for (i = 0; i < l_nb_tiles; ++i) {\r\n```\r\n\r\nTest file: [magick-5304QxxxLsVTCFtl.zip](https://github.com/uclouvain/openjpeg/files/1886544/magick-5304QxxxLsVTCFtl.zip)\r\n\r\n<!-- 7457 -->"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 379483762,
+   "author_login": "rouault",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2018-04-07T16:56:54Z",
+   "updated_utc": "2018-04-07T16:56:54Z",
+   "permalink": "https://github.com/uclouvain/openjpeg/issues/1111#issuecomment-379483762",
+   "body_markdown": "The file cannot be read with the master version due to stricter checks. \r\n```\r\n===========================================\r\nThe extension of this file is incorrect.\r\nFOUND CFtl. SHOULD BE .j2k or .jpc or .j2c\r\n===========================================\r\n\r\n[INFO] Start to read j2k main header (0).\r\n[WARNING] Unknown marker\r\n[WARNING] Cannot take in charge mct data within multiple MCT records\r\n[WARNING] Unknown marker\r\n[INFO] Stream reached its end !\r\n[ERROR] Stream too short\r\nERROR -> opj_dump: failed to read the header\r\n```\r\n\r\nThat said the underlying problem still exist. OpenJPEG does validate that the number of tiles does not exceed the maximum allowed of 65535 ( https://github.com/uclouvain/openjpeg/blob/98cfdd31340509895f3e2a36f667f66bb3cf1ff2/src/lib/openjp2/j2k.c#L2314 ) , but that still involve significant memory allocations. Not sure there is an easy fix for that"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 379492000,
+   "author_login": "dlemstra",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-04-07T19:08:11Z",
+   "updated_utc": "2018-04-07T19:08:11Z",
+   "permalink": "https://github.com/uclouvain/openjpeg/issues/1111#issuecomment-379492000",
+   "body_markdown": "Sorry for not mentioning but we are using a clone of the master on a daily basis.\r\n\r\nI was wondering if it would be possible to know the minimum size of a tile and check if the input data is long enough."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 379494794,
+   "author_login": "rouault",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2018-04-07T19:51:08Z",
+   "updated_utc": "2018-04-07T19:51:08Z",
+   "permalink": "https://github.com/uclouvain/openjpeg/issues/1111#issuecomment-379494794",
+   "body_markdown": "> I was wondering if it would be possible to know the minimum size of a tile and check if the input data is long enough.\r\n\r\nI've managed to create a file of 65535x1 pixels with tiles of size 1x1, so 65535 tiles. Its size is just 3.6 MB, so this is not an effective way of avoiding the issue."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 379538556,
+   "author_login": "dlemstra",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2018-04-08T10:16:56Z",
+   "updated_utc": "2018-04-08T10:16:56Z",
+   "permalink": "https://github.com/uclouvain/openjpeg/issues/1111#issuecomment-379538556",
+   "body_markdown": "Our file is only 244 bytes and I was wondering the allocation could be moved to `opj_jp2_read_header_procedure` and do the allocation right before the `return OPJ_TRUE;`. And before the allocation you could even check if the stream is at least 64176 * number of bytes required for single tile."
+  }
+ ]
+}

@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/duckdb/duckdb-excel/issues/96",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in zip_file.cpp",
+ "author_login": "thomas-0816",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:57Z",
+ "final_url": "https://github.com/duckdb/duckdb-excel/issues/96",
+ "repo": "duckdb/duckdb-excel",
+ "repo_language": "C++",
+ "number": 96,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-06T22:26:33Z",
+ "updated_at": "2026-09-06T22:38:44Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "thomas-0816",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-06T22:26:33Z",
+   "updated_utc": "2026-09-06T22:38:44Z",
+   "permalink": "https://github.com/duckdb/duckdb-excel/issues/96",
+   "body_markdown": "When testing the excel extension, asan found a leak:\n\n```\n010+ =================================================================\n011+ ==110744==ERROR: LeakSanitizer: detected memory leaks\n012+ \n013+ Direct leak of 288 byte(s) in 3 object(s) allocated from:\n014+     #0 0x7f471a9080c1 in operator new(unsigned long) (/usr/lib/llvm-18/lib/clang/18/lib/linux/libclang_rt.asan-x86_64.so+0x1080c1) (BuildId: bf9e3747052c46cd49f7974555b1700dce30b8c0)\n015+     #1 0x7f4714951615 in duckdb::LocalFileSystem::OpenFile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&, duckdb::FileOpenFlags, duckdb::optional_ptr<duckdb::FileOpener, true>) (/home/runner/work/pdo-duckdb-php/pdo-duckdb-php/modules/pdo_duckdb.so+0x1751615) (BuildId: d410e8434a31512ca75868e800c188b51a70ba1d)\n016+     #2 0x7f4714903a52 in duckdb::FileSystem::OpenFile(duckdb::OpenFileInfo const&, duckdb::FileOpenFlags, duckdb::optional_ptr<duckdb::FileOpener, true>) (/home/runner/work/pdo-duckdb-php/pdo-duckdb-php/modules/pdo_duckdb.so+0x1703a52) (BuildId: d410e8434a31512ca75868e800c188b51a70ba1d)\n017+ \n018+ SUMMARY: AddressSanitizer: 288 byte(s) leaked in 3 allocation(s).\n\n(full output, see https://github.com/thomas-0816/pdo-duckdb-php/actions/runs/34059786123/job/101558130750)\n```\n\nSuggested diff from the llm:\n\n```\ndiff --git a/src/excel/xlsx/zip_file.cpp b/src/excel/xlsx/zip_file.cpp\nindex 8640ee4..bb3e906 100644\n--- a/src/excel/xlsx/zip_file.cpp\n+++ b/src/excel/xlsx/zip_file.cpp\n@@ -54,7 +54,7 @@ int32_t mz_stream_duckdb_open(void *stream, const char *path, int32_t mode) {\n \n        if (self.handle) {\n                self.handle->Close();\n-               self.handle->~FileHandle();\n+               delete self.handle;\n                self.handle = nullptr;\n                self.last_error.clear();\n        }\n@@ -135,7 +135,7 @@ int32_t mz_stream_duckdb_seek(void *stream, int64_t offset, int32_t origin) {\n int32_t mz_stream_duckdb_close(void *stream) {\n        auto &self = *reinterpret_cast<mz_stream_duckdb *>(stream);\n        self.handle->Close();\n-       self.handle->~FileHandle();\n+       delete self.handle;\n        self.handle = nullptr;\n        self.last_error.clear();\n        return MZ_OK;\n@@ -160,7 +160,7 @@ void mz_stream_duckdb_delete(void **stream) {\n        auto &self = *reinterpret_cast<mz_stream_duckdb *>(*stream);\n        if (self.handle) {\n                self.handle->Close();\n-               self.handle->~FileHandle();\n+               delete self.handle;\n                self.handle = nullptr;\n                self.last_error.clear();\n        }\n```\n\nExplanation from the llm:\n\nThe `mz_stream_duckdb` wrapper takes ownership of a raw `FileHandle *` returned by `FileSystem::OpenFile` (which allocates it with `operator new` inside `LocalFileSystem::OpenFile`), but releases it by calling only `~FileHandle()`, the destructor. Calling a destructor directly never invokes `operator delete`, so the object's memory is never freed—only the destructor body runs. Every opened xlsx file (the `COPY TO` writer stream and the `ZipFileReader` stream used by `SELECT * FROM <xlsx>`) therefore leaks one `FileHandle*` and any buffers it owns, which is exactly the \"288 bytes in 3 objects allocated from duckdb::LocalFileSystem::OpenFile\" LeakSanitizer report. The correct deallocation is `delete self.handle`, which runs the destructor and frees the allocation.\n\nDuckDB v1.5.5\nexcel extension_version: f4c72b5\nOS: Linux\n\ncc @Maxxen "
+  }
+ ]
+}

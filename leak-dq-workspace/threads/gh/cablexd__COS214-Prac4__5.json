@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/cablexd/COS214-Prac4/issues/5",
+ "passes": [
+  "main"
+ ],
+ "title": "Task 5: Debugging and Memory Investigation",
+ "author_login": "cablexd",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:19Z",
+ "final_url": "https://github.com/cablexd/COS214-Prac4/issues/5",
+ "repo": "cablexd/COS214-Prac4",
+ "repo_language": "C++",
+ "number": 5,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-01T20:16:35Z",
+ "updated_at": "2026-09-08T10:18:58Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "cablexd",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-01T20:16:35Z",
+   "updated_utc": "2026-09-08T10:18:58Z",
+   "permalink": "https://github.com/cablexd/COS214-Prac4/issues/5",
+   "body_markdown": "```\nUse the debugging tools introduced in the module as part of development, not only after the program is\nfinished.\nYour PDF must contain a short engineering investigation that includes:\n• evidence of using GDB on a meaningful part of your program, including breakpoints/stepping and\ninspection of relevant program state;\n• one genuine bug encountered during development, with its symptom, cause, debugging evidence and\ncorrection; and\n• Valgrind evidence for the final application.\nThe final implementation must not contain definitely-lost memory originating from your own code.\nA typical Valgrind command is:\nvalgrind --leak-check=full --show-leak-kinds=all ./taskforge\n```"
+  }
+ ]
+}

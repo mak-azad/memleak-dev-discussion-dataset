@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/OpenPrinting/cups-filters/issues/636",
+ "passes": [
+  "main"
+ ],
+ "title": "Lack of error handling for realloc calls, posing risks of memory leaks and null pointer dereferences",
+ "author_login": "zkh8227",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:47Z",
+ "final_url": "https://github.com/OpenPrinting/cups-filters/issues/636",
+ "repo": "OpenPrinting/cups-filters",
+ "repo_language": "C",
+ "number": 636,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-05-08T05:08:26Z",
+ "updated_at": "2026-03-08T05:30:53Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "zkh8227",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-05-08T05:08:26Z",
+   "updated_utc": "2026-03-08T05:30:53Z",
+   "permalink": "https://github.com/OpenPrinting/cups-filters/issues/636",
+   "body_markdown": "#Issue Description\nIn some code segments of the cups-filters project, the calls to the realloc function do not handle errors. When realloc fails and returns NULL, it can lead to memory leaks and null pointer dereferences, which affect the stability and robustness of the program. \n\n#Suggested Solution\nFor each realloc call in the code, a temporary pointer should be used to receive the return value of realloc. When the return value is NULL, appropriate error handling, such as freeing the original memory block and potentially returning an error code or taking other corrective actions, should be implemented. This will prevent memory leaks and null pointer dereference issues, enhancing the stability and reliability of the cups-filters code.\n\n#Detail\n\n1. The optionset function in the filter/foomatic-rip/options.c file\n\noptionset(const char *name)\n{\n...\n if (optionset_count == optionset_alloc)\n  {\n    optionset_alloc *= 2;\n    optionsets = realloc(optionsets, optionset_alloc * sizeof(char *));    ###realloc failed and return null?\n    for (i = optionset_count; i < optionset_alloc; i++)\n      optionsets[i] = NULL;\n  }\n...\n}\nWhen realloc fails and returns NULL, the optionsets pointer will be set to NULL, causing the original memory block pointed to by optionsets to be unable to be freed, resulting in a memory leak. Also, subsequent operations on optionsets may lead to a null pointer dereference.\n\n2. The read_line function in the filter/foomatic-rip/renderer.c file\n\nread_line(FILE *stream,\n\t  size_t *readbytes)\n{\n...\n  while ((c = fgetc(stream)) != EOF)\n  {\n    if (len >= alloc -1)\n    {\n      alloc *= 2;\n      line = realloc(line, alloc);  ###realloc failed and return null?\n    }\n    line[len] = (char)c;\n    ...\n  }\n...\n}\nIf realloc fails and returns NULL, the line pointer will be NULL. Then, the operation line[len] = (char)c; will trigger a null pointer dereference, and the original memory block pointed to by line will be lost, causing a memory leak.\n\n3.The read_jcl_lines function in the filter/foomatic-rip/renderer.c file\n\nread_jcl_lines(FILE *stream,\n\t       const char *jclstr,\n\t       size_t *readbinarybytes)\n{\n...\n  while ((line = read_line(stream, readbinarybytes)))\n  {\n    if (cnt >= alloc -1)\n    {\n      alloc *= 2;\n      result = realloc(result, alloc * sizeof(char *)); ###realloc failed and return null?\n    }\n    result[cnt] = line;\n    ....\n  }\n...\n}\nWhen realloc fails and makes result a NULL pointer, subsequent operations on result will lead to a null pointer dereference, and the original memory related to result won't be freed, leading to a memory leak."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4018392353,
+   "author_login": "nischal202006",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-03-08T05:30:53Z",
+   "updated_utc": "2026-03-08T05:30:53Z",
+   "permalink": "https://github.com/OpenPrinting/cups-filters/issues/636#issuecomment-4018392353",
+   "body_markdown": "Hello, I’m a new contributor interested in working on this issue.\nFrom the above description and after looking at the code, I have observed is some realloc calls directly assign the returned pointer to the original variable. If realloc fails and returns NULL, this could lead to losing the original memory pointer and causes a memory leak or null pointer dereference.\nI noticed this in filter/foomatic-rip/options.c and filter/foomatic-rip/renderer.c\nMy Idea is that these realloc calls should instead use a temporary pointer and check for NULL before assigning it back to the original variable. Before applying the fix, I wanted to know whether this correct approach for this issue here in this project and if there are any coding error handling conventions I should follow."
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/libming/libming/issues/297",
+ "passes": [
+  "main"
+ ],
+ "title": "Allocation-size-too-big in parseSWF_DEFINELOSSLESS2",
+ "author_login": "pip-izony",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:18Z",
+ "final_url": "https://github.com/libming/libming/issues/297",
+ "repo": "libming/libming",
+ "repo_language": "C",
+ "number": 297,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-12-11T07:35:23Z",
+ "updated_at": "2023-12-11T07:35:23Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "pip-izony",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-12-11T07:35:23Z",
+   "updated_utc": "2023-12-11T07:35:23Z",
+   "permalink": "https://github.com/libming/libming/issues/297",
+   "body_markdown": "## Environment\r\nUbuntu 22.04.3 LTS\r\n## Compiler\r\nclang version 11.0.0\r\nTarget: x86_64-unknown-linux-gnu\r\nThread model: posix\r\n## Step to reproduce\r\n```cd libming \r\n./autogen.sh\r\n./configure --disable-shared --disable-freetype\r\ncd util\r\n./swftophp <PoC file>\r\n```\r\n## Contents of PoC file\r\n```\r\nUnzip the file below.\r\n```\r\n[PoC.zip](https://github.com/libming/libming/files/13632269/PoC.zip)\r\n## Expected behavior \r\nPrint error or warning messages handled within swftophp.\r\n## Current behavior\r\n```\r\nheader indicates a filesize of 169083242 but filesize is 164\r\n<?php\r\n$m = new SWFMovie(10);\r\n\r\nming_setscale(1.0);\r\n$m->setRate(10.078125);\r\n$m->setDimension(1, -2);\r\n\r\n/* Note: xMin and/or yMin are not 0! */\r\n\r\n$m->setFrames(6165);\r\n=================================================================\r\n==1320439==ERROR: AddressSanitizer: requested allocation size 0xfffffffffffffff9 (0x800 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000000 (thread T0)\r\n    #0 0x7f56906b4887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\r\n    #1 0x55e07ceb1f17 in readBytes (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x57f17)\r\n    #2 0x55e07cea337c in parseSWF_DEFINELOSSLESS2 (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x4937c)\r\n    #3 0x55e07ce7cee4 in blockParse (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x22ee4)\r\n    #4 0x55e07ce7c3ca in readMovie (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x223ca)\r\n    #5 0x55e07ce7cc3d in main (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x22c3d)\r\n    #6 0x7f5690229d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\r\n\r\n==1320439==HINT: if you don't care about these errors you may set allocator_may_return_null=1\r\nSUMMARY: AddressSanitizer: allocation-size-too-big ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145 in __interceptor_malloc\r\n==1320439==ABORTING\r\n```"
+  }
+ ]
+}

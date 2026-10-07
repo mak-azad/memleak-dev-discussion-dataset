@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/haskell-gi/haskell-gi/issues/23",
+ "passes": [
+  "main"
+ ],
+ "title": "Pango attributeWriteKlass wants a `Ptr AttrClass` instead of `Maybe AttrClass`",
+ "author_login": "hamishmack",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:25Z",
+ "final_url": "https://github.com/haskell-gi/haskell-gi/issues/23",
+ "repo": "haskell-gi/haskell-gi",
+ "repo_language": "Haskell",
+ "number": 23,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2016-05-06T04:35:17Z",
+ "updated_at": "2016-12-05T21:24:52Z",
+ "closed_at": null,
+ "labels": [
+  "question"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "hamishmack",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-05-06T04:35:17Z",
+   "updated_utc": "2016-12-05T21:24:52Z",
+   "permalink": "https://github.com/haskell-gi/haskell-gi/issues/23",
+   "body_markdown": "In file `bindings/Pango/GI/Structs/Attribute.hs` the read and write functions for the `class` attribute of Pango `Attribute` struct looks like this:\n\n```\nattributeReadKlass :: MonadIO m => Attribute -> m (Maybe AttrClass)\nattributeReadKlass s = liftIO $ withManagedPtr s $ \\ptr -> do\n    val <- peek (ptr `plusPtr` 0) :: IO (Ptr AttrClass)\n    result <- convertIfNonNull val $ \\val' -> do\n        val'' <- (newPtr 32 AttrClass) val'\n        return val''\n    return result\n\nattributeWriteKlass :: MonadIO m => Attribute -> Ptr AttrClass -> m ()\nattributeWriteKlass s val = liftIO $ withManagedPtr s $ \\ptr -> do\n    poke (ptr `plusPtr` 0) (val :: Ptr AttrClass)\n```\n\nShould attributeWriteKlass take a `Maybe AttrClass` instead of a `Ptr AttrClass`?\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 217804293,
+   "author_login": "garetxe",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2016-05-09T08:23:18Z",
+   "updated_utc": "2016-05-09T08:23:18Z",
+   "permalink": "https://github.com/haskell-gi/haskell-gi/issues/23#issuecomment-217804293",
+   "body_markdown": "This is on purpose (although I am definitely open to changing it if we can come up with a better way of doing things). The issue here is memory ownership: if you pass in `Just k` to `attributeWriteKlass`, who is responsible for freeing the memory? The block of memory inside a `Pango.AttrClass` will be freed by the haskell GC at some point, so we cannot just copy the pointer to the memory itself.\n\nWe could instead make a copy, and write a copy to that, but that will probably give rise to a memory leak eventually.\n\nSo what we do right now is leaving the responsibility of doing things right to the caller. Not ideal, but there is not enough info to do things safely at binding generation time, as far as I can see.\n\n`attributeReadKlass` has some of the same issues in principle, so perhaps it would be better to also just return a pointer  (also to remove the asymmetry between `Read` and `Write`).\n\nI am honestly not sure what is the best thing to do here. Any preferences/suggestions?\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 218142904,
+   "author_login": "hamishmack",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-05-10T12:30:34Z",
+   "updated_utc": "2016-05-10T12:30:34Z",
+   "permalink": "https://github.com/haskell-gi/haskell-gi/issues/23#issuecomment-218142904",
+   "body_markdown": "I have created issue #24 to track the problem I was actually trying to solve when I came across this.  I think the pango attribute stuff is a bit broken in GIR.  I'm not sure if it should even be possible to write to the `Attribute.class` since doing so would be transforming the attribute from one subtype to another.  The correct way to set the subtype would seem to be suing functions like `pango_attr_font_desc_new` to allocate the structure and set the subtype.\n\nWe should probably make `Attribute.class` read only.\n\nAs for the `AttrClass` type, these should probably only me constructed by pango and we don't have to worry about scope as they are global.  They are allocated as static locals in the `pang_attr_*_new` functions, like this:\n\n```\nPangoAttribute *\npango_attr_font_desc_new (const PangoFontDescription *desc)\n{\n  static const PangoAttrClass klass = {\n    PANGO_ATTR_FONT_DESC,\n    pango_attr_font_desc_copy,\n    pango_attr_font_desc_destroy,\n    pango_attr_font_desc_equal\n  };\n\n  PangoAttrFontDesc *result = g_slice_new (PangoAttrFontDesc);\n  pango_attribute_init (&result->attr, &klass);\n  result->desc = pango_font_description_copy (desc);\n\n  return (PangoAttribute *)result;\n}\n```\n"
+  }
+ ]
+}

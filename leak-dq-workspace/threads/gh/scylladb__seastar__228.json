@@ -1,0 +1,100 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/scylladb/seastar/issues/228",
+ "passes": [
+  "main"
+ ],
+ "title": "==8524==ERROR: LeakSanitizer: detected memory leaks",
+ "author_login": "opope",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:51Z",
+ "final_url": "https://github.com/scylladb/seastar/issues/228",
+ "repo": "scylladb/seastar",
+ "repo_language": "C++",
+ "number": 228,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2016-12-13T19:18:09Z",
+ "updated_at": "2021-02-21T15:45:05Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 5,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "opope",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-12-13T19:18:09Z",
+   "updated_utc": "2021-02-21T15:45:05Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/228",
+   "body_markdown": "Centos 7.2, boost 1.58, gcc version 5.2.1, built with\r\n./configure.py --enable-dpdk --static-stdc++\r\n\r\nran the fast tests:\r\n./test.py --fast\r\nand got few of these errors, I assume they are real memory leaks:\r\n\r\n=================================================================\r\n==8524==ERROR: LeakSanitizer: detected memory leaks\r\n\r\nDirect leak of 1344 byte(s) in 56 object(s) allocated from:\r\n    #0 0x7f50592a6c02 in operator new(unsigned long, std::nothrow_t const&) (/opt/scylladb/lib64/libasan.so.2+0x99c02)\r\n    #1 0x7f5058685d65 in __cxa_thread_atexit (/opt/scylladb/lib64/libstdc++.so.6+0x8bd65)\r\n\r\nIndirect leak of 5376 byte(s) in 224 object(s) allocated from:\r\n    #0 0x7f50592a6c02 in operator new(unsigned long, std::nothrow_t const&) (/opt/scylladb/lib64/libasan.so.2+0x99c02)\r\n    #1 0x7f5058685d65 in __cxa_thread_atexit (/opt/scylladb/lib64/libstdc++.so.6+0x8bd65)\r\n\r\nSUMMARY: AddressSanitizer: 6720 byte(s) leaked in 280 allocation(s).\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 325047048,
+   "author_login": "verc11",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2017-08-25T22:22:05Z",
+   "updated_utc": "2017-08-25T22:22:05Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/228#issuecomment-325047048",
+   "body_markdown": "Did you find a solution? I'm running into the same issue on RHEL7 where almost all tests fail with the following leaks-\r\n==19197==ERROR: LeakSanitizer: detected memory leaks\r\n\r\nDirect leak of 32 byte(s) in 1 object(s) allocated from:\r\n    #0 0x7f313f264d7a in realloc (/opt/scylladb/lib64/libasan.so.2+0x98d7a)\r\n    #1 0xffa1cd  (/livevol/seastar-master/build/debug/tests/weak_ptr_test+0xffa1cd)\r\n\r\nIndirect leak of 30 byte(s) in 2 object(s) allocated from:\r\n    #0 0x7f313f2649fa in malloc (/opt/scylladb/lib64/libasan.so.2+0x989fa)\r\n    #1 0x7f313ac0d949 in __GI___strdup (/lib64/libc.so.6+0x86949)\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 340261402,
+   "author_login": "CuthbertJungle",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2017-10-29T13:11:36Z",
+   "updated_utc": "2017-10-29T13:13:46Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/228#issuecomment-340261402",
+   "body_markdown": "i also see this on Ubuntu 16.04\r\n\r\n==7582==ERROR: LeakSanitizer: detected memory leaks\r\n\r\nDirect leak of 176 byte(s) in 2 object(s) allocated from:\r\n    #0 0x7f380f72aec0 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.3+0xc6ec0)\r\n    #1 0x7f3809b5e4a8 in lt__malloc (/usr/lib/x86_64-linux-gnu/libltdl.so.7+0x24a8)\r\n\r\nbut also have this:\r\n==6469==WARNING: ASan doesn't fully support makecontext/swapcontext functions and may produce false positives in some cases!\r\n\r\nso could well be false positives. Not sure how you confirm !"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 421258959,
+   "author_login": "tchaikov",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2018-09-14T07:34:34Z",
+   "updated_utc": "2018-09-14T07:34:34Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/228#issuecomment-421258959",
+   "body_markdown": "i debugged this leak reported by ASan. and i believe it's caused by libhwloc. it `dlopen()`s its plugins. its plugins are opened using `libltdl` which allocates 88 bytes for each `lt__handle` struct, when `dlopen()` is called. a minimal reproducer can be whipped up with the sequence of \r\n\r\n1. hwloc_topology_init()\r\n1. hwloc_topology_load()\r\n1. hwloc_topology_destroy()\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 555902666,
+   "author_login": "avikivity",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2019-11-20T08:48:27Z",
+   "updated_utc": "2019-11-20T08:48:27Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/228#issuecomment-555902666",
+   "body_markdown": "There are two ways to fix this:\r\n1. fix the problem upstream (in  hwloc or libltdl, wherever the problem is) and wait for package updates\r\n2. whitelist these leaks so lsan ignores them"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 782878268,
+   "author_login": "balusch",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-02-21T15:45:05Z",
+   "updated_utc": "2021-02-21T15:45:05Z",
+   "permalink": "https://github.com/scylladb/seastar/issues/228#issuecomment-782878268",
+   "body_markdown": "> i debugged this leak reported by ASan. and i believe it's caused by libhwloc. it `dlopen()`s its plugins. its plugins are opened using `libltdl` which allocates 88 bytes for each `lt__handle` struct, when `dlopen()` is called. a minimal reproducer can be whipped up with the sequence of\r\n> \r\n> 1. hwloc_topology_init()\r\n> 2. hwloc_topology_load()\r\n> 3. hwloc_topology_destroy()\r\n\r\nHello, I met the same problem caused by libhwloc.so, have you solved it?"
+  }
+ ]
+}

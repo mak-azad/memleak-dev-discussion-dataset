@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/jcfaracco/gds-nouveau-fs/issues/2",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory Leak in DMA Error Path (nvfs-core.c:536)",
+ "author_login": "jcfaracco",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:04Z",
+ "final_url": "https://github.com/jcfaracco/gds-nouveau-fs/issues/2",
+ "repo": "jcfaracco/gds-nouveau-fs",
+ "repo_language": "Batchfile",
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-11-08T21:05:31Z",
+ "updated_at": "2025-11-08T21:05:42Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jcfaracco",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-11-08T21:05:31Z",
+   "updated_utc": "2025-11-08T21:05:42Z",
+   "permalink": "https://github.com/jcfaracco/gds-nouveau-fs/issues/2",
+   "body_markdown": "The `nvfs_get_p2p_dma_mapping()` function allocates a `pci_dev_mapping` structure but may not properly free it in all error scenarios. When `nvfs_get_dma_address()` fails after allocation, the cleanup path doesn't consistently free the allocated structure, leading to gradual memory exhaustion under high error rates. This is particularly problematic in production environments where transient DMA errors can occur frequently.\n\n  - [ ] Audit all error paths in nvfs_get_p2p_dma_mapping() to identify missing cleanup\n  - [ ] Add proper kfree() calls for pci_dev_mapping structures in error scenarios\n  - [ ] Implement RAII-style cleanup using goto labels for consistent error handling\n  - [ ] Add memory leak detection tests using kmemleak or custom tracking\n  - [ ] Review related functions like nvfs_get_dma_address() for similar patterns\n  - [ ] Update function documentation to clarify ownership semantics\n  - [ ] Add static analysis annotations for memory ownership"
+  }
+ ]
+}

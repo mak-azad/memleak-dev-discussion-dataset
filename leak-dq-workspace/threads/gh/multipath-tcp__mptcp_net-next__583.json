@@ -1,0 +1,114 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/multipath-tcp/mptcp_net-next/issues/583",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "KMemLeak: from `mptcp_sk_clone_init()`",
+ "author_login": "matttbe",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:41Z",
+ "final_url": "https://github.com/multipath-tcp/mptcp_net-next/issues/583",
+ "repo": "multipath-tcp/mptcp_net-next",
+ "repo_language": "C",
+ "number": 583,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-09-05T11:13:49Z",
+ "updated_at": "2025-12-12T16:37:10Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "selftests"
+ ],
+ "comments_reported": 6,
+ "query_buckets": [
+  "KERNEL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "matttbe",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-09-05T11:13:49Z",
+   "updated_utc": "2025-12-12T16:37:10Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583",
+   "body_markdown": "Our CI just [reported](https://github.com/multipath-tcp/mptcp_net-next/actions/runs/17484970392) this potential leak:\n\n```\nunreferenced object 0xffff888119d90c80 (size 3032):\ncomm \"packetdrill\", pid 31258, jiffies 4299819414\nhex dump (first 32 bytes):\n7f 00 00 06 7f 00 00 06 00 00 00 00 ad 97 90 1f  ................\n0a 00 07 41 00 00 00 00 00 00 00 00 00 00 00 00  ...A............\nbacktrace (crc 890e4443):\nkmem_cache_alloc_noprof (mm/slub.c:4190 (discriminator 1)) \nsk_prot_alloc.isra.0 (net/core/sock.c:2233 (discriminator 2)) \nsk_clone_lock (net/core/sock.c:2467) \nmptcp_sk_clone_init (net/mptcp/protocol.c:3269) \nsubflow_syn_recv_sock (net/mptcp/subflow.c:880 (discriminator 1)) \ntcp_check_req (net/ipv4/tcp_minisocks.c:873) \ntcp_v6_rcv (net/ipv6/tcp_ipv6.c:1840) \nip6_protocol_deliver_rcu (net/ipv6/ip6_input.c:440) \nip6_input_finish (net/ipv6/ip6_input.c:492) \nip6_input (include/linux/rcupdate.h:869) \nipv6_rcv (include/net/dst.h:474 (discriminator 3)) \n__netif_receive_skb_one_core (net/core/dev.c:6033) \nnetif_receive_skb_internal (net/core/dev.c:6239) \nnetif_receive_skb (net/core/dev.c:6298) \ntun_rx_batched.isra.0 (include/linux/bottom_half.h:33 (discriminator 1)) \ntun_get_user (drivers/net/tun.c:1950)\n```\n\nSimilar issues have been seen on NIPA:\n* https://netdev-3.bots.linux.dev/vmksft-mptcp-dbg/results/279881/1-mptcp-join-sh/stdout\n* https://netdev-3.bots.linux.dev/vmksft-mptcp-dbg/results/280062/1-mptcp-join-sh/stdout\n\n@cpaasch did you manage to reproduce it? A false positive?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3273855247,
+   "author_login": "matttbe",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-09-10T08:19:37Z",
+   "updated_utc": "2025-09-10T11:59:43Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583#issuecomment-3273855247",
+   "body_markdown": "It looks like it happened again recently:\n* https://github.com/multipath-tcp/mptcp_net-next/actions/runs/17604568587\n* https://github.com/multipath-tcp/mptcp_net-next/actions/runs/17586663636\n* https://github.com/multipath-tcp/mptcp_net-next/actions/runs/17608702434\n\n@cpaasch : how did you reproduce it on your side?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3275731344,
+   "author_login": "cpaasch-oai",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-09-10T16:47:30Z",
+   "updated_utc": "2025-09-10T16:47:30Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583#issuecomment-3275731344",
+   "body_markdown": "Turned out that when I hit it, it was a different leak."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3275739972,
+   "author_login": "matttbe",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-09-10T16:50:44Z",
+   "updated_utc": "2025-09-10T16:50:44Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583#issuecomment-3275739972",
+   "body_markdown": "> Turned out that when I hit it, it was a different leak.\n\nThank you for your reply! Do you mean you had the same calltrace? Or you had an unrelated KMemLeak?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3275909391,
+   "author_login": "cpaasch-oai",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-09-10T17:37:05Z",
+   "updated_utc": "2025-09-10T17:37:05Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583#issuecomment-3275909391",
+   "body_markdown": "Unrelated kmemleak... "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3523127851,
+   "author_login": "matttbe",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-11-12T17:42:05Z",
+   "updated_utc": "2025-11-12T17:42:05Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583#issuecomment-3523127851",
+   "body_markdown": "Note: this issue still happens from time to time, e.g. https://github.com/multipath-tcp/mptcp_net-next/actions/runs/19303104996/job/55202821360\n\nIf someone has an idea how to reproduce this, or help with the debug, do not hesitate to share that :)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3647305525,
+   "author_login": "matttbe",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-12-12T16:37:10Z",
+   "updated_utc": "2025-12-12T16:37:10Z",
+   "permalink": "https://github.com/multipath-tcp/mptcp_net-next/issues/583#issuecomment-3647305525",
+   "body_markdown": "FYI, my syzkaller instances can also reproduce the issue, e.g. on top of `export/20251205T155419`:\n\n```\nBUG: memory leak\nunreferenced object 0xffff8880396c3000 (size 2928):\n  comm \"softirq\", pid 0, jiffies 4295153189\n  hex dump (first 32 bytes):\n    ac 14 14 aa ac 14 14 aa 00 00 00 00 dc b0 21 4e  ..............!N\n    02 00 07 40 00 00 00 00 00 00 00 00 00 00 00 00  ...@............\n  backtrace (crc 1247605b):\n    kmemleak_alloc_recursive include/linux/kmemleak.h:44 [inline]\n    slab_post_alloc_hook mm/slub.c:4953 [inline]\n    slab_alloc_node mm/slub.c:5258 [inline]\n    kmem_cache_alloc_noprof+0x489/0x6e0 mm/slub.c:5265\n    sk_prot_alloc+0x60/0x290 net/core/sock.c:2239\n    sk_clone+0x7f/0x1360 net/core/sock.c:2481\n    sk_clone_lock include/net/sock.h:1836 [inline]\n    mptcp_sk_clone_init+0x36/0x1730 net/mptcp/protocol.c:3507\n    subflow_syn_recv_sock+0xcfd/0x1280 net/mptcp/subflow.c:881\n    tcp_check_req+0x78e/0x2470 net/ipv4/tcp_minisocks.c:910\n    tcp_v4_rcv+0x178c/0x47a0 net/ipv4/tcp_ipv4.c:2247\n    ip_protocol_deliver_rcu+0xb7/0x3e0 net/ipv4/ip_input.c:207\n    ip_local_deliver_finish+0x3cd/0x690 net/ipv4/ip_input.c:241\n    NF_HOOK include/linux/netfilter.h:318 [inline]\n    NF_HOOK include/linux/netfilter.h:312 [inline]\n    ip_local_deliver+0x1be/0x560 net/ipv4/ip_input.c:262\n    dst_input include/net/dst.h:474 [inline]\n    ip_rcv_finish net/ipv4/ip_input.c:453 [inline]\n    NF_HOOK include/linux/netfilter.h:318 [inline]\n    NF_HOOK include/linux/netfilter.h:312 [inline]\n    ip_rcv+0x534/0x840 net/ipv4/ip_input.c:573\n    __netif_receive_skb_one_core+0x197/0x1e0 net/core/dev.c:6137\n    __netif_receive_skb+0x1f/0x120 net/core/dev.c:6250\n    process_backlog+0x362/0x13d0 net/core/dev.c:6602\n    __napi_poll.constprop.0+0xb7/0x6c0 net/core/dev.c:7666\n    napi_poll net/core/dev.c:7729 [inline]\n    net_rx_action+0xafc/0x1070 net/core/dev.c:7881\n\nBUG: memory leak\nunreferenced object 0xffff888010b29c00 (size 32):\n  comm \"softirq\", pid 0, jiffies 4295153190\n  hex dump (first 32 bytes):\n    02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\n    01 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00  ................\n  backtrace (crc ea16adaf):\n    kmemleak_alloc_recursive include/linux/kmemleak.h:44 [inline]\n    slab_post_alloc_hook mm/slub.c:4953 [inline]\n    slab_alloc_node mm/slub.c:5258 [inline]\n    __do_kmalloc_node mm/slub.c:5651 [inline]\n    __kmalloc_noprof+0x4e8/0x7e0 mm/slub.c:5664\n    kmalloc_noprof include/linux/slab.h:961 [inline]\n    kzalloc_noprof include/linux/slab.h:1094 [inline]\n    lsm_blob_alloc+0x68/0x90 security/security.c:192\n    lsm_sock_alloc security/security.c:4375 [inline]\n    security_sk_alloc+0x2f/0xd0 security/security.c:4391\n    sk_prot_alloc+0xab/0x290 net/core/sock.c:2248\n    sk_clone+0x7f/0x1360 net/core/sock.c:2481\n    sk_clone_lock include/net/sock.h:1836 [inline]\n    mptcp_sk_clone_init+0x36/0x1730 net/mptcp/protocol.c:3507\n    subflow_syn_recv_sock+0xcfd/0x1280 net/mptcp/subflow.c:881\n    tcp_check_req+0x78e/0x2470 net/ipv4/tcp_minisocks.c:910\n    tcp_v4_rcv+0x178c/0x47a0 net/ipv4/tcp_ipv4.c:2247\n    ip_protocol_deliver_rcu+0xb7/0x3e0 net/ipv4/ip_input.c:207\n    ip_local_deliver_finish+0x3cd/0x690 net/ipv4/ip_input.c:241\n    NF_HOOK include/linux/netfilter.h:318 [inline]\n    NF_HOOK include/linux/netfilter.h:312 [inline]\n    ip_local_deliver+0x1be/0x560 net/ipv4/ip_input.c:262\n    dst_input include/net/dst.h:474 [inline]\n    ip_rcv_finish net/ipv4/ip_input.c:453 [inline]\n    NF_HOOK include/linux/netfilter.h:318 [inline]\n    NF_HOOK include/linux/netfilter.h:312 [inline]\n    ip_rcv+0x534/0x840 net/ipv4/ip_input.c:573\n    __netif_receive_skb_one_core+0x197/0x1e0 net/core/dev.c:6137\n    __netif_receive_skb+0x1f/0x120 net/core/dev.c:6250\n    process_backlog+0x362/0x13d0 net/core/dev.c:6602\n\n\n<<<<<<<<<<<<<<< tail report >>>>>>>>>>>>>>>\n\n    __netif_receive_skb_one_core+0x197/0x1e0\n    __netif_receive_skb+0x1f/0x120\n    process_backlog+0x362/0x13d0\n    __napi_poll.constprop.0+0xb7/0x6c0\n    net_rx_action+0xafc/0x1070\nBUG: memory leak\nunreferenced object 0xffff888010b29c00 (size 32):\n  comm \"softirq\", pid 0, jiffies 4295153190\n  hex dump (first 32 bytes):\n    02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\n    01 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00  ................\n  backtrace (crc ea16adaf):\n    __kmalloc_noprof+0x4e8/0x7e0\n    lsm_blob_alloc+0x68/0x90\n    security_sk_alloc+0x2f/0xd0\n    sk_prot_alloc+0xab/0x290\n    sk_clone+0x7f/0x1360\n    mptcp_sk_clone_init+0x36/0x1730\n    subflow_syn_recv_sock+0xcfd/0x1280\n    tcp_check_req+0x78e/0x2470\n    tcp_v4_rcv+0x178c/0x47a0\n    ip_protocol_deliver_rcu+0xb7/0x3e0\n    ip_local_deliver_finish+0x3cd/0x690\n    ip_local_deliver+0x1be/0x560\n    ip_rcv+0x534/0x840\n    __netif_receive_skb_one_core+0x197/0x1e0\n    __netif_receive_skb+0x1f/0x120\n    process_backlog+0x362/0x13d0\n\n\n<<<<<<<<<<<<<<< tail report >>>>>>>>>>>>>>>\n```\n\nNote that NIPA also had it when running [`mptcp_connect.sh`](https://netdev-3.bots.linux.dev/vmksft-mptcp-dbg/results/398141/2-mptcp-connect-sh/stdout):\n\n```\nok 1 selftests: net/mptcp: mptcp_connect.sh\nmake[1]: Leaving directory '/home/virtme/testing/wt-12/tools/testing/selftests/net/mptcp'\nmake: Leaving directory '/home/virtme/testing/wt-12/tools/testing/selftests'\nxx__-> echo $?\n0\nxx__-> echo scan > /sys/kernel/debug/kmemleak\nxx__-> echo scan > /sys/kernel/debug/kmemleak && cat /sys/kernel/debug/kmemleak\nunreferenced object 0xffff88800c17b340 (size 3040):\n  comm \"softirq\", pid 0, jiffies 4297185802\n  hex dump (first 32 bytes):\n    0a 00 01 02 0a 00 01 01 00 00 00 00 95 42 89 27  .............B.'\n    0a 00 07 41 00 00 00 00 00 00 00 00 00 00 00 00  ...A............\n  backtrace (crc eeaaf340):\n    kmem_cache_alloc_noprof+0x441/0x650\n    sk_prot_alloc.constprop.0+0x4e/0x1b0\n    sk_clone+0x4d/0x1140\n    mptcp_sk_clone_init+0x33/0x10d0\n    subflow_syn_recv_sock+0x9d1/0x16d0\n    tcp_check_req+0x4b9/0x20c0\n    tcp_v4_rcv+0x1004/0x30a0\n    ip_protocol_deliver_rcu+0x82/0x350\n    ip_local_deliver_finish+0x35d/0x620\n    ip_local_deliver+0x19c/0x470\n    ip_rcv+0xc2/0x370\n    __netif_receive_skb_one_core+0x108/0x180\n    process_backlog+0x3b8/0x13d0\n    __napi_poll.constprop.0+0x9b/0x460\n    net_rx_action+0x49c/0xd30\n    handle_softirqs+0x215/0x610\nxx__-> \n```"
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Electrostatics/apbs/issues/310",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Fix Python reference leaks in legacy getForces binding",
+ "author_login": "sobolevnrm",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:46Z",
+ "final_url": "https://github.com/Electrostatics/apbs/issues/310",
+ "repo": "Electrostatics/apbs",
+ "repo_language": "C",
+ "number": 310,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-13T00:28:25Z",
+ "updated_at": "2026-09-13T00:28:25Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "sobolevnrm",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-13T00:28:25Z",
+   "updated_utc": "2026-09-13T00:28:25Z",
+   "permalink": "https://github.com/Electrostatics/apbs/issues/310",
+   "body_markdown": "The legacy SWIG implementation in `tools/python/apbslib.i` creates the `qf`, `db`, and `ib` dictionary-key objects with `PyUnicode_FromString()` and passes them to `PyDict_SetItem()`. `PyDict_SetItem()` does not steal references, so those three local references need `Py_DECREF()` calls after insertion (including appropriate error-path cleanup).\n\nThis is pre-existing binding technical debt discovered while fixing #300. It does not block the parser/build compatibility work, but repeated `getForces()` calls in a long-running Python process can leak references.\n\nAcceptance criteria:\n- add correct decref/error cleanup for all locally owned objects in `getForces()`\n- add a focused repeated-call or reference-count regression test\n- verify the generated SWIG module under the supported Python binding CI lane"
+  }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/mrragava/onefuzz-notification/issues/1",
+ "passes": [
+  "main"
+ ],
+ "title": "setup/fuzz - AddressSanitizer: bad-free (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x511f10) in free",
+ "author_login": "mrragava",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:25Z",
+ "final_url": "https://github.com/mrragava/onefuzz-notification/issues/1",
+ "repo": "mrragava/onefuzz-notification",
+ "repo_language": "C",
+ "number": 1,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-06-25T01:48:12Z",
+ "updated_at": "2021-06-27T00:51:08Z",
+ "closed_at": null,
+ "labels": [
+  "bad-free"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mrragava",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-06-25T01:48:12Z",
+   "updated_utc": "2021-06-27T00:51:08Z",
+   "permalink": "https://github.com/mrragava/onefuzz-notification/issues/1",
+   "body_markdown": "## Files\n\n* input: [crash-f4c53c26f28d6ba480acb490b5ceab3729ac50fa](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-crashes-032590c6e8ea524cb32942a29c898a62&filename=crash-f4c53c26f28d6ba480acb490b5ceab3729ac50fa)\n* exe: [setup/fuzz]( https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-setup-a7ec4edefc00598fae7acd01bc3d636f&filename=fuzz)\n* report: [e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-unique-reports-032590c6e8ea524cb32942a29c898a62&filename=e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json)\n\n## Repro\n\n `onefuzz --endpoint https://oefuzzingtest2instance.azurewebsites.net repro create_and_connect oft-unique-reports-032590c6e8ea524cb32942a29c898a62 e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json`\n\n## Call Stack\n\n```#0 0x511f10 in free (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x511f10)\n#1 0x54ae96 in LLVMFuzzerTestOneInput /__w/onefuzz-notification/onefuzz-notification/simple-libfuzzer/simple.c:38:24\n#2 0x42e9f7 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x42e9f7)\n#3 0x41ee8a in fuzzer::RunOneTest(fuzzer::Fuzzer*, char const*, unsigned long) (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x41ee8a)\n#4 0x429e50 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x429e50)\n#5 0x41cb52 in main (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x41cb52)\n#6 0x7ffff6a99bf6 in __libc_start_main /build/glibc-S9d2JN/glibc-2.27/csu/../csu/libc-start.c:310\n#7 0x41cbc9 in _start (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x41cbc9)\n```\n\n## ASAN Log\n\n```INFO: Seed: 307833847\nINFO: Loaded 1 modules   (21 inline 8-bit counters): 21 [0x788fb0, 0x788fc5), \nINFO: Loaded 1 PC tables (21 PCs): 21 [0x5664c8,0x566618), \nsetup/fuzz: Running 1 inputs 1 time(s) each.\nRunning: /tmp/.tmpOuUOZ2/crash-f4c53c26f28d6ba480acb490b5ceab3729ac50fa\n=================================================================\n==5782==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x7fffffffd020 in thread T0\n    #0 0x511f10 in free (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x511f10)\n    #1 0x54ae96 in LLVMFuzzerTestOneInput /__w/onefuzz-notification/onefuzz-notification/simple-libfuzzer/simple.c:38:24\n    #2 0x42e9f7 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x42e9f7)\n    #3 0x41ee8a in fuzzer::RunOneTest(fuzzer::Fuzzer*, char const*, unsigned long) (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x41ee8a)\n    #4 0x429e50 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x429e50)\n    #5 0x41cb52 in main (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x41cb52)\n    #6 0x7ffff6a99bf6 in __libc_start_main /build/glibc-S9d2JN/glibc-2.27/csu/../csu/libc-start.c:310\n    #7 0x41cbc9 in _start (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x41cbc9)\n\nAddress 0x7fffffffd020 is located in stack of thread T0 at offset 32 in frame\n    #0 0x54a5ff in LLVMFuzzerTestOneInput /__w/onefuzz-notification/onefuzz-notification/simple-libfuzzer/simple.c:8\n\n  This frame has 1 object(s):\n    [32, 36) 'cnt' (line 9) <== Memory access at offset 32 is inside this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism or swapcontext\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: bad-free (/onefuzz/blob-containers/fuzz3rpz7enxyexcq/fuzz+0x511f10) in free\n==5782==ABORTING\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 869080975,
+   "author_login": "mrragava",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-06-27T00:51:06Z",
+   "updated_utc": "2021-06-27T00:51:06Z",
+   "permalink": "https://github.com/mrragava/onefuzz-notification/issues/1#issuecomment-869080975",
+   "body_markdown": "Duplicate found.\n\n* input: [crash-884903fbc80b23c96a92eda563ef82fd6716052b](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-crashes-032590c6e8ea524cb32942a29c898a62&filename=crash-884903fbc80b23c96a92eda563ef82fd6716052b)\n* exe: [setup/fuzz]( https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-setup-a7ec4edefc00598fae7acd01bc3d636f&filename=fuzz)\n* report: [e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-unique-reports-032590c6e8ea524cb32942a29c898a62&filename=e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 869080977,
+   "author_login": "mrragava",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-06-27T00:51:07Z",
+   "updated_utc": "2021-06-27T00:51:07Z",
+   "permalink": "https://github.com/mrragava/onefuzz-notification/issues/1#issuecomment-869080977",
+   "body_markdown": "Duplicate found.\n\n* input: [crash-884903fbc80b23c96a92eda563ef82fd6716052b](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-crashes-032590c6e8ea524cb32942a29c898a62&filename=crash-884903fbc80b23c96a92eda563ef82fd6716052b)\n* exe: [setup/fuzz]( https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-setup-a7ec4edefc00598fae7acd01bc3d636f&filename=fuzz)\n* report: [e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-unique-reports-032590c6e8ea524cb32942a29c898a62&filename=e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 869080979,
+   "author_login": "mrragava",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-06-27T00:51:07Z",
+   "updated_utc": "2021-06-27T00:51:07Z",
+   "permalink": "https://github.com/mrragava/onefuzz-notification/issues/1#issuecomment-869080979",
+   "body_markdown": "Duplicate found.\n\n* input: [crash-884903fbc80b23c96a92eda563ef82fd6716052b](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-crashes-032590c6e8ea524cb32942a29c898a62&filename=crash-884903fbc80b23c96a92eda563ef82fd6716052b)\n* exe: [setup/fuzz]( https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-setup-a7ec4edefc00598fae7acd01bc3d636f&filename=fuzz)\n* report: [e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json](https://oefuzzingtest2instance.azurewebsites.net/api/download?container=oft-unique-reports-032590c6e8ea524cb32942a29c898a62&filename=e711c125516bc2ef456fb7841568f294f62c84046576effdcbdae316e4a66b12.json)"
+  }
+ ]
+}

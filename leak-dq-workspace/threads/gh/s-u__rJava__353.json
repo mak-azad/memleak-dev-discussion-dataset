@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/s-u/rJava/issues/353",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "ckx() leaks the toString() jstring local reference",
+ "author_login": "QiuYucheng2003",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:56Z",
+ "final_url": "https://github.com/s-u/rJava/issues/353",
+ "repo": "s-u/rJava",
+ "repo_language": "Java",
+ "number": 353,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-09T05:36:27Z",
+ "updated_at": "2026-09-09T05:36:27Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "QiuYucheng2003",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-09T05:36:27Z",
+   "updated_utc": "2026-09-09T05:36:27Z",
+   "permalink": "https://github.com/s-u/rJava/issues/353",
+   "body_markdown": "### Summary\n\nIn `ckx()`, the `jstring` returned by `Throwable.toString()` is never released. Nearby local refs (`cname`, `cls`, `x`) are deleted, but `s` is not.\n\nhttps://github.com/s-u/rJava/blob/534ff33499641619e3ca3ac7d573d953613d0102/src/rJava.c#L78-L114\n\n```c\njstring s = (jstring)(*env)->CallObjectMethod(env, x, mid);\nif (s) {\n    const char *c = (*env)->GetStringUTFChars(env, s, 0);\n    if (c) {\n        msg = PROTECT(mkString(c));\n        (*env)->ReleaseStringUTFChars(env, s, c);\n    }\n}\n/* cname / cls / x are DeleteLocalRef'd; s is not */\n```\n\n`ReleaseStringUTFChars` only releases the UTF-8 buffer. It does not delete the JNI local reference.\n\n### Why it sticks around\n\n`ckx()` runs on the R thread after `AttachCurrentThread` (the `JNIEnv` is cached in `eenv` and is not detached for the session). This is not a Java-to-native JNI entry, so locals are not freed on return to R. `throwR()` then calls `stop()`, which typically does not return.\n\nEach Java exception handled by `ckx()` therefore leaves one extra local ref (`s`) on that attached thread.\n\n### Impact\n\nOne leaked local reference per exception. This is a small, persistent leak on a long-lived attached thread. It is unlikely to overflow the local reference table unless many Java exceptions are handled in the same R session.\n\n### Suggested fix\n\nAfter `ReleaseStringUTFChars` (and on the `s != NULL` path even if `GetStringUTFChars` fails):\n\n```c\n(*env)->DeleteLocalRef(env, s);\n```"
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/google/sanitizers/issues/1368",
+ "passes": [
+  "main"
+ ],
+ "title": "Possible ASAN false positive when calling std::ostringstream's str when overriding new+delete",
+ "author_login": "jyaif",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:21Z",
+ "final_url": "https://github.com/google/sanitizers/issues/1368",
+ "repo": "google/sanitizers",
+ "repo_language": "C",
+ "number": 1368,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-01-23T10:30:03Z",
+ "updated_at": "2025-01-09T09:14:14Z",
+ "closed_at": null,
+ "labels": [
+  "OpSys-OSX"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jyaif",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-01-23T10:30:03Z",
+   "updated_utc": "2025-01-09T09:14:14Z",
+   "permalink": "https://github.com/google/sanitizers/issues/1368",
+   "body_markdown": "When running my program with ASAN, I'm getting an error when using std::ostringstream. Something special with the program is that it's overriding the new and delete operators.\r\n\r\nHere's a simplified repro case:\r\n\r\n```c++\r\n#include <sstream>\r\n\r\nchar big_chunk[1000000];\r\nchar* alloc = big_chunk;\r\n\r\nvoid *operator new(std::size_t sz)  {\r\n   char* a = alloc;\r\n   alloc += ((sz +7)&~7);\r\n   return a;\r\n}\r\n\r\nvoid operator delete(void *p) noexcept {\r\n}\r\n\r\nvoid operator delete(void* p, std::size_t) noexcept {\r\n}\r\n\r\nint main() {\r\n  std::ostringstream stream;\r\n  stream << \"a long string that will need allocation\";\r\n  stream.str();\r\n  return 0;\r\n}\r\n```\r\n\r\nWhen compiled and ran with:\r\n```\r\nclang++ --std=c++17 main.cpp -fsanitize=address -O0 -g && ./a.out\r\n```\r\n\r\nI'm getting the following error, which I believe is a false positive:\r\n```\r\n=================================================================\r\n==17820==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x0001081fc380 in thread T0\r\n    #0 0x108392c0d in wrap__ZdlPv+0x7d (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x55c0d)\r\n    #1 0x1081f11dc in main main.cpp:21\r\n    #2 0x7fff20354620 in start+0x0 (libdyld.dylib:x86_64+0x15620)\r\n\r\n0x0001081fc380 is located 0 bytes inside of global variable 'big_chunk' defined in 'main.cpp:3:6' (0x1081fc380) of size 1000000\r\nSUMMARY: AddressSanitizer: bad-free (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x55c0d) in wrap__ZdlPv+0x7d\r\n==17820==ABORTING\r\nAbort trap: 6\r\n```\r\n(main.cpp:21 corresponds to the stream.str(); line)"
+  }
+ ]
+}

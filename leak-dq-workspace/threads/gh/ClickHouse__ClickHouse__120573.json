@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ClickHouse/ClickHouse/issues/120573",
+ "passes": [
+  "main"
+ ],
+ "title": "`IAST::intrusive_ptr_release` calls `dynamic_cast<void *>` on an already-destroyed object — latent UB, interior-pointer free under `operator delete` on any AST class whose `IAST` base is not at offset 0",
+ "author_login": "qoega",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:32Z",
+ "final_url": "https://github.com/ClickHouse/ClickHouse/issues/120573",
+ "repo": "ClickHouse/ClickHouse",
+ "repo_language": "C++",
+ "number": 120573,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-17T11:13:30Z",
+ "updated_at": "2026-09-17T12:24:37Z",
+ "closed_at": null,
+ "labels": [
+  "comp-sql-syntax"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590",
+  "761",
+  "459"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "qoega",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-17T11:13:30Z",
+   "updated_utc": "2026-09-17T12:24:37Z",
+   "permalink": "https://github.com/ClickHouse/ClickHouse/issues/120573",
+   "body_markdown": "# `IAST::intrusive_ptr_release` calls `dynamic_cast<void *>` on an already-destroyed object — latent UB, interior-pointer free under `operator delete` on any AST class whose `IAST` base is not at offset 0\n\n### Describe what's wrong\n\nThe non-recursive AST deleter in `src/Parsers/IAST.cpp` (`intrusive_ptr_release`, `LinkedList::create`) destroys the node with `ptr->~IAST()` and only then computes the address of the complete object with `dynamic_cast<void *>(ptr)` to reuse the storage for a `LinkedList` element, which is later released with `operator delete(list_head)`.\n\n`dynamic_cast` on an object whose lifetime has ended is undefined behaviour. In practice, under the Itanium ABI, the dynamic type during and after `~IAST()` is `IAST`, so the cast may return the address of the `IAST` base subobject instead of the complete object. For any AST class whose `IAST` base is **not** at offset 0 (multiple inheritance with a non-`IAST` first base) the deleter then frees an interior pointer.\n\n### Where\n\n`src/Parsers/IAST.cpp`, `intrusive_ptr_release` → `LinkedList::create`:\n\n```cpp\nASTs children;\nchildren.swap(ptr->children);\nptr->~IAST();                                                   // object is dead here\nLinkedList * elem = new (dynamic_cast<void *>(ptr)) LinkedList; // UB: dynamic_cast on a destroyed object\n...\nlist_head->~LinkedList();\noperator delete(list_head);                                     // frees whatever the cast returned\n```\n\n### Why the existing test does not catch it natively\n\n`src/Parsers/tests/gtest_ast_deleter.cpp` deliberately uses `struct ASTCounting : public StackDecrementer, public DB::IAST` (the `IAST` base is at a non-zero offset), i.e. exactly the layout this code is meant to handle, and it passes in CI.\n\nIt passes only because clang does not store the `IAST` vtable pointer in the (base-object) destructor when nothing in the destructor observes it, so the stale derived vptr still gives the right offset-to-top. That is an implementation detail, not a guarantee; a compiler or build mode that resets the vptr in destructors (Fil-C's clang does) exposes it immediately.\n\n### Evidence\n\nRunning `unit_tests_dbms --gtest_filter=ASTDeleter.*` with a Fil-C build of master (memory-safe C/C++ toolchain, AArch64):\n\n```\nfilc safety error: cannot free ptr with ptr != lower (ptr = 0xf246365d7b00,0xf246365d7af0,0xf246365d7b40,...).\n    src/Common/memory.h:183:17: untrackMemory<> (inlined)\n    src/Common/AllocationInterceptors.cpp:180:31: operator delete(void*)\n    src/Parsers/IAST.cpp:74:17: DB::intrusive_ptr_release(DB::IAST const*)\n    contrib/boost/boost/smart_ptr/intrusive_ptr.hpp:76:23: ~intrusive_ptr (inlined)\n    src/Parsers/tests/gtest_ast_deleter.cpp:68:5: ASTDeleter_SimpleChain_Test::TestBody()\n```\n\n`ptr` is 16 bytes past the start of the allocation (`lower`): the freed pointer is the `IAST` subobject inside the `ASTWithDecrementer` object. With the fix below the suite passes on the same build (5 tests).\n\n### Impact\n\n- Production AST classes all seem to have an `IAST`-derived first base, so the interior-pointer free does not happen with the current compiler; the defect is **latent UB** that depends on codegen.\n- Any future AST class with a non-`IAST` first base, or a compiler change in destructor vptr handling, turns it into a heap corruption (jemalloc frees the wrong slot) or an ASan \"attempting free on address which was not malloc()-ed\".\n\n### Fix\n\nTake the complete-object address while the object is alive (one line moved; comment added):\n\n```cpp\nASTs children;\nchildren.swap(ptr->children);\nvoid * storage = dynamic_cast<void *>(ptr);\nptr->~IAST();\nLinkedList * elem = new (storage) LinkedList;\n```\n\nNative behaviour is unchanged for classes with `IAST` at offset 0; the existing `ASTDeleter` unit tests cover the multiple-inheritance layout. PR incoming.\n"
+  }
+ ]
+}

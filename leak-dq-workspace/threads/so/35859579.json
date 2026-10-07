@@ -1,0 +1,50 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 35859579,
+ "url": "https://stackoverflow.com/questions/35859579/pointer-being-freed-was-not-allocated-cannot-be-solved",
+ "title": "Pointer being freed was not allocated! Cannot be solved",
+ "tags": [
+  "c",
+  "pointers",
+  "free"
+ ],
+ "score": 0,
+ "view_count": 320,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 35859659,
+ "created_utc": "2016-03-08T05:19:18Z",
+ "last_activity_utc": "2016-03-08T08:02:33Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 6032522,
+ "author_display_name": "whatthekey",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/35859579/pointer-being-freed-was-not-allocated-cannot-be-solved",
+ "body_html": "<p>I wrote a function to run linux command (still modifying).</p>\n\n<p>Why free(path) at the last makes error? </p>\n\n<p>Here is code:</p>\n\n<pre><code>void cmd_other(char *cmd){\n  char *env;\n  env = getenv(\"PATH\");\n  char * path = malloc(424);\n  path = strtok(env, \":\");\n  int notExist = 1;\n\n  while(path != NULL){              //this will break all $PATH variables by\":\"\n    char *file = malloc(424);\n    strcat(file, path);\n    strcat(file,\"/\");\n    strcat(file, cmd);\n    printf(\"%s\\n\", path);\n    if(access(file, X_OK) == 0){\n      pid_t child_pid;\n      pid_t pid = fork();\n      int child_status = 0;\n      if(pid == 0){                    //since execvp() will end the process\n        char *args[] = {file, (char *) NULL};\n        execvp(file,args);\n        exit(0);\n      }\n      else{\n        child_pid = wait(&amp;child_status);\n        notExist = 0;\n        break;\n      }\n    }   \n    path  = strtok(NULL, \":\");\n    free(file);\n  }\n  if(notExist){           // if the command not exist in $PATH\n    printf(\"%s: command not found\\n\", cmd);\n  }\n  free(path);\n}\n</code></pre>\n\n<p>malloc: *** error for object 0x7fff5fbffe21: pointer being freed was not allocated</p>\n\n<p>and am i right on writing command function of linux?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 35859659,
+   "parent_id": 35859579,
+   "author_user_id": 3003365,
+   "author_display_name": "kaylum",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/35859659",
+   "score": 3,
+   "created_utc": "2016-03-08T05:25:21Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2016-03-08T05:25:21Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Every time you call <code>strtok</code> you are changing the value of <code>path</code>. That doesn't work as <code>free</code> requires the original pointer. Just save a copy of <code>path</code> first and use that for the <code>strtok</code> or <code>free</code>.</p>\n"
+  }
+ ]
+}

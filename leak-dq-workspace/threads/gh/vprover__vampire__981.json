@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/vprover/vampire/issues/981",
+ "passes": [
+  "main"
+ ],
+ "title": "OperatorType interning leaks duplicate candidate allocations",
+ "author_login": "shalashaska117",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:18Z",
+ "final_url": "https://github.com/vprover/vampire/issues/981",
+ "repo": "vprover/vampire",
+ "repo_language": "C++",
+ "number": 981,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-25T10:19:32Z",
+ "updated_at": "2026-09-25T10:19:32Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "shalashaska117",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-25T10:19:32Z",
+   "updated_utc": "2026-09-25T10:19:32Z",
+   "permalink": "https://github.com/vprover/vampire/issues/981",
+   "body_markdown": "`OperatorType::getTypeFromKey()` allocates a candidate before looking it up. When an equivalent type already exists, `find(resultType, resultType)` replaces the candidate pointer with the shared result. The key is released, but the candidate object is lost.\n\nTested on Linux x86-64 at production commit `af03e1547d9381cea97c051ed65a7918d07a2b0e`, using GCC 15.2.0, Valgrind 3.26.0 and a Debug build with `CHECK_LEAKS=ON` and Z3 enabled. No production fixes were applied. The commands below assume the repository dependencies are available:\n\n```sh\ncmake -S . -B build/memcheck -DCMAKE_BUILD_TYPE=Debug -DCHECK_LEAKS=ON\ncmake --build build/memcheck --target vampire vtest -j4\n```\n\nSave this as `true.p`:\n\n```text\ncnf(a,axiom,$true).\n```\n\n```sh\nvalgrind --tool=memcheck --leak-check=full --show-leak-kinds=all \\\n  --errors-for-leak-kinds=definite,indirect,possible --track-origins=yes \\\n  --error-exitcode=97 --trace-children=yes \\\n  build/memcheck/vampire -p off -t 0 true.p\n```\n\nExcerpt from the recorded Valgrind XML, with the stack shortened:\n\n```text\n16 bytes in 1 blocks are definitely lost in loss record 2 of 15\n  operator new(unsigned long) (vg_replace_malloc.c:488)\n  Kernel::OperatorType::getTypeFromKey(Lib::Vector<Kernel::TermList>*, unsigned int) (OperatorType.cpp:66)\n  Kernel::OperatorType::getFunctionTypeUniformRange(unsigned int, Kernel::TermList, Kernel::TermList, unsigned int) (OperatorType.hpp:136)\n  Kernel::OperatorType::getTypeConType(unsigned int) (OperatorType.hpp:151)\n```\n\nThe source path is [OperatorType::getTypeFromKey](https://github.com/vprover/vampire/blob/af03e1547d9381cea97c051ed65a7918d07a2b0e/Kernel/OperatorType.cpp#L57). The minimal solve produces four 16-byte definitely-lost records from startup sort registration; repeated interning also exercises the same allocation path. The expected behavior is to release an unused candidate while retaining pointer sharing and the existing key ownership rules.\n\nThese records are separate from the cached `Property` leak and timer shutdown reads also present in this process. The total number of leak records is not a count of distinct bugs.\n\n## Discovery and test\n\nFound while grouping repeated Valgrind allocation records from the cleanup-enabled campaign. The true-only solve below retains the four startup records, and inspection of the interning lookup identifies the discarded candidate. The other leak groups are kept separate.\n\nThe campaign, strict Valgrind handling and failure-reporting methods are shared in [testing PR #978](https://github.com/vprover/vampire/pull/978). The input and direct command above reproduce the selected check without that runner.\n"
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/openwall/john/issues/5798",
+ "passes": [
+  "main"
+ ],
+ "title": "genmkvpwd max_lvl parameter memory exhaustion",
+ "author_login": "momo-trip",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:30Z",
+ "final_url": "https://github.com/openwall/john/issues/5798",
+ "repo": "openwall/john",
+ "repo_language": "C",
+ "number": 5798,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-07-03T02:59:36Z",
+ "updated_at": "2025-07-08T20:48:51Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "maintenance/cleanup"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "momo-trip",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-07-03T02:59:36Z",
+   "updated_utc": "2025-07-08T20:48:51Z",
+   "permalink": "https://github.com/openwall/john/issues/5798",
+   "body_markdown": "# genmkvpwd max_lvl parameter memory exhaustion\n\nHi, we have found a memory exhaustion issue and would like to report this.\nWe're running the proposed fix locally but haven't tested thoroughly. Please make any needed corrections and push.\n\n## Summary\nThe `max_lvl` argument in genmkpwd can cause excessive memory allocation when an invalid or large value is provided.\n\n## Reproduction\n- Operating System: Ubuntu 24.04 LTS\n- Architecture: x86_64\n- Compiler: GCC 14.2.0\n\n## Reproduction steps\n```bash\ngit clone https://github.com/openwall/john\ncd john/src\n./configure --enable-asan\nmake\n../run/genmkvpwd  ../run/stats -1\n# No crash, but large allocations\n# ../run/genmkvpwd  ../run/stats 99999\n```\n\n## Output\n```\n=================================================================\n==1014574==ERROR: AddressSanitizer: out of memory: allocator is trying to allocate 0x2160ec0000 bytes\n    #0 0x7c1c7f4fd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69\n    #1 0x5a111f4e4031 in mem_alloc /tmp/john/src/memory.c:92\n    #2 0x5a111f4e2069 in main /tmp/john/src/genmkvpwd.c:232\n    #3 0x7c1c7f02a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\n    #4 0x7c1c7f02a28a in __libc_start_main_impl ../csu/libc-start.c:360\n    #5 0x5a111f4e07e4 in _start (/tmp/john/run/genmkvpwd+0x47e4) (BuildId: b4e075dafb2127c3f70d28cd97c5c1dcc7034212)\n==1014574==HINT: if you don't care about these errors you may set allocator_may_return_null=1\nSUMMARY: AddressSanitizer: out-of-memory ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69 in malloc\n==1014574==ABORTING\n```\n\n## Root Cause Analysis\n[[src/genmkvpwd.c:217](https://github.com/openwall/john/blob/5baa3c47dbef1466b106a5894e3096b13a8c22f1/src/genmkvpwd.c#L217)](https://github.com/openwall/john/blob/5baa3c47dbef1466b106a5894e3096b13a8c22f1/src/genmkvpwd.c#L217)\nThe `max_lvl` value is read from command line arguments using `atoi`.\n\n[[src/genmkvpwd.c:232](https://github.com/openwall/john/blob/5baa3c47dbef1466b106a5894e3096b13a8c22f1/src/genmkvpwd.c#L232)](https://github.com/openwall/john/blob/5baa3c47dbef1466b106a5894e3096b13a8c22f1/src/genmkvpwd.c#L232)\nHere, when `max_lvl` is large, excessive memory allocation occurs.\nThis code path is executed when `max_len` is not provided as an argument or is set to 0.\n\n[[src/genmkvpwd.c:269](https://github.com/openwall/john/blob/5baa3c47dbef1466b106a5894e3096b13a8c22f1/src/genmkvpwd.c#L269)](https://github.com/openwall/john/blob/5baa3c47dbef1466b106a5894e3096b13a8c22f1/src/genmkvpwd.c#L269)\nAdditional context: When `max_len` is non-zero, it is corrected to be within `MAX_MKV_LVL`.\n\n## Proposed Fix\nThis issue can be avoided by comparing against `MAX_MKV_LVL`, similar to when `max_len` is non-zero.\nAdditionally, using `strtol` instead of `atoi` would better prevent invalid input.\n\n```diff\ndiff --git a/src/genmkvpwd.c b/src/genmkvpwd.c\nindex de62d0330..4b5e0f5d9 100644\n--- a/src/genmkvpwd.c\n+++ b/src/genmkvpwd.c\n@@ -214,7 +214,17 @@ int main(int argc, char * *argv)\n \t\treturn -1;\n \t}\n \n-\tmax_lvl = atoi(argv[2]);\n+\tchar *parse_error;\n+\tlong l_max_lvl = strtol(argv[2], &parse_error, 10);\n+\tif (errno != 0){\n+\t\tprintf(\"Usage: %s statfile max_lvl [max_len] [start] [end]\\n\", argv[0]);\n+\t\treturn -1;\n+\t} else if (l_max_lvl > UINT_MAX || l_max_lvl < 0|| parse_error[0] != '\\0'){\n+\t\tfprintf(stderr, \"max_lvl is invalid\\n\");\n+\t\treturn -1;\n+\t}\n+\n+\tmax_lvl = l_max_lvl;\n \n \tif (argc>3)\n \t\tmax_len = atoi(argv[3]);\n@@ -227,6 +237,10 @@ int main(int argc, char * *argv)\n \n \tif (max_len == 0)\n \t{\n+\t\tif (max_lvl>MAX_MKV_LVL) {\n+\t\t\tfprintf(stderr, \"Warning: Level = %d is too large (max = %d)\\n\", max_lvl, MAX_MKV_LVL);\n+\t\t\tmax_lvl = MAX_MKV_LVL;\n+\t\t}\n \t\tfor (max_len=6;max_len<20;max_len++)\n \t\t{\n \t\t\tnbparts = mem_alloc(256*(max_lvl+1)*sizeof(long long)*(max_len+1));\n```"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 2983182,
+ "url": "https://stackoverflow.com/questions/2983182/new-delete-malloc-free",
+ "title": "New, delete, malloc, free",
+ "tags": [
+  "c++"
+ ],
+ "score": 3,
+ "view_count": 754,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 2983185,
+ "created_utc": "2010-06-06T05:09:18Z",
+ "last_activity_utc": "2010-06-06T05:30:25Z",
+ "license": "CC BY-SA 2.5",
+ "author_user_id": 166012,
+ "author_display_name": "ckv",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/2983182/new-delete-malloc-free",
+ "body_html": "<p><code>new</code> and <code>delete</code> are said to be preprocessors while <code>malloc</code> and <code>free</code> are functions. What is meant by <code>new</code> and <code>delete</code> being preprocessors?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 2983185,
+   "parent_id": 2983182,
+   "author_user_id": 189293,
+   "author_display_name": "Rhangaun",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/2983185",
+   "score": 11,
+   "created_utc": "2010-06-06T05:10:57Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2010-06-06T05:10:57Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<p><em>new</em> and <em>delete</em> are C++ <strong>operators</strong> (like +, (), etc.) whereas <em>malloc</em> and <em>free</em> are (C) functions. Some operators (including new and delete) can be overloaded.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3044764,
+   "parent_id": 2983182,
+   "parent_type": "question",
+   "author_user_id": 55078,
+   "author_display_name": "Juliano",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/2983182/#comment3044764_2983182",
+   "score": 7,
+   "created_utc": "2010-06-06T05:12:12Z",
+   "edited": false,
+   "license": "CC BY-SA 2.5",
+   "body_html": "New and delete are not &quot;preprocessors&quot;. They have nothing to do with <i>the</i> preprocessor. New and delete are language directives. More precisely, they are unary operators like &#39;+&#39; and &#39;*&#39;."
+  }
+ ]
+}

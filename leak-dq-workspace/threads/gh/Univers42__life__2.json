@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Univers42/life/issues/2",
+ "passes": [
+  "main"
+ ],
+ "title": "grid_alloc overwrites teh three grid pointers unconditionally",
+ "author_login": "LESdylan",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:42Z",
+ "final_url": "https://github.com/Univers42/life/issues/2",
+ "repo": "Univers42/life",
+ "repo_language": "C",
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-15T13:39:20Z",
+ "updated_at": "2026-09-15T13:39:20Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "LESdylan",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-15T13:39:20Z",
+   "updated_utc": "2026-09-15T13:39:20Z",
+   "permalink": "https://github.com/Univers42/life/issues/2",
+   "body_markdown": "```bash\n\n╭─ life develop took 3.3s\n╰─ ❯ ./life random=8x8:50 --random=9x9:50\nlife: error: cannot read config file\n╭─ life develop ✘1\n╰─ ❯ ./life co./life configs/glider.cfg --random=9x9:50 \n╭─ life develop took 7.0s\n╰─ ❯ make     make                                                                                                                                                                                                        15:36\ncc -g3 -fsanitize=address,undefined \\\n   -Iincludes -Ilibft/includes -Iminilibx \\\n   srcs/*.c libft/libft.a \\\n   -Lminilibx -lmlx -lXext -lX11 -lbsd -lm \\\n   -o life_debug\nmake: Nothing to be done for 'all'.\n╭─ life develop\n╰─ ❯ ( unset D^Cunset DISPLAY; ASAN_OPTIONS=detect_leaks=1 ./life_debug --random=8x8:50 --random=9x9:50 )                                                                                                                 15:37\n╭─ life develop ✘130\n╰─ ❯ ( unset D( unset DISPLAY; ASAN_OPTIONS=detect_leaks=1 ./life_debug --random=8x8:50 --random=9x9:50 )                                                                                                                 15:37\nlife: error: mlx_init failed\n\n=================================================================\n==642119==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 64 byte(s) in 1 object(s) allocated from:\n    #0 0x49a4cd in malloc (/home/dlesieur/Documents/life/life_debug+0x49a4cd)\n    #1 0x4db5a4 in ft_calloc (/home/dlesieur/Documents/life/life_debug+0x4db5a4)\n    #2 0x4cc2d7 in grid_alloc /home/dlesieur/Documents/life/srcs/grid_alloc.c:20:15\n    #3 0x4d5c3c in parse_random /home/dlesieur/Documents/life/srcs/parse_random.c:57:2\n    #4 0x4d2a1a in apply_flag /home/dlesieur/Documents/life/srcs/parse_args.c:44:3\n    #5 0x4d22bf in parse_args /home/dlesieur/Documents/life/srcs/parse_args.c:63:4\n    #6 0x4d1801 in main /home/dlesieur/Documents/life/srcs/main.c:40:2\n    #7 0x7f4b6b7b0d8f in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n\nDirect leak of 64 byte(s) in 1 object(s) allocated from:\n    #0 0x49a4cd in malloc (/home/dlesieur/Documents/life/life_debug+0x49a4cd)\n    #1 0x4db5a4 in ft_calloc (/home/dlesieur/Documents/life/life_debug+0x4db5a4)\n    #2 0x4cc3e3 in grid_alloc /home/dlesieur/Documents/life/srcs/grid_alloc.c:21:18\n    #3 0x4d5c3c in parse_random /home/dlesieur/Documents/life/srcs/parse_random.c:57:2\n    #4 0x4d2a1a in apply_flag /home/dlesieur/Documents/life/srcs/parse_args.c:44:3\n    #5 0x4d22bf in parse_args /home/dlesieur/Documents/life/srcs/parse_args.c:63:4\n    #6 0x4d1801 in main /home/dlesieur/Documents/life/srcs/main.c:40:2\n    #7 0x7f4b6b7b0d8f in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n\nDirect leak of 64 byte(s) in 1 object(s) allocated from:\n    #0 0x49a4cd in malloc (/home/dlesieur/Documents/life/life_debug+0x49a4cd)\n    #1 0x4db5a4 in ft_calloc (/home/dlesieur/Documents/life/life_debug+0x4db5a4)\n    #2 0x4cc1ec in grid_alloc /home/dlesieur/Documents/life/srcs/grid_alloc.c:19:16\n    #3 0x4d5c3c in parse_random /home/dlesieur/Documents/life/srcs/parse_random.c:57:2\n    #4 0x4d2a1a in apply_flag /home/dlesieur/Documents/life/srcs/parse_args.c:44:3\n    #5 0x4d22bf in parse_args /home/dlesieur/Documents/life/srcs/parse_args.c:63:4\n    #6 0x4d1801 in main /home/dlesieur/Documents/life/srcs/main.c:40:2\n    #7 0x7f4b6b7b0d8f in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n\nSUMMARY: AddressSanitizer: 192 byte(s) leaked in 3 allocation(s).\n╭─ life develop* ✘1\n\n```"
+  }
+ ]
+}

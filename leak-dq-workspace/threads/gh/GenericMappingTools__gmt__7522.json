@@ -1,0 +1,197 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/GenericMappingTools/gmt/issues/7522",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer",
+ "author_login": "jidanni",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:34Z",
+ "final_url": "https://github.com/GenericMappingTools/gmt/issues/7522",
+ "repo": "GenericMappingTools/gmt",
+ "repo_language": "C",
+ "number": 7522,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-06-12T20:21:27Z",
+ "updated_at": "2023-06-13T12:06:38Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 13,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jidanni",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-12T20:21:27Z",
+   "updated_utc": "2023-06-13T12:06:38Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522",
+   "body_markdown": "```\r\n$ echo | gmt xyz2grd /dev/stdin -G/tmp/nn \\\r\n-JT-87/41/4c \\\r\n-I1M -R-100/100/-100/100\r\nxyz2grd [WARNING]: For a UTM or TM projection, your region -100/100/-100/100 is too large to be in degrees and thus assumed to be in meters\r\nfree(): invalid pointer\r\nAborted\r\n$ gmt --version\r\n6.4.0\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588034293,
+   "author_login": "welcome[bot]",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-06-12T20:21:29Z",
+   "updated_utc": "2023-06-12T20:21:29Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588034293",
+   "body_markdown": "👋 Thanks for opening your first issue here! Please make sure you filled out the template with as much detail as possible. We appreciate that you took the time to contribute!\n\nPlease make sure you read our [Contributing Guide](https://github.com/GenericMappingTools/gmt/blob/master/CONTRIBUTING.md) and abide by our [Code of Conduct](https://github.com/GenericMappingTools/.github/blob/main/CODE_OF_CONDUCT.md).\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588160765,
+   "author_login": "joa-quim",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-12T21:58:05Z",
+   "updated_utc": "2023-06-12T21:58:05Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588160765",
+   "body_markdown": "Can't reproduce this either (Linux == Windows)\r\n```\r\necho | xyz2grd -Glixo /dev/stdin -JT-87/41/4c -I1M -R-100/100/-100/100 -V\r\nxyz2grd [WARNING]: For a UTM or TM projection, your region -100/100/-100/100 is too large to be in degrees and thus assumed to be in meters\r\nmapproject [INFORMATION]: Provides 2, expects 2-column binary data\r\nmapproject [INFORMATION]: Processing input table data\r\nmapproject [INFORMATION]: Transform -88/-86/40/42 <- -85394.6196907/85394.6196907/-111044.260899/111547.404647 [m]\r\nmapproject [INFORMATION]: Input 2 columns via binary records using format dd\r\nmapproject [INFORMATION]: Reading Data Table from memory reference supplied by pointer\r\nmapproject [INFORMATION]: Output 2 columns via binary records using format dd\r\nmapproject [INFORMATION]: Writing Data Table to memory reference supplied by pointer\r\nmapproject [INFORMATION]: Projected 2 points\r\nmapproject [INFORMATION]: Input extreme values:  Xmin: -100 Xmax: 100 Ymin: -100 Ymax 100\r\nmapproject [INFORMATION]: Output extreme values: Xmin: -87.0011885472 Xmax: -86.9988114204 Ymin: 40.9990995308 Ymax 41.0009004579\r\nmapproject [INFORMATION]: Mapped 2 x-y pairs [m] to lon-lat pairs\r\nxyz2grd [INFORMATION]: Region selection -R-100/100/-100/100 is replaced by the equivalent geographic region -R-87.0011885472/40.9990995308/-86.9988114204/41.0009004579+r\r\nxyz2grd [ERROR]: Unrecognized option -V\r\n```\r\n\r\nAnd what is that ``/dev/stdin`` doing there?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588171287,
+   "author_login": "Esteban82",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-12T22:06:27Z",
+   "updated_utc": "2023-06-12T22:06:27Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588171287",
+   "body_markdown": "Hi jidanni!! Thanks for reporting all the issues and suggestions. It is nice to see someone new.\r\n\r\nI can reproduce BUT I was using **GMT 6.4**. Maybe the problem was already fix. \r\n\r\n@jidanni try using the dev version. 6.4 is almost one year old. "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588177391,
+   "author_login": "joa-quim",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-12T22:10:56Z",
+   "updated_utc": "2023-06-12T22:10:56Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588177391",
+   "body_markdown": "Tried with an old 6.1.1 and didn't get that message either."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588854199,
+   "author_login": "jidanni",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-06-13T08:58:19Z",
+   "updated_utc": "2023-06-13T09:00:10Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588854199",
+   "body_markdown": "I'm using\r\nhttps://packages.debian.org/sid/gmt\r\nIf there is something I should put in\r\n/etc/apt/sources.list.d/\r\nplease tell me.\r\nNo .debs on\r\nhttps://www.generic-mapping-tools.org/download/ ."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588900789,
+   "author_login": "PaulWessel",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-13T09:25:09Z",
+   "updated_utc": "2023-06-13T09:25:09Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588900789",
+   "body_markdown": "FYI, the /dev/stdin does not cause any trouble but is unnecessary since GMT always reads stdin if no table file is given."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588903027,
+   "author_login": "PaulWessel",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-13T09:26:38Z",
+   "updated_utc": "2023-06-13T09:26:38Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588903027",
+   "body_markdown": "> Tried with an old 6.1.1 and didn't get that message either.\r\n\r\nNothing on macOS either with dev version."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588949195,
+   "author_login": "PaulWessel",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-13T09:50:47Z",
+   "updated_utc": "2023-06-13T09:50:47Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588949195",
+   "body_markdown": "> I'm using\r\n> https://packages.debian.org/sid/gmt\r\n> If there is something I should put in\r\n> /etc/apt/sources.list.d/\r\n> please tell me.\r\n> No .debs on\r\n> https://www.generic-mapping-tools.org/download/ .\r\n\r\nI think all the Linux distros do their own GMT version maintenance and since we developers do not work on all of those anyway we do not know what to put in such config recipes.  It is possible this is a real bug that only manifests on some OS and since @Esteban82 can reproduce it perhaps that command can be run in ddd and tell us what line it crashes."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1588995143,
+   "author_login": "anbj",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-06-13T10:15:59Z",
+   "updated_utc": "2023-06-13T10:20:37Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1588995143",
+   "body_markdown": "Debian 12 Bookworm, gmt bleeding edge compiled from source:\r\n\r\n```\r\n$ gmt --version\r\n6.5.0_3403c89_2023.06.13\r\n```\r\n\r\n```\r\n$ echo | gmt xyz2grd /dev/stdin -G/tmp/nn \\\r\n-JT-87/41/4c \\\r\n-I1M -R-100/100/-100/100\r\nxyz2grd [WARNING]: For a UTM or TM projection, your region -100/100/-100/100 is too large to be in degrees and thus assumed to be in meters\r\nfree(): invalid pointer\r\nAborted\r\n```\r\n\r\nVariations:\r\n\r\nRemove ``/dev/stdin`` and you get this:\r\n\r\n```\r\n$ echo | gmt xyz2grd -G/tmp/nn -JT-87/41/4c -I1M -R-100/100/-100/100\r\nxyz2grd [WARNING]: For a UTM or TM projection, your region -100/100/-100/100 is too large to be in degrees and thus assumed to be in meters\r\nmalloc_consolidate(): invalid chunk size\r\nAborted\r\n```\r\n\r\nRemove ``echo |`` and it just hangs (killed with ``^c``)::\r\n\r\n```\r\n$ gmt xyz2grd /dev/stdin -G/tmp/nn -JT-87/41/4c -I1M -R-100/100/-100/100\r\nxyz2grd [WARNING]: For a UTM or TM projection, your region -100/100/-100/100 is too large to be in degrees and thus assumed to be in meters\r\n^Cfree(): invalid pointer\r\nAborted\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1589006661,
+   "author_login": "PaulWessel",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-13T10:24:24Z",
+   "updated_utc": "2023-06-13T10:24:24Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1589006661",
+   "body_markdown": "Thanks @anbj, might you be able to build with debug (See DEBUG in cmake/* files) and run the gmt command in **ddd**?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1589066653,
+   "author_login": "PaulWessel",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-13T10:57:20Z",
+   "updated_utc": "2023-06-13T10:57:20Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1589066653",
+   "body_markdown": "Actually, turning malloc guards on in Xcode shows the problem.  Because of confusion on **-I** it first creates a grid that has size 25 (a 1x1 grid since **-R** is (at line 535 in xyz2grd) -87.001188547204534/-86.998811420443928/40.999099530771346/41.000900457940716 but inc is 1 so we get a grid size of 1x1.\r\n\r\nThen, when we updated the pad on the grid the wesn is the same but now inc is 0.0023771267606065294,/0.0018009271693699702 and the grid is suddenly 2x2 in size.  With pad that is 36 nodes but only 25 was allocated earlier.  Accessing those nodes beyond 25 yields the SEGV .\r\n\r\nClearly, there are issues with computing _inc_ twice and not properly set the very first time (1) but improved the 2nd time - but that is too late for memory alloc.\r\n\r\nThink we need to document clearly what **-R -J** means in **xyz2grd** and then we can probably fix where it fails to live up to that.  Pretty sure this happens because nobody intended any of this to happen or be used as such in **xyz2grd**."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1589165669,
+   "author_login": "anbj",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-06-13T12:02:37Z",
+   "updated_utc": "2023-06-13T12:02:37Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1589165669",
+   "body_markdown": "@PaulWessel, so no point for me to run **ddd**?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1589173822,
+   "author_login": "PaulWessel",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-06-13T12:06:38Z",
+   "updated_utc": "2023-06-13T12:06:38Z",
+   "permalink": "https://github.com/GenericMappingTools/gmt/issues/7522#issuecomment-1589173822",
+   "body_markdown": "No, clearly a bug\r\n\r\nOn 13 June 2023 at 14:02:47, anbj ***@***.***) wrote:\r\n\r\n> @PaulWessel\r\n> <https://urldefense.com/v3/__https://github.com/PaulWessel__;!!PvDODwlR4mBZyAb0!ULIHmNMbr36czeiI6vII7kjfvscYalC_Flc7O-3jLXTwj8K9AJpZ7VzPQWHHESjkClsr4secnABn-SsqM5ZDVGLZsw$>,\r\n> so no point for me to run *ddd*?\r\n>\r\n> —\r\n> Reply to this email directly, view it on GitHub\r\n> <https://urldefense.com/v3/__https://github.com/GenericMappingTools/gmt/issues/7522*issuecomment-1589165669__;Iw!!PvDODwlR4mBZyAb0!ULIHmNMbr36czeiI6vII7kjfvscYalC_Flc7O-3jLXTwj8K9AJpZ7VzPQWHHESjkClsr4secnABn-SsqM5aqKYEEdg$>,\r\n> or unsubscribe\r\n> <https://urldefense.com/v3/__https://github.com/notifications/unsubscribe-auth/AGJ7IXYNCRU4M7PVSQSFQHTXLBJGPANCNFSM6AAAAAAZD4DO4I__;!!PvDODwlR4mBZyAb0!ULIHmNMbr36czeiI6vII7kjfvscYalC_Flc7O-3jLXTwj8K9AJpZ7VzPQWHHESjkClsr4secnABn-SsqM5a3CH_9aw$>\r\n> .\r\n> You are receiving this because you were mentioned.Message ID:\r\n> ***@***.***>\r\n>\r\n"
+  }
+ ]
+}

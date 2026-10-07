@@ -1,0 +1,82 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 62867252,
+ "url": "https://stackoverflow.com/questions/62867252/i-am-trying-to-solve-the-problem-in-c-files-and-streams",
+ "title": "I am trying to solve the problem in C++ Files and Streams",
+ "tags": [
+  "c++"
+ ],
+ "score": 0,
+ "view_count": 47,
+ "answer_count": 1,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2020-07-12T22:56:32Z",
+ "last_activity_utc": "2020-07-12T23:16:03Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 13868892,
+ "author_display_name": "Dave",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/62867252/i-am-trying-to-solve-the-problem-in-c-files-and-streams",
+ "body_html": "<pre><code>#include &lt;iostream&gt;\nclass Model\n</code></pre>\n<p>{</p>\n<pre><code>public:\n  Model(const char *a)\n{\n  message=a;\n}\nconst char *car() { return message; }\nconst char *message;\n\n};\nclass ModelCar\n{\npublic:\nModelCar(const char *sn, const char *b=&quot;c&quot;)\n{\n filename=strdup(sn);\n f=fopen(sn,b);\n if (f==NULL)\n{\nthrow Model(&quot;File can't be opened&quot;);\n}\n\n}\n~ModelCar()\n{\n  delete [] filename;\n  if (fclose(f)&lt;0)\n{\n  throw Model(&quot;File can't be closed&quot;);\n}\n}\nvoid read(char *buf, int size)\n{\n if (fread(buf, 1, size, f)!=size)\n{\n throw Model(&quot;File can't be read&quot;);\n}\n\n}\n const char *filename;\n FILE *f;\n};\n</code></pre>\n<p>Why I am getting error: ‘strdup’ was not declared in this scope , I tried and add #include &lt;string.h&gt; but still getting error\nCan anyone please help me what is wrong in this code</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 111172576,
+   "parent_id": 62867252,
+   "parent_type": "question",
+   "author_user_id": 5743288,
+   "author_display_name": "catnip",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/62867252/#comment111172576_62867252",
+   "score": 0,
+   "created_utc": "2020-07-12T23:07:20Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Could you please indent your code."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 111172595,
+   "parent_id": 62867252,
+   "parent_type": "question",
+   "author_user_id": 13190950,
+   "author_display_name": "Yunfei Chen",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/62867252/#comment111172595_62867252",
+   "score": 0,
+   "created_utc": "2020-07-12T23:09:16Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "That code is unreadable....."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 62867364,
+   "parent_id": 62867252,
+   "author_user_id": 13190950,
+   "author_display_name": "Yunfei Chen",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/62867364",
+   "score": 0,
+   "created_utc": "2020-07-12T23:16:03Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2020-07-12T23:16:03Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>First of all I suggest you to fix some problems with the code:\n1.</p>\n<pre><code>delete [] filename;\nfilename=strdup(sn);\n</code></pre>\n<p>Okay your delete function suggests that your filename is a dynamic array which you never intialized. Also have you looked at what strdup returns, it returns a dynamic char, not an dynamic array. I would suggest you change:</p>\n<pre><code>delete [] filename;\n</code></pre>\n<p>to</p>\n<pre><code>free(filename);\n</code></pre>\n"
+  }
+ ]
+}

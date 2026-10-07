@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/asg017/sqlite-vec/issues/265",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug]: Multiple memory leaks in vec0 operations (INSERT, DELETE, error paths)",
+ "author_login": "murillodutt",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:05Z",
+ "final_url": "https://github.com/asg017/sqlite-vec/issues/265",
+ "repo": "asg017/sqlite-vec",
+ "repo_language": "C",
+ "number": 265,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-02-18T02:23:27Z",
+ "updated_at": "2026-02-18T02:23:27Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "murillodutt",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-18T02:23:27Z",
+   "updated_utc": "2026-02-18T02:23:27Z",
+   "permalink": "https://github.com/asg017/sqlite-vec/issues/265",
+   "body_markdown": "## Description\n\nPR #258 identifies 7 memory leaks in `sqlite-vec.c` that have not been merged. These leaks occur in INSERT operations, DELETE operations, and error handling paths within vec0 virtual tables.\n\nSince PR #258 has been open without review, I'm filing this as a bug to increase visibility.\n\n## Identified Leaks (from PR #258)\n\nThe leaks are in various code paths in `sqlite-vec.c`:\n\n1. **INSERT path** — allocated buffers not freed on early return/error\n2. **DELETE path** — chunk data not freed after processing\n3. **Error handling** — several error branches skip cleanup of allocated memory\n4. **Query result construction** — intermediate buffers leaked in edge cases\n\n## Impact\n\n- Long-running applications that perform many INSERT/DELETE/query operations will see growing memory usage\n- Production systems with high-throughput vector operations (e.g., embedding pipelines processing thousands of documents) are most affected\n- Memory is not reclaimed until the database connection is closed\n\n## Environment\n\n- sqlite-vec: 0.1.7-alpha.2 and 0.1.7-alpha.10 (PR #258 not merged in either)\n- Observed on: macOS ARM64, Linux x64\n\n## Reference\n\nPR #258 contains the specific fixes for all 7 leak sites.\n\nReported by Murillo Dutt"
+  }
+ ]
+}

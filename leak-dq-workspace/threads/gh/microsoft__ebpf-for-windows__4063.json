@@ -1,0 +1,54 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/microsoft/ebpf-for-windows/issues/4063",
+ "passes": [
+  "main"
+ ],
+ "title": "The netebpfext fuzzer should check for memory leaks",
+ "author_login": "Alan-Jowett",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:02Z",
+ "final_url": "https://github.com/microsoft/ebpf-for-windows/issues/4063",
+ "repo": "microsoft/ebpf-for-windows",
+ "repo_language": "C",
+ "number": 4063,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-12-02T16:46:35Z",
+ "updated_at": "2026-10-02T00:18:38Z",
+ "closed_at": null,
+ "labels": [
+  "triaged",
+  "P2"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Alan-Jowett",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-12-02T16:46:35Z",
+   "updated_utc": "2026-10-02T00:18:38Z",
+   "permalink": "https://github.com/microsoft/ebpf-for-windows/issues/4063",
+   "body_markdown": "The netebpfext fuzzer should check for memory leaks."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2512138456,
+   "author_login": "shankarseal",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2024-12-02T16:48:48Z",
+   "updated_utc": "2024-12-02T16:48:48Z",
+   "permalink": "https://github.com/microsoft/ebpf-for-windows/issues/4063#issuecomment-2512138456",
+   "body_markdown": "Consider the cases where there can be memory leaks on error-paths other than memory allocation."
+  }
+ ]
+}

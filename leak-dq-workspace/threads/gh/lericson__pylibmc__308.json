@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lericson/pylibmc/issues/308",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "`key_prefix` leaks in `_PylibMC_IncrMulti()`",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:49Z",
+ "final_url": "https://github.com/lericson/pylibmc/issues/308",
+ "repo": "lericson/pylibmc",
+ "repo_language": "C",
+ "number": 308,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-02T12:58:17Z",
+ "updated_at": "2026-08-02T12:58:17Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-02T12:58:17Z",
+   "updated_utc": "2026-08-02T12:58:17Z",
+   "permalink": "https://github.com/lericson/pylibmc/issues/308",
+   "body_markdown": "I found two possible reference leaks around `key_prefix` in `_PylibMC_IncrMulti()`: the empty-prefix case overwrites the only pointer with\n`NULL`, and the `keys_tmp` allocation-failure path returns without releasing a non-empty prefix.\n\nFile: `src/_pylibmcmodule.c`\n\nFunction: `_PylibMC_IncrMulti`\n\nRelevant code:\n\n```c\nif (key_prefix_raw != NULL) {\n    key_prefix = PyBytes_FromStringAndSize(key_prefix_raw, key_prefix_len);\n\n    if (key_prefix != NULL && PyBytes_Size(key_prefix) == 0)\n        key_prefix = NULL;              // (1) overwrites the only reference\n}\n\nkeys_tmp = PyList_New(nkeys);\nif (keys_tmp == NULL)\n    return NULL;                        // (2) bypasses cleanup, leaks key_prefix\n```\n\nwith the cleanup block:\n\n```c\ncleanup:\n    if (incrs != NULL)\n        PyMem_Free(incrs);\n    Py_XDECREF(key_prefix);\n    Py_DECREF(keys_tmp);\n    Py_XDECREF(iterator);\n    return retval;\n```\n\n1. When an empty prefix is supplied (`key_prefix_raw != NULL`, length 0), `PyBytes_FromStringAndSize()` returns an owned reference, then\n   `key_prefix = NULL` overwrites the only pointer without `Py_DECREF()`. The later `Py_XDECREF(key_prefix)` sees `NULL` and cannot release it. (The value is the empty-bytes object, so this is a refcount imbalance on a shared singleton rather than growing memory, but the missing decref is still a bug.)\n\n2. If a non-empty `key_prefix` was created and `PyList_New(nkeys)` then fails, `return NULL` bypasses the `cleanup` block, leaking `key_prefix`. This\n   requires an allocation failure.\n\nSuggested fix:\n\n```c\nif (key_prefix_raw != NULL) {\n    key_prefix = PyBytes_FromStringAndSize(key_prefix_raw, key_prefix_len);\n    if (key_prefix == NULL)\n        return NULL;\n    if (PyBytes_Size(key_prefix) == 0) {\n        Py_DECREF(key_prefix);\n        key_prefix = NULL;\n    }\n}\n\nkeys_tmp = PyList_New(nkeys);\nif (keys_tmp == NULL) {\n    Py_XDECREF(key_prefix);\n    return NULL;\n}\n```\n"
+  }
+ ]
+}

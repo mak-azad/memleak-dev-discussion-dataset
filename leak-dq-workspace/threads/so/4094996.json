@@ -1,0 +1,82 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 4094996,
+ "url": "https://stackoverflow.com/questions/4094996/what-happens-to-the-memory-allocated-by-new-if-the-constructor-throws",
+ "title": "What happens to the memory allocated by `new` if the constructor throws?",
+ "tags": [
+  "c++"
+ ],
+ "score": 23,
+ "view_count": 2995,
+ "answer_count": 3,
+ "is_answered": true,
+ "accepted_answer_id": 4095025,
+ "created_utc": "2010-11-04T08:45:09Z",
+ "last_activity_utc": "2010-11-04T10:21:53Z",
+ "license": "CC BY-SA 2.5",
+ "author_user_id": 75889,
+ "author_display_name": "StackedCrooked",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/4094996/what-happens-to-the-memory-allocated-by-new-if-the-constructor-throws",
+ "body_html": "<p>Will this code cause a memory leak?</p>\n\n<pre><code>#include &lt;stdexept&gt;\n\nclass MyClass\n{\npublic:\n    MyClass()\n    {\n        throw std::runtime_error(\"Test\");\n    }\n};\n\nint main()\n{\n    try\n    {\n        MyClass * myClass = new MyClass;\n    }\n    catch (const std::exception &amp; exc)\n    {\n        // Memory leak?\n    }\n    return 0;\n}\n</code></pre>\n\n<p>The memory allocated by <code>new</code> is never deleted. Is this taken care of internally, or it an actual memory leak?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 4095025,
+   "parent_id": 4094996,
+   "author_user_id": 9990,
+   "author_display_name": "Marcelo Cantos",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/4095025",
+   "score": 18,
+   "created_utc": "2010-11-04T08:49:20Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2010-11-04T08:49:20Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<p>The memory will be automatically freed before the exception propagates.</p>\n\n<p>This is essential, because a) the program never receives a pointer to free, and b) even if it did, it would have no portable way to actually free it since the memory never became an object that you can delete.</p>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 4095055,
+   "parent_id": 4094996,
+   "author_user_id": 165520,
+   "author_display_name": "Prasoon Saurav",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/4095055",
+   "score": 13,
+   "created_utc": "2010-11-04T08:53:59Z",
+   "last_edit_utc": "2017-05-23T10:33:15Z",
+   "last_activity_utc": "2010-11-04T09:03:47Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>The memory will be properly deallocated.</p>\n\n<p>Related questions at SO.</p>\n\n<p><li> <a href=\"https://stackoverflow.com/questions/1197566/is-it-ever-not-safe-to-throw-an-exception-in-a-constructor\">Is it ever not safe to throw an exception in a constructor?</a></li>\n <li> <a href=\"https://stackoverflow.com/questions/1230423/c-handle-resources-if-constructors-may-throw-exceptions-reference-to-faq-17\">C++ : handle resources if constructors may throw exceptions (Reference to FAQ 17.4)</a></li></p>\n\n<pre><code>prasoon@prasoon-desktop ~ $ cat noleak.cpp &amp;&amp; g++ noleak.cpp &amp;&amp; valgrind --leak-check=full ./a.out\n#include &lt;stdexcept&gt;\n\nclass MyClass\n{\npublic:\n    MyClass()\n    {\n        throw std::runtime_error(\"Test\");\n    }\n};\n\nint main()\n{\n    try\n    {\n        MyClass * myClass = new MyClass;\n    }\n    catch (const std::exception &amp; exc)\n    {\n        // Memory leak?\n    }\n    return 0;\n}\n==3652== Memcheck, a memory error detector\n==3652== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.\n==3652== Using Valgrind-3.5.0 and LibVEX; rerun with -h for copyright info\n==3652== Command: ./a.out\n==3652== \n==3652== \n==3652== HEAP SUMMARY:\n==3652==     in use at exit: 0 bytes in 0 blocks\n==3652==   total heap usage: 3 allocs, 3 frees, 106 bytes allocated\n==3652== \n==3652== All heap blocks were freed -- no leaks are possible\n==3652== \n==3652== For counts of detected and suppressed errors, rerun with: -v\n==3652== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 17 from 6)\nprasoon@prasoon-desktop ~ $ \n</code></pre>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 4095666,
+   "parent_id": 4094996,
+   "author_user_id": 418110,
+   "author_display_name": "Chubsdad",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/4095666",
+   "score": 8,
+   "created_utc": "2010-11-04T10:21:53Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2010-11-04T10:21:53Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<blockquote>\n  <p>$15.2/2 - \"An object that is partially\n  constructed or partially destroyed\n  will have destructors executed for all\n  of its fully constructed base classes\n  and non-variant members, that is, for\n  subobjects for which the principal\n  constructor (12.6.2) has completed\n  execution and the destructor has not\n  yet begun execution. Similarly, if the\n  non-delegating constructor for an\n  object has completed execution and a\n  delegating constructor for that object\n  exits with an exception, the object’s\n  destructor will be invoked. <strong>If the\n  object was allocated in a\n  new-expression, the matching\n  deallocation function (3.7.4.2, 5.3.4,\n  12.5), if any, is called to free the storage occupied by the object.</strong>\"</p>\n</blockquote>\n"
+  }
+ ]
+}

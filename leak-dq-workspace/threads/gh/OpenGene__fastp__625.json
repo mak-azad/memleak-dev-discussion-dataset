@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/OpenGene/fastp/issues/625",
+ "passes": [
+  "main"
+ ],
+ "title": "Fix for Mismatched delete / delete[] in Memory Deallocation",
+ "author_login": "peppapig450",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:12Z",
+ "final_url": "https://github.com/OpenGene/fastp/issues/625",
+ "repo": "OpenGene/fastp",
+ "repo_language": "C++",
+ "number": 625,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-07-06T17:48:14Z",
+ "updated_at": "2026-03-24T14:23:33Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "762",
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "peppapig450",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-07-06T17:48:14Z",
+   "updated_utc": "2026-03-24T14:23:33Z",
+   "permalink": "https://github.com/OpenGene/fastp/issues/625",
+   "body_markdown": "## Summary\nWhile running Valgrind, I noticed several \"Mismatched free() / delete / delete[]\" errors across the codebase. Arrays allocated with `new[]` are being freed with `delete` instead of `delete[]`, causing undefined behavior and potential memory corruption.\n\n## Evidence\n```\n==190175== Mismatched free() / delete / delete []\n==190175==    at 0x49037A7: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==190175==    by 0x409F5C8: Stats::~Stats() (src/stats.cpp:114)\n==190175==  Address 0x4f72f80 is 0 bytes inside a block of size 9,400 alloc'd\n==190175==    at 0x4901007: operator new[](unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==190175==    by 0x409EC7A: Stats::Stats(Options*, bool, int, int) (src/stats.cpp:39)\n```\n\n## Build Environment\n\n#### Compile Flags:\n```makefile\nCXXFLAGS := -std=c++11 -O0 -g -fno-omit-frame-pointer -pthread -MD -MP -I$(DIR_INC)\nLD_FLAGS := $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) $(LIBS) $(LD_FLAGS)\n```\n\n#### Valgrind Command:\n```shell\nvalgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./fastp -i testdata/R2.fq -o test.fq\n```\n\n#### Valgrind Output:\n[Uploaded here.](https://gist.github.com/peppapig450/5aa8056b9248c3c009b1c59d0bbeba0f)\n\n## Root Cause\nIn C++, arrays allocated with new[] need to be freed using delete[] rather than delete. Using the wrong deallocation operator is undefined behavior.\n\n## Affected Files and Lines\n\n### `src/stats.cpp` - Stats class destructor (~line 114-138)\n**Problem:**\n```cpp\n// Constructor allocates with new[]\nmCycleQ30Bases[i] = new long[mBufLen];      // line 39\nmCycleQ20Bases[i] = new long[mBufLen];      // line 42  \nmCycleBaseContents[i] = new long[mBufLen];  // line 45\nmCycleBaseQual[i] = new long[mBufLen];      // line 48\nmCycleTotalBase = new long[mBufLen];        // line 51\nmCycleTotalQual = new long[mBufLen];        // line 54\n\n// Destructor incorrectly uses delete\ndelete mCycleQ30Bases[i];     // Should be delete[]\ndelete mCycleQ20Bases[i];     // Should be delete[]\ndelete mCycleBaseContents[i]; // Should be delete[]\ndelete mCycleBaseQual[i];     // Should be delete[]\ndelete mCycleTotalBase;       // Should be delete[]\ndelete mCycleTotalQual;       // Should be delete[]\n```\n\n### `src/filterresult.cpp` - FilterResult class (~line 25)\n**Problem:**\n```cpp\n// Constructor\nmCorrectionMatrix = new long[64];  // line 19\n\n// Destructor  \ndelete mCorrectionMatrix;          // Should be delete[]\n```\n\n### `src/stats.cpp` - Stats::summarize() method (~line 188-190)\nArrays allocated in `summarize()` and stored in `mQualityCurves`/`mContentCurves` maps are likely freed with `delete` instead of `delete[]`.\n\n### `src/stats.cpp` - Stats::extendBuffer() method\nMultiple `new[]` allocations that may be incorrectly freed.\n\n## Impact\n- **Memory corruption** leading to unpredictable behavior\n- **Potential crashes** during cleanup/destruction\n- **Potentially impacts scientific reproducibility** due to unstable execution\n- **Security implications** from heap corruption\n\n## Proposed Fix\nReplace all `delete` calls with `delete[]` for arrays:\n\n```cpp\n// In Stats destructor\ndelete[] mCycleQ30Bases[i];\ndelete[] mCycleQ20Bases[i]; \ndelete[] mCycleBaseContents[i];\ndelete[] mCycleBaseQual[i];\ndelete[] mCycleTotalBase;\ndelete[] mCycleTotalQual;\n\n// In FilterResult destructor  \ndelete[] mCorrectionMatrix;\n```\n\nI'd be happy to submit a PR with these fixes if that would be helpful. The changes are straightforward and I can include all necessary `delete` → `delete[]` conversions.\n\n### Optional Future Enhancement\nConsider migrating to modern C++ containers (`std::vector<long>`, `std::array<long, N>`) to eliminate manual memory management entirely, but the immediate priority is fixing the current undefined behavior.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4118711903,
+   "author_login": "gregdev00",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-03-24T14:23:33Z",
+   "updated_utc": "2026-03-24T14:23:33Z",
+   "permalink": "https://github.com/OpenGene/fastp/issues/625#issuecomment-4118711903",
+   "body_markdown": "I think this mr fixes it: https://github.com/OpenGene/fastp/pull/670"
+  }
+ ]
+}

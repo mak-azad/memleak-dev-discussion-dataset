@@ -1,0 +1,68 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 51223203,
+ "url": "https://stackoverflow.com/questions/51223203/c-shell-with-background-tasks",
+ "title": "C shell with background tasks",
+ "tags": [
+  "c",
+  "shell",
+  "background",
+  "task"
+ ],
+ "score": 1,
+ "view_count": 1777,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 51223414,
+ "created_utc": "2018-07-07T12:24:30Z",
+ "last_activity_utc": "2018-07-07T13:00:38Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 10046039,
+ "author_display_name": "Chaser01",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/51223203/c-shell-with-background-tasks",
+ "body_html": "<p>I'm about to implement a shell in C and I've got some questions.</p>\n\n<p>It should be able to run programms in the foreground or in the background. If you enter \"job\" before a command, it should be run in the background and I want to organize these background tasks in a list. With the command \"list\" all background tasks should be displayed on the command line.</p>\n\n<p>If I add some background tasks with the job-command, I have got the problem that the pid is always 0, for example when I add two tasks and then do the list-command, both have the pid 0. What is my mistake here?</p>\n\n<p>Another problem is, that I want to set the attribute \"command\" for the new list element, but always the command for every element of the list will be set to this value. Where am I wrong here? How can I fix this issue?</p>\n\n<p>Here's my code:</p>\n\n<p><strong>shell.c (the main class):</strong></p>\n\n<pre><code>#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include &lt;sys/types.h&gt;\n#include &lt;unistd.h&gt;\n#include &lt;errno.h&gt;\n\n#include \"dll.h\"\n\n#define MAXIMUM_INPUT 256\n\nstruct proc_info {\n    struct list_head head;\n    pid_t pid;\n    char* command;\n    char* running;\n    int number;\n    int status;\n};\n\nvoid print_procs(struct proc_info *proc_list);\n\nvoid executecmd(char* command);\n\nint makeargv(const char *s, const char *delimiters, char ***argvp);\n\nvoid freemakeargv(char **argv);\n\nint main() {\n    //Initialize list\n    struct list_head anchor;\n    list_init(&amp;anchor);\n    int count = 0;\n    char input[256];\n    pid_t newProcess;\n\n    while(1) {\n\n        //Prompt\n        printf(\"tsh&gt; \");\n\n        //Read input\n        if (fgets(input, 256, stdin) == NULL)\n            continue;\n        int len = strlen(input);\n        if(len == 1) //Only the \"\\n\", fgets puts \"\\n\" at the end of the string\n            continue;\n        else if (input[len - 1] == '\\n')\n            input[len - 1] = 0;\n\n        //Make a list of strings with each argument out of the string of all arguments\n        char** args;\n        makeargv(input , \" \", &amp;args);\n\n        char* firstArgument = *args;\n\n        if(strcmp(firstArgument, \"job\") == 0) {\n            char *command;\n            strncpy(command, input+4, len-4);\n\n            struct proc_info *new_proc;\n            new_proc = malloc(sizeof(struct proc_info));\n            new_proc-&gt;command = command;\n            new_proc-&gt;number = count;\n            new_proc-&gt;running = \"running\";\n            count++;\n            list_add_tail(&amp;(new_proc-&gt;head), &amp;anchor);\n\n            if ((newProcess = fork()) == -1)\n                perror(\"Error when trying to fork\");\n            else if (newProcess == 0) {\n                new_proc-&gt;pid = getpid();\n                execvp(args[1], args+1);\n                perror(\"Cannot execute command\");\n                printf(\"tsh&gt;\");\n                exit(1);                \n            }\n        } else if(strcmp(firstArgument, \"list\") == 0) {\n            print_procs((struct proc_info *) &amp;anchor);\n        } else if(strcmp(firstArgument, \"info\") == 0) {\n            printf(\"ToDo\");\n        } else if(strcmp(firstArgument, \"wait\") == 0) {\n            printf(\"ToDo\");\n        } else if(strcmp(firstArgument, \"kill\") == 0) {\n            printf(\"ToDo\");\n        } else if(strcmp(firstArgument, \"quit\") == 0) {\n            return 0;\n        } else {\n            int status = system(input);\n            if(status != 0) {\n                printf(\"---&gt;[invalid command]&lt;---\\n\");\n            }\n            printf(\"---&gt;[status=%d]&lt;---\\n\", status);     \n        }\n\n        //Free allocated memory for the arguments\n        freemakeargv(args);\n    }\n}\n\nvoid print_procs(struct proc_info *proc_list) {\n    struct proc_info *elem = proc_list;\n    elem = (struct proc_info *) elem-&gt;head.next;\n    printf(\" No | PID    | Running  | Status | Command\\n\");\n    while(proc_list != elem) {\n        printf(\"%3d | %6d | %8s | %6d | %s\\n\", elem-&gt;number, elem-&gt;pid, elem-&gt;running, elem-&gt;status, elem-&gt;command);\n        elem = (struct proc_info *) elem-&gt;head.next;\n    }\n}\n\nint makeargv(const char *s, const char *delimiters, char ***argvp) {\n   int error;\n   int i;\n   int numtokens;\n   const char *snew;\n   char *t;\n\n   if ((s == NULL) || (delimiters == NULL) || (argvp == NULL)) {\n      errno = EINVAL;\n      return -1;\n   }\n   *argvp = NULL;                           \n   snew = s + strspn(s, delimiters);         /* snew is real start of string */\n   if ((t = malloc(strlen(snew) + 1)) == NULL) \n      return -1; \n   strcpy(t, snew);               \n   numtokens = 0;\n   if (strtok(t, delimiters) != NULL)     /* count the number of tokens in s */\n      for (numtokens = 1; strtok(NULL, delimiters) != NULL; numtokens++) ; \n\n                             /* create argument array for ptrs to the tokens */\n   if ((*argvp = malloc((numtokens + 1)*sizeof(char *))) == NULL) {\n      error = errno;\n      free(t);\n      errno = error;\n      return -1; \n   } \n                        /* insert pointers to tokens into the argument array */\n   if (numtokens == 0) \n      free(t);\n   else {\n      strcpy(t, snew);\n      **argvp = strtok(t, delimiters);\n      for (i = 1; i &lt; numtokens; i++)\n          *((*argvp) + i) = strtok(NULL, delimiters);\n    } \n    *((*argvp) + numtokens) = NULL;             /* put in final NULL pointer */\n    return numtokens;\n}     \n\nvoid freemakeargv(char **argv) {\n   if (argv == NULL)\n      return;\n   if (*argv != NULL)\n      free(*argv);\n   free(argv);\n}\n</code></pre>\n\n<p><strong>dll.c:</strong></p>\n\n<pre><code>#include &lt;stdlib.h&gt;\n#include &lt;stdio.h&gt;\n#include \"dll.h\"\n\n/* initialize \"shortcut links\" for empty list */\nvoid\nlist_init(struct list_head *head)\n{\n    head-&gt;prev = head;\n    head-&gt;next = head;\n}\n\n/* insert new entry after the specified head */\nvoid \nlist_add(struct list_head *new, struct list_head *head)\n{\n    new-&gt;prev = head;\n    new-&gt;next = head-&gt;next;\n    head-&gt;next = new;\n    new-&gt;next-&gt;prev = new;\n}\n\n/* insert new entry before the specified head */\nvoid \nlist_add_tail(struct list_head *new, struct list_head *head)\n{\n    //Insterting before head is equal to inserting after the previous of the head\n    list_add(new, head-&gt;prev);\n}\n\n/* deletes entry from list and reinitialize it, returns pointer to entry */\nstruct list_head* \nlist_del(struct list_head *entry)\n{\n    struct list_head *previous = entry-&gt;prev;\n    struct list_head *following = entry-&gt;next;\n    previous-&gt;next = following;\n    following-&gt;prev = previous;\n    entry-&gt;prev = NULL;\n    entry-&gt;next = NULL;\n    return entry;\n}\n\n/* delete entry from one list and insert after the specified head */\nvoid \nlist_move(struct list_head *entry, struct list_head *head)\n{\n    list_add(list_del(entry), head);\n}\n\n/* delete entry from one list and insert before the specified head */\nvoid \nlist_move_tail(struct list_head *entry, struct list_head *head)\n{\n    list_add_tail(list_del(entry), head);\n}\n\n/* tests whether a list is empty */\nint \nlist_empty(struct list_head *head)\n{\n    return (head == head-&gt;prev &amp;&amp; head == head-&gt;next);\n}\n</code></pre>\n\n<p><strong>dll.h:</strong></p>\n\n<pre><code>#ifndef DLL_H\n#define DLL_H\n\nstruct list_head {\n    struct list_head *next, *prev;\n};\n\n/* initialize \"shortcut links\" for empty list */\nextern void\nlist_init(struct list_head *head);\n\n/* insert new entry after the specified head */\nextern void \nlist_add(struct list_head *new, struct list_head *head);\n\n/* insert new entry before the specified head */\nextern void \nlist_add_tail(struct list_head *new, struct list_head *head);\n\n/* deletes entry from list and reinitialize it, returns pointer to entry */\nextern struct list_head* \nlist_del(struct list_head *entry);\n\n/* delete entry from one list and insert after the specified head */\nextern void \nlist_move(struct list_head *entry, struct list_head *head);\n\n/* delete entry from one list and insert before the specified head */\nextern void \nlist_move_tail(struct list_head *entry, struct list_head *head);\n\n/* tests whether a list is empty */\nextern int \nlist_empty(struct list_head *head);\n\n#endif\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 51223414,
+   "parent_id": 51223203,
+   "author_user_id": 5636775,
+   "author_display_name": "Ctx",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/51223414",
+   "score": 1,
+   "created_utc": "2018-07-07T12:54:39Z",
+   "last_edit_utc": "2018-07-07T13:00:38Z",
+   "last_activity_utc": "2018-07-07T13:00:38Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>The mistake is, that you set the process id <em>in the child</em></p>\n\n<pre><code>        if ((newProcess = fork()) == -1)\n            perror(\"Error when trying to fork\");\n        else if (newProcess == 0) {\n            // This is executed in the CHILD PROCESS!!\n            new_proc-&gt;pid = getpid();\n            execvp(args[1], args+1);\n            perror(\"Cannot execute command\");\n            printf(\"tsh&gt;\");\n            exit(1);                \n        }\n</code></pre>\n\n<p>The child process doesn't share memory with the parent, so the information is not automagically transported to the parent.\nYou have to add this after your if-block:</p>\n\n<pre><code>        new_proc-&gt;pid = newProcess;\n</code></pre>\n\n<p>This way the child pid is saved in the <em>main</em> process.</p>\n\n<p>For the <code>command</code>-issue: The pointer is uninitialized:</p>\n\n<pre><code>char *command;\nstrncpy(command, input+4, len-4);\n</code></pre>\n\n<p>You have to allocate memory before copying to it and make sure, that the result is terminated with a null byte:</p>\n\n<pre><code>char *command = malloc(len-4+1);\nstrncpy(command, input+4, len-4);\ncommand[len-4] = '\\0';\n</code></pre>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 89427516,
+   "parent_id": 51223414,
+   "parent_type": "answer",
+   "author_user_id": 10046039,
+   "author_display_name": "Chaser01",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/51223203/#comment89427516_51223414",
+   "score": 0,
+   "created_utc": "2018-07-07T13:20:07Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Well, that was it. Thank you very much!"
+  }
+ ]
+}

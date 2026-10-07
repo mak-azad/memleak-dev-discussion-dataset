@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 66645743,
+ "url": "https://stackoverflow.com/questions/66645743/still-getting-memory-leak-errors-when-trying-to-free-malloced-pointer-of-struct",
+ "title": "Still getting memory leak errors when trying to free malloc'ed pointer of struct",
+ "tags": [
+  "c",
+  "memory-leaks"
+ ],
+ "score": 0,
+ "view_count": 199,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 66646717,
+ "created_utc": "2021-03-15T21:12:54Z",
+ "last_activity_utc": "2021-03-15T22:46:12Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 9573000,
+ "author_display_name": "Mana",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/66645743/still-getting-memory-leak-errors-when-trying-to-free-malloced-pointer-of-struct",
+ "body_html": "<p>When compiling my program, I get a LeakSanitizer error where it detected memory leaks at the line <code>word_dict target = (word_dict)malloc(sizeof(dict))</code> in the <code>newDict</code> function. I don't free <code>target</code> because I return the value for use in other functions below. However, I'm struggling to find when I should call free on the allocated memory. I tried freeing <code>spamDict</code> and <code>nonspamDict</code> in the <code>bayesian_spam_filer</code> function but the memory leak error still persists.</p>\n<pre><code>typedef struct dictionary dict;\ntypedef dict* word_dict;\ntypedef enum {false, true} bool;\n\n/*\n linked list, count is for the total word count and\n occur is the numbers of the mails that had the word\n */\nstruct dictionary{\n    char word[WORDLENGTH + 1];\n    int occur;\n    int count;\n    word_dict next;\n    bool updated;\n};\n\n\n// if there is no matching words after searching, create a new node\nword_dict newDict(char *string, word_dict next){\n    word_dict target = (word_dict)malloc(sizeof(dict));\n    int i = 0;\n\n    while(string[i] !='\\0' &amp;&amp; i&lt;WORDLENGTH) {\n        target-&gt;word[i] = string[i];\n        i++;\n    }\n    target-&gt;word[i] = 0;\n    target-&gt;count = 1;\n    target-&gt;next = next;\n    target-&gt;occur = 1;\n    target-&gt;updated = true;\n    return target;\n}\n\n/*\n search matching words, if a matching word is found\n add 1 to count and return true\n no matching word, then return false\n*/\nword_dict searchDict(char* string, word_dict pos){\n    word_dict first = pos;\n    if(strcmp(string, MAILSEPARATOR) == 0) { //end of an email\n        update(first);\n        return first;\n    }\n\n    string = preprocess(string);\n    if(string == NULL) {\n        return first;\n    }\n    \n    int result;\n    word_dict prevPos=pos;\n    while(pos != NULL){\n        if((result = strcmp(pos-&gt;word, string)) == 0){\n            if(!pos-&gt;updated) {\n                pos-&gt;occur++;\n                pos-&gt;updated = true;\n            }\n            pos-&gt;count++;\n            return first;\n        } else if(result &gt; 0) { // has passed the position and no matching word, need to add node.\n            if (prevPos == pos){\n                return newDict(string,pos);\n            }\n            prevPos-&gt;next = newDict(string, pos);\n            return first;\n        }\n        prevPos = pos;\n        pos = pos-&gt;next;\n    }\n    //printf(&quot;null found\\n&quot;);\n    prevPos-&gt;next = newDict(string, pos);\n    return first;\n}\n\n/*\n initialize training\n reads the sample mails and creates a linked list of\n the percentages of the words occuring in the sample mails\n*/\nword_dict initializeTraining(char* filename){\n    FILE *fp = NULL;\n    fp = fopen(filename, &quot;r&quot;);\n    if(fp == NULL) {\n        printf(&quot;no file found\\n&quot;);\n        return NULL;\n    }\n    \n    char* string;\n    string = (char*)malloc(sizeof(char)*50);\n    word_dict first = NULL;\n    fscanf(fp, &quot;%s\\n&quot;, string);\n    string = preprocess(string);\n    first = newDict(string, NULL);\n    \n    while(fscanf(fp,&quot;%s&quot;, string) == 1) {\n        first = searchDict(string, first);\n    }\n    fclose(fp);\n    free(string);\n    return first;\n}\n\n/*\n tests whether the mail is pam or not\n takes the filename of the test mail,\n returns true or false depending on the email's content\n*/\nbool bayesian_spam_filter(char * filename_for_test_email) {\n    word_dict spamDict=initializeTraining(&quot;spam.txt&quot;);\n    word_dict nonspamDict=initializeTraining(&quot;not_spam.txt&quot;);\n    \n#if DEBUG\n    printDict(spamDict);\n    printDict(nonspamDict);\n#endif\n    \n    FILE *stream=NULL;\n    stream = fopen(filename_for_test_email, &quot;r&quot;);\n    if(stream == NULL){\n        printf(&quot;no file found\\n&quot;);\n        return false;\n    }\n    \n    char* string;\n    string = (char*)malloc(sizeof(char)*50);\n    \n    int ps, pn; // probability of spam mail and non-spam mail\n    double prob = 0.5;\n    while(fscanf(stream,&quot;%s&quot;, string) == 1){\n        char* tempString; // for handling the errors happening from string being null during preprocessing\n        tempString = preprocess(string);\n        if(tempString == NULL){\n            continue;\n        }\n\n        if((ps = searchTest(tempString, spamDict)) != 0) {\n            if((pn = searchTest(tempString, nonspamDict)) != 0) {\n                printf(&quot;ps:%3d, pn:%3d, %s\\n&quot;, ps, pn, tempString);\n                prob = prob * (double) ps / ((prob* (double)ps + (1 - prob) * (double) pn));\n                printf(&quot;this probability: %.10f\\n&quot;, prob);\n            }\n        }\n    }\n\n    //printf(&quot;%d, %d \\n&quot;, pSProduct, pNProduct);\n    //proba=(float)(pSProduct/(pSProduct+pNProduct));\n    printf(&quot;Probability of mail being spam: %.10f\\n&quot;, prob);\n    fclose(stream);\n    free(string);\n    free(spamDict);\n    free(nonspamDict);\n    if (prob &gt; 0.9) {\n        return true;\n    }\n    return false;\n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 117813091,
+   "parent_id": 66645743,
+   "parent_type": "question",
+   "author_user_id": 1322972,
+   "author_display_name": "WhozCraig",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/66645743/#comment117813091_66645743",
+   "score": 1,
+   "created_utc": "2021-03-15T21:21:01Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "If you think whatever the super-secret <code>preprocess</code> function is doing isn&#39;t important, think again, especially with statements like <code>string = preprocess(string);</code> Just saying."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 66646717,
+   "parent_id": 66645743,
+   "author_user_id": 9865869,
+   "author_display_name": "Tim Boddy",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/66646717",
+   "score": 0,
+   "created_utc": "2021-03-15T22:46:12Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2021-03-15T22:46:12Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>The reason a leak is reported is that in the end of <strong>bayesian_spam_filter</strong> you are only freeing the first entry in each linked list associated with <strong>spamDict</strong> and <strong>nonSpamDict</strong> so the remainder of each list is leaked:</p>\n<pre><code>free(spamDict);\nfree(nonspamDict);\n</code></pre>\n<p>You need to loop through both of those lists to free all the nodes in the list.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 117814790,
+   "parent_id": 66645743,
+   "parent_type": "question",
+   "author_user_id": 721269,
+   "author_display_name": "David Schwartz",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/66645743/#comment117814790_66645743",
+   "score": 0,
+   "created_utc": "2021-03-15T22:50:11Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "If you can replicate the leak without <code>preprocess</code>, then show us the code that demonstrates the leak without calling <code>preprocess</code>. If you can&#39;t replicate the leak without <code>preprocess</code>, then how are you expecting us to find the leak without it?"
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/eclipse-mosquitto/mosquitto/issues/3678",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "File descriptor leak in `dynsec_init()` when `fdopen()` fails",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:50Z",
+ "final_url": "https://github.com/eclipse-mosquitto/mosquitto/issues/3678",
+ "repo": "eclipse-mosquitto/mosquitto",
+ "repo_language": "C",
+ "number": 3678,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-06-28T06:51:44Z",
+ "updated_at": "2026-06-28T06:51:52Z",
+ "closed_at": null,
+ "labels": [
+  "Status: Available"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-06-28T06:51:44Z",
+   "updated_utc": "2026-06-28T06:51:52Z",
+   "permalink": "https://github.com/eclipse-mosquitto/mosquitto/issues/3678",
+   "body_markdown": "#### Description\n\nI found a possible file descriptor leak in `dynsec_init()` on the error path where `fdopen()` fails after `open()` has already succeeded.\n\nFile: `apps/mosquitto_ctrl/dynsec.c`\n\nFunction: `dynsec_init`\n\nOn non-Windows builds the file is created with `open()` and the returned fd is then wrapped in a `FILE *` with `fdopen()`:\n\n```c\n#ifdef WIN32\n\tfptr = mosquitto_fopen(filename, \"wb\", true);\n#else\n\tint fd = open(filename, O_CREAT | O_EXCL | O_WRONLY, 0640);\n\tif(fd < 0){\n\t\tfree(json_str);\n\t\tfprintf(stderr, \"dynsec init: Unable to open '%s' for writing (%s).\\n\", filename, strerror(errno));\n\t\treturn -1;\n\t}\n\tfptr = fdopen(fd, \"wb\");\n#endif\n\tif(fptr){\n\t\tfprintf(fptr, \"%s\", json_str);\n\t\tfree(json_str);\n\t\tfclose(fptr);\n\t}else{\n\t\tfree(json_str);\n\t\tfprintf(stderr, \"dynsec init: Unable to open '%s' for writing.\\n\", filename);\n\t\treturn -1;\n\t}\n```\n\nWhen `fdopen()` succeeds, `fclose(fptr)` closes the stream and the underlying fd, so that path is fine.\n\nWhen `fdopen()` fails, `fptr` is `NULL` and the `else` branch frees `json_str`, prints an error, and returns `-1` — but it never calls `close(fd)`. Per POSIX, a failed `fdopen()` does not close the fd passed to it, and because `fptr` is `NULL` the fd cannot be reclaimed through `fclose(fptr)` either. The fd from `open()` is therefore leaked on this path.\n\nBecause `open()` uses `O_CREAT | O_EXCL`, this path also leaves behind a freshly created but empty config file.\n\n`mosquitto_ctrl dynsec init` is normally a short-lived command, so a single run has limited impact, but the ownership error is clear and the fd accumulates if this logic is ever reached repeatedly or embedded in a long-lived process.\n\nA minimal fix is to close the fd when `fdopen()` fails:\n\n```c\n\tfptr = fdopen(fd, \"wb\");\n\tif(fptr == NULL){\n\t\tint saved_errno = errno;\n\t\tclose(fd);\n\t\tfree(json_str);\n\t\tfprintf(stderr, \"dynsec init: Unable to open '%s' for writing (%s).\\n\",\n\t\t        filename, strerror(saved_errno));\n\t\treturn -1;\n\t}\n```\n\nSaving `errno` before `close()` keeps the original `fdopen()` failure reason. Optionally the empty file created by `open()` could also be removed on this path, but that is a behavioral choice and not required to fix the fd leak."
+  }
+ ]
+}

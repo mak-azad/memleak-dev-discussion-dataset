@@ -1,0 +1,66 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 41003046,
+ "url": "https://stackoverflow.com/questions/41003046/can-i-free-x509-x-after-calling-x509-store-add-certx509-store-ctx-x509-x",
+ "title": "Can I free X509 *x after calling X509_STORE_add_cert(X509_STORE *ctx, X509 *x)?",
+ "tags": [
+  "c",
+  "ssl"
+ ],
+ "score": 3,
+ "view_count": 1759,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 44076205,
+ "created_utc": "2016-12-06T19:12:11Z",
+ "last_activity_utc": "2017-05-19T17:52:55Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1999934,
+ "author_display_name": "user1999934",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/41003046/can-i-free-x509-x-after-calling-x509-store-add-certx509-store-ctx-x509-x",
+ "body_html": "<p>I have few questions.</p>\n\n<p>1.Suppose I have the following piece of code.</p>\n\n<pre><code> X509 *cert = NULL;\n//point cert to some valid certs in the memory.\nconst SSL_METHOD *tlsv1x_method = TLSv1_2_method();\nSSL_CTX *ctx = SSL_CTX_new(tlsv1x_method);\nX509_STORE *x509_store = SSL_CTX_get_cert_store(ctx);\nX509_STORE_add_cert(x509_store,cert);\n</code></pre>\n\n<p>Will ssl keep a local copy of cert after calling this. Or will it reference this \npointer(cert) always. Can I free/overwrite this pointer(cert) without any adverse affects on my ssl.</p>\n\n<ol start=\"2\">\n<li><p>Will SSL_CTX_free(ctx) clear all my data structures related to this ctx like the certs etc ? Will it also clear the pointer(cert) in the first question, or do I need to clear it ,after I am done with this ctx session?</p></li>\n<li><p><a href=\"https://www.openssl.org/docs/man1.0.1/ssl/SSL_CTX_free.html\" rel=\"nofollow noreferrer\">https://www.openssl.org/docs/man1.0.1/ssl/SSL_CTX_free.html</a>  says SSL_CTX_free() decrements the reference count of ctx, and removes the SSL_CTX object pointed to by ctx and frees up the allocated memory if the the reference count has reached 0.\nWhat are the other api's which increment/decrement the ctx reference count?\nI see that after calling SSL_CTX_new , ctx refrence count is 1.\nBut when I call ssl_new(ctx) it increases to 3. Why 3? </p></li>\n</ol>\n\n<p>4.To completely free(no memory leak) the ssl session can I use this?</p>\n\n<pre><code>while(ssl_ctx-&gt;references &gt;0){\nSSL_CTX_free(ssl_ctx);\n}\n</code></pre>\n\n<p>The idea behind this is to free all the structures related with the ctx,as SSL_CTX_free only frees all the structures(certs etc.) when the reference count is 0.</p>\n\n<p>Any help would be appreciated.</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 69215048,
+   "parent_id": 41003046,
+   "parent_type": "question",
+   "author_user_id": 645128,
+   "author_display_name": "ryyker",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/41003046/#comment69215048_41003046",
+   "score": 0,
+   "created_utc": "2016-12-06T19:19:21Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Not sure if <i><a href=\"http://openssl.6102.n7.nabble.com/at-what-time-must-I-call-SSL-free-SSL-CTX-free-td11385.html\" rel=\"nofollow noreferrer\">this applies perfectly</a></i>, but good discussion on topic."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 44076205,
+   "parent_id": 41003046,
+   "author_user_id": 2145180,
+   "author_display_name": "dvo",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/44076205",
+   "score": 3,
+   "created_utc": "2017-05-19T17:52:55Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2017-05-19T17:52:55Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>I had a similar question like your first one. To answer (most of) your questions:</p>\n\n<ol>\n<li><p>I just experimented with X509_STORE_add_cert() since I could not find documentation of its behavior w.r.t. the cert referenced. The function increments the reference count of the cert added. So you should free the cert when you don't need it any more for other purposes.</p></li>\n<li><p>and 3.) SSL_CTX_free() does free the referenced X509_STORE if its reference count becomes 0, which will in turn (indirectly) call X509_free(). Since this will release the memory allocated for the cert only if its reference count becomes 0, you need to free your reference to the cert as well.</p></li>\n<li><p>and 4.) You should not try to directly use the reference counter nor need to worry about it. Whoever allocates an object or adds a reference to it is responsible for freeing it (once).</p></li>\n</ol>\n"
+  }
+ ]
+}

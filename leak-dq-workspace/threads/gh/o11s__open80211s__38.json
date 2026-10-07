@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/o11s/open80211s/issues/38",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "kmemleak: 2 new suspected memory leaks ",
+ "author_login": "jlopex",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:39Z",
+ "final_url": "https://github.com/o11s/open80211s/issues/38",
+ "repo": "o11s/open80211s",
+ "repo_language": "C",
+ "number": 38,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2013-10-01T14:50:05Z",
+ "updated_at": "2013-10-01T14:50:05Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "KERNEL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jlopex",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2013-10-01T14:50:05Z",
+   "updated_utc": "2013-10-01T14:50:05Z",
+   "permalink": "https://github.com/o11s/open80211s/issues/38",
+   "body_markdown": "Possible memory leak using  wireless-testing (commit-id b75ff5e)\n\nroot@qemu:~# cat /sys/kernel/debug/kmemleak\n\nunreferenced object 0xffff880015ab84c0 (size 64):\n  comm \"softirq\", pid 0, jiffies 4294888798 (age 1166.893s)\n  hex dump (first 32 bytes):\n    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\n    00 01 01 01 00 00 00 01 01 01 00 00 00 01 01 01  ................\n  backtrace:\n    [<ffffffff81819246>] kmemleak_alloc+0x26/0x50\n    [<ffffffff811744d7>] kmem_cache_alloc_trace+0xe7/0x260\n    [<ffffffffa0125ec1>] mesh_add_vendor_ies+0x31/0xf0 [mac80211]\n    [<ffffffffa0126564>] ieee80211_mesh_build_beacon+0x44/0x640 [mac80211]\n    [<ffffffffa0128274>] mesh_table_alloc+0xb4/0x120 [mac80211]\n    [<ffffffffa01283be>] mesh_path_lookup+0x1e/0xb0 [mac80211]\n    [<ffffffffa011d1cd>] ieee80211_mgd_assoc+0x76d/0xb40 [mac80211]\n    [<ffffffffa011d9d1>] ieee80211_mgd_stop+0xc1/0xd0 [mac80211]\n    [<ffffffffa011eccb>] queues_read+0x3b/0xf0 [mac80211]\n    [<ffffffffa01179dc>] ieee80211_mgd_probe_ap_send+0x5c/0x240 [mac80211]\n    [<ffffffffa0119175>] ieee80211_rx_mgmt_beacon+0x8b5/0x14f0 [mac80211]\n    [<ffffffffa00cb5fb>] ieee80211_scan_rx+0x3b/0x2b0 [mac80211]\n    [<ffffffff8106bd0d>] process_one_work+0x1dd/0x6e0\n    [<ffffffff8106d40b>] worker_thread+0x11b/0x370\n    [<ffffffff81075b9b>] kthread+0xdb/0xe0\n    [<ffffffff81834f2c>] ret_from_fork+0x7c/0xb0\n\nunreferenced object 0xffff880015bb3e80 (size 64):\n  comm \"softirq\", pid 0, jiffies 4294888798 (age 1166.894s)\n  hex dump (first 32 bytes):\n    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\n    00 01 01 01 00 00 00 01 01 01 00 00 00 01 01 01  ................\n  backtrace:\n    [<ffffffff81819246>] kmemleak_alloc+0x26/0x50\n    [<ffffffff811744d7>] kmem_cache_alloc_trace+0xe7/0x260\n    [<ffffffffa0125ec1>] mesh_add_vendor_ies+0x31/0xf0 [mac80211]\n    [<ffffffffa0126564>] ieee80211_mesh_build_beacon+0x44/0x640 [mac80211]\n    [<ffffffffa0128274>] mesh_table_alloc+0xb4/0x120 [mac80211]\n    [<ffffffffa01283be>] mesh_path_lookup+0x1e/0xb0 [mac80211]\n    [<ffffffffa011d1cd>] ieee80211_mgd_assoc+0x76d/0xb40 [mac80211]\n    [<ffffffffa011d9d1>] ieee80211_mgd_stop+0xc1/0xd0 [mac80211]\n    [<ffffffffa011eccb>] queues_read+0x3b/0xf0 [mac80211]\n    [<ffffffffa01179dc>] ieee80211_mgd_probe_ap_send+0x5c/0x240 [mac80211]\n    [<ffffffffa0119175>] ieee80211_rx_mgmt_beacon+0x8b5/0x14f0 [mac80211]\n    [<ffffffffa00cb5fb>] ieee80211_scan_rx+0x3b/0x2b0 [mac80211]\n    [<ffffffff8106bd0d>] process_one_work+0x1dd/0x6e0\n    [<ffffffff8106d40b>] worker_thread+0x11b/0x370\n    [<ffffffff81075b9b>] kthread+0xdb/0xe0\n    [<ffffffff81834f2c>] ret_from_fork+0x7c/0xb0\nroot@qemu:~# \n"
+  }
+ ]
+}

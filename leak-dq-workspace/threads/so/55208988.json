@@ -1,0 +1,52 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 55208988,
+ "url": "https://stackoverflow.com/questions/55208988/if-free-is-called-inside-a-function-does-it-only-free-locally",
+ "title": "If free() is called inside a function, does it only free locally?",
+ "tags": [
+  "c",
+  "function",
+  "memory-management",
+  "free",
+  "realloc"
+ ],
+ "score": 2,
+ "view_count": 128,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 55209037,
+ "created_utc": "2019-03-17T15:58:26Z",
+ "last_activity_utc": "2019-03-17T16:03:12Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 5901226,
+ "author_display_name": "Glenn Jansson",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/55208988/if-free-is-called-inside-a-function-does-it-only-free-locally",
+ "body_html": "<p>Still learning the ropes of allocation and deallocation and I'm curious about something. </p>\n\n<p>Let's say you allocate memory for an array:</p>\n\n<pre><code>int *array = malloc(5 * sizeof(int));\n</code></pre>\n\n<p>You send the array to a function and reallocate it there. The function parameter would have to be a double pointer to the array (or &amp;array) or the reallocation would only take place locally.</p>\n\n<p>If you also want to free (deallocate) the array inside another function, does it also have to be a double pointer? Would freeing in a function only happen locally? If not, how does it differ from reallocation in that aspect?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 55209037,
+   "parent_id": 55208988,
+   "author_user_id": 15168,
+   "author_display_name": "Jonathan Leffler",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/55209037",
+   "score": 7,
+   "created_utc": "2019-03-17T16:03:12Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2019-03-17T16:03:12Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>No, <code>free()</code> frees the memory globally, just as <code>malloc()</code> allocates the memory globally.  That is, the memory is allocated and, provided the pointer to it is made accessible (function argument, function return value, global variable), it stays allocated and accessible indefinitely — until freed or the program exits (or it is leaked; there's no longer a valid accessible pointer to the memory).  And allocated memory that is freed is freed indefinitely.  It might be made available again by another allocation, but that's coincidental.</p>\n\n<p>If you pass a pointer to allocated memory into a function and that function frees it, it is freed for the calling code.  The calling code needs to know that the called function freed the memory so it doesn't try to use the memory after it was freed.</p>\n"
+  }
+ ]
+}

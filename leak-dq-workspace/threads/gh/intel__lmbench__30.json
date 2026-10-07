@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/intel/lmbench/issues/30",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer",
+ "author_login": "gongchangsui",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:36Z",
+ "final_url": "https://github.com/intel/lmbench/issues/30",
+ "repo": "intel/lmbench",
+ "repo_language": "C",
+ "number": 30,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-12-04T08:24:29Z",
+ "updated_at": "2024-12-04T08:29:57Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "gongchangsui",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-12-04T08:24:29Z",
+   "updated_utc": "2024-12-04T08:29:57Z",
+   "permalink": "https://github.com/intel/lmbench/issues/30",
+   "body_markdown": "vm OS:  ubuntu 24.04\r\nrun：\r\n```./bw_mem -P `nproc --all`  -W 5 -N 5 1024M rdwr```\r\noutput： `free(): invalid pointer`"
+  }
+ ]
+}

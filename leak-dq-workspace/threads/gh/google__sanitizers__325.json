@@ -1,0 +1,128 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/google/sanitizers/issues/325",
+ "passes": [
+  "main"
+ ],
+ "title": "Leak of size 0 reported as leak of size 1",
+ "author_login": "ramosian-glider",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:46Z",
+ "final_url": "https://github.com/google/sanitizers/issues/325",
+ "repo": "google/sanitizers",
+ "repo_language": "C",
+ "number": 325,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2015-09-01T00:36:27Z",
+ "updated_at": "2015-09-01T00:37:27Z",
+ "closed_at": null,
+ "labels": [
+  "Type-Defect",
+  "Priority-Medium",
+  "ProjectAddressSanitizer",
+  "Status-Accepted"
+ ],
+ "comments_reported": 7,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:36:27Z",
+   "updated_utc": "2015-09-01T00:37:27Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325",
+   "body_markdown": "Originally reported on Google Code with ID 325\n\n```\n#include <stdlib.h>\n\nint main() {\n  void * volatile p = malloc(0);\n  return 0;\n}\n\nERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 1 byte(s) in 1 object(s) allocated from:\n\nThis is confusing and may lead debugging down the wrong path.\n\n```\n\nReported by `eugenis@google.com` on 2014-07-17 08:32:33\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537504,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:36:35Z",
+   "updated_utc": "2015-09-01T00:36:35Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537504",
+   "body_markdown": "```\nThis is because malloc(0) actually allocates 1 byte in ASan. The allocator doesn't support\n0-byte allocations. Alas we don't have the luxury of an extra metadata bit to distinguish\nbetween 0 and 1 byte blocks.\n```\n\nReported by `earthdok@chromium.org` on 2014-07-17 08:52:24\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537517,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:36:44Z",
+   "updated_utc": "2015-09-01T00:36:44Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537517",
+   "body_markdown": "```\nIt's somewhat tempting to mark this as wontfix :) Is there an example of real-world\nproblem it causes? Even if it is reported as a leak, LSan should provide an allocation\nstack trace, so debugging this shouldn't be that hard.\n```\n\nReported by `samsonov@google.com` on 2014-07-17 18:23:07\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537530,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:36:52Z",
+   "updated_utc": "2015-09-01T00:36:52Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537530",
+   "body_markdown": "```\nIsn't it perfectly fine to allocate non-zero amount of memory for malloc(0)? This could\nindeed result in a leak in real program.\n```\n\nReported by `tetra2005` on 2014-07-17 19:48:57\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537545,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:37:01Z",
+   "updated_utc": "2015-09-01T00:37:01Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537545",
+   "body_markdown": "```\nSee discussion for commit r213120 in cfe ml.\nThinking that allocation size is 1 rather then 0 actually leads report investigation\ndown the wrong path.\n\nAnd yes, this could totally be a real memory leak.\n```\n\nReported by `eugenis@google.com` on 2014-07-17 19:51:29\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537556,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:37:10Z",
+   "updated_utc": "2015-09-01T00:37:10Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537556",
+   "body_markdown": "```\nWhat we could do is have the user_requested_size metadata field always contain the actual\nrequested size (possibly 0), and have two accessors (one returns user_requested_size\nfor use in reports, the other returns max(user_requested_size, 1) for internal use).\nWe just need to go through the code carefully and separate the two use cases.\n```\n\nReported by `earthdok@chromium.org` on 2014-07-18 08:35:15\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537572,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:37:18Z",
+   "updated_utc": "2015-09-01T00:37:18Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537572",
+   "body_markdown": "Reported by `ramosian.glider` on 2015-07-30 09:05:33\n- **Labels added**: ProjectAddressSanitizer\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 136537594,
+   "author_login": "ramosian-glider",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-09-01T00:37:27Z",
+   "updated_utc": "2015-09-01T00:37:27Z",
+   "permalink": "https://github.com/google/sanitizers/issues/325#issuecomment-136537594",
+   "body_markdown": "```\nAdding Project:AddressSanitizer as part of GitHub migration.\n```\n\nReported by `ramosian.glider` on 2015-07-30 09:06:57\n"
+  }
+ ]
+}

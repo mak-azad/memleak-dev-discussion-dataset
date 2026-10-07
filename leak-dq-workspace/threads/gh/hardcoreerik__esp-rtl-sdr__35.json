@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/hardcoreerik/esp-rtl-sdr/issues/35",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "A fifth simultaneously deferred device close is dropped (handle leaked)",
+ "author_login": "hardcoreerik",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:09Z",
+ "final_url": "https://github.com/hardcoreerik/esp-rtl-sdr/issues/35",
+ "repo": "hardcoreerik/esp-rtl-sdr",
+ "repo_language": "C++",
+ "number": 35,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-29T03:00:03Z",
+ "updated_at": "2026-09-29T03:00:03Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-handle"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "hardcoreerik",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-29T03:00:03Z",
+   "updated_utc": "2026-09-29T03:00:03Z",
+   "permalink": "https://github.com/hardcoreerik/esp-rtl-sdr/issues/35",
+   "body_markdown": "**Where:** `defer_device_close()` in `src/esp_rtl_sdr.cpp`; `kMaxDeferredClose = 4`.\n\n**What happens:** when a control transfer never completes, the device close is parked in a 4-slot list and retried by the client task. If a fifth close is parked while all four slots are still occupied, the code logs `device close deferred list full: handle leaked` and drops it.\n\n**Verified:** yes, by reading the code. It needs five stuck closes at once, so it is very unlikely in practice.\n\n**Suggested fix:** grow the list (or make it a queue) and log the high-water mark.\n\nFound by CodeRabbit's automated review of #29 and triaged while preparing 0.9.1. Deferred from 0.9.1 because the fix changes runtime behaviour on V4/V4L hardware and needs a hardware retest first.\r\n"
+  }
+ ]
+}

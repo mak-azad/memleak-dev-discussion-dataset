@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/rpi-ws281x/rpi-ws281x-python/issues/103",
+ "passes": [
+  "main"
+ ],
+ "title": "munmap_chunk(): invalid pointer in ws2811_cleanup",
+ "author_login": "godmar",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:52Z",
+ "final_url": "https://github.com/rpi-ws281x/rpi-ws281x-python/issues/103",
+ "repo": "rpi-ws281x/rpi-ws281x-python",
+ "repo_language": "C",
+ "number": 103,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-10-11T11:25:47Z",
+ "updated_at": "2023-10-16T03:35:33Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "godmar",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-10-11T11:25:47Z",
+   "updated_utc": "2023-10-16T03:35:33Z",
+   "permalink": "https://github.com/rpi-ws281x/rpi-ws281x-python/issues/103",
+   "body_markdown": "I'm using rpi-ws281x 5.0.0 on an RPi 3b with Raspbian GNU/Linux 11. My Python program does not use any other native libraries besides this one. In my app, I'm using 2 PWM channels (GPIO 18 and 19) and one 1 PCM channel (GPIO 21), and the app/hardware basically works.\r\n\r\nHowever, usually when exiting, the program crashes due to an attempt to free an invalid pointer in `ws2811_cleanup`:\r\n\r\n```\r\nmunmap_chunk(): invalid pointer\r\n\r\nProgram received signal SIGABRT, Aborted.\r\n__GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50\r\n50\t../sysdeps/unix/sysv/linux/raise.c: No such file or directory.\r\n(gdb) bt\r\n#0  __GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50\r\n#1  0x76d4a364 in __GI_abort () at abort.c:79\r\n#2  0x76d9be44 in __libc_message (action=action@entry=do_abort, fmt=<optimized out>)\r\n    at ../sysdeps/posix/libc_fatal.c:155\r\n#3  0x76da39fc in malloc_printerr (str=<optimized out>) at malloc.c:5347\r\n#4  0x76da3d40 in munmap_chunk (p=<optimized out>) at malloc.c:2830\r\n#5  0x766b0230 in ws2811_cleanup (ws2811=0x51e7e8) at lib/ws2811.c:623\r\n#6  0x766b54d0 in _wrap_ws2811_fini (self=<optimized out>, args=<optimized out>)\r\n    at rpi_ws281x_wrap.c:4169\r\n#7  0x000b747c in ?? ()\r\nBacktrace stopped: previous frame identical to this frame (corrupt stack?)\r\n(gdb)\r\n```\r\nI'm not sure if this constitutes a problem with the Python wrapper or with `rpi_ws281x` itself.  I haven't been able to collect more information, but I wanted to leave this bug report since this shouldn't happen. \r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1763673452,
+   "author_login": "godmar",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-10-16T03:35:33Z",
+   "updated_utc": "2023-10-16T03:35:33Z",
+   "permalink": "https://github.com/rpi-ws281x/rpi-ws281x-python/issues/103#issuecomment-1763673452",
+   "body_markdown": "I found the issue.  [`ws2811_led_set`](https://github.com/rpi-ws281x/rpi-ws281x-python/blob/95a43d61421ffe43f9ed77034df7d5f9c00f27ed/library/rpi_ws281x.i#L78-L88) currently does not check for negative led indices:\r\n```c\r\n    int ws2811_led_set(ws2811_channel_t *channel, int lednum, uint32_t color)\r\n    {\r\n        if (lednum >= channel->count)\r\n        {\r\n            return -1;\r\n        }\r\n\r\n        channel->leds[lednum] = color;\r\n\r\n        return 0;\r\n    }\r\n```\r\nA negative value for `lednum` will not be caught and leads to memory corruption.\r\n\r\nEven though this library is close to the hardware, it would be nice if the Python wrapper were memory safe and would catch this kind of bug in a fail-safe manner.\r\n\r\nIMO, it may even be advisable to turn it into an `IndexError` (or implement Python's negative index semantics), rather than returning -1 (which the caller may not check). `PixelStrip` appears to want to act like an array, but doesn't implement negative indices either.\r\n\r\nLeaving this open for comment.\r\n\r\n\r\n"
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/glyn/ipc-channel-mux/issues/33",
+ "passes": [
+  "main"
+ ],
+ "title": "cargo test fails intermittently on Windows with STATUS_ACCESS_VIOLATION",
+ "author_login": "glyn",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:24Z",
+ "final_url": "https://github.com/glyn/ipc-channel-mux/issues/33",
+ "repo": "glyn/ipc-channel-mux",
+ "repo_language": "Rust",
+ "number": 33,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-03-24T16:20:42Z",
+ "updated_at": "2026-03-31T13:33:26Z",
+ "closed_at": null,
+ "labels": [
+  "help wanted"
+ ],
+ "comments_reported": 4,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "glyn",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-24T16:20:42Z",
+   "updated_utc": "2026-03-31T13:33:26Z",
+   "permalink": "https://github.com/glyn/ipc-channel-mux/issues/33",
+   "body_markdown": "Since three weeks ago, `cargo test` fails intermittently in Windows CI with the following error:\n~~~\n  process didn't exit successfully: `D:\\a\\ipc-channel-mux\\ipc-channel-mux\\target\\x86_64-pc-windows-msvc\\debug\\deps\\ipc_channel_mux-050909b60cc6723b.exe --nocapture`\n(exit code: 0xc0000005, STATUS_ACCESS_VIOLATION)\n~~~\n\nExamples:\n\n* x86_64-pc-windows-msvc - https://github.com/glyn/ipc-channel-mux/actions/runs/23497610593/job/68383112215\n* i686-pc-windows-msvc - https://github.com/glyn/ipc-channel-mux/actions/runs/22722472401/job/65888182914\n* x86_64-pc-windows-msvc - https://github.com/glyn/ipc-channel-mux/actions/runs/22746074338/job/65970053633\n\nNote that I have not seen this error on MSRV builds (Rust 1.86).\n\nI have tried setting RUST_MIN_STACK to 16 MB, but this doesn't prevent the failure."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4126075804,
+   "author_login": "glyn",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-25T12:09:10Z",
+   "updated_utc": "2026-03-25T12:09:10Z",
+   "permalink": "https://github.com/glyn/ipc-channel-mux/issues/33#issuecomment-4126075804",
+   "body_markdown": "I added an intermittency workflow to investigate changing some of the settings and this unearthed https://github.com/glyn/ipc-channel-mux/issues/36."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4137158791,
+   "author_login": "glyn",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-26T18:11:23Z",
+   "updated_utc": "2026-03-26T18:11:54Z",
+   "permalink": "https://github.com/glyn/ipc-channel-mux/issues/33#issuecomment-4137158791",
+   "body_markdown": "On the branch 33-windows-ci-access-violation I found that the access violations occur when running various bytes* testcases.\n\nRef: https://github.com/glyn/ipc-channel-mux/actions/runs/23608566659/job/68757932371?pr=38"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4161383039,
+   "author_login": "glyn",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-31T09:54:28Z",
+   "updated_utc": "2026-03-31T13:27:37Z",
+   "permalink": "https://github.com/glyn/ipc-channel-mux/issues/33#issuecomment-4161383039",
+   "body_markdown": "https://github.com/glyn/ipc-channel-mux/pull/40 shows that cargo test fails on Windows around 2-3% of the time.\n\nhttps://github.com/glyn/ipc-channel-mux/pull/41 which includes Claude Code's putative fix to https://github.com/servo/ipc-channel/issues/450 still fails (actually more frequently than PR 40 - 4-5% of the time).\n\nI had Claude Code write some Windows stress tests for ipc-channel, but these all passed. See https://github.com/servo/ipc-channel/pull/451.\n\nI had Claude Code write some Windows stress tests for ipc-channel based on the usage patterns in ipc-channel-mux, but these all passed (once I had applied the putative fix to https://github.com/servo/ipc-channel/issues/450). See https://github.com/glyn/ipc-channel-mux/pull/43."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4162682518,
+   "author_login": "glyn",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-31T13:33:10Z",
+   "updated_utc": "2026-03-31T13:33:26Z",
+   "permalink": "https://github.com/glyn/ipc-channel-mux/issues/33#issuecomment-4162682518",
+   "body_markdown": "Below is a dump of some investigation into this issue by Claude Code.\n\n---\n# Windows CI ACCESS_VIOLATION Investigation\n\n## Issue\n\nIntermittent CI failure on Windows where the test process exits with\n`STATUS_ACCESS_VIOLATION` (0xc0000005). See GitHub issue #33, branch\n`33-windows-ci-access-violation`, PR #38.\n\nExample failure:\nhttps://github.com/glyn/ipc-channel-mux/actions/runs/23588956079/job/68689035582#step:5:256\n\n## Symptoms\n\n- Test process crashes with exit code 0xc0000005 (`STATUS_ACCESS_VIOLATION`)\n- Intermittent — only hits occasionally across 200 matrix runs\n- Affects x86_64-pc-windows-msvc (and possibly i686)\n- No Rust backtrace or panic message — bypasses the panic handler entirely\n- `RUST_MIN_STACK=16777216` (16 MB) is already set\n- Tests that surface the ipc-channel PR #449 bug (`try_recv_timeout` message\n  loss) are `#[ignore]`d, so this is a separate issue\n\n## Crash Dump Capture Journey\n\nGetting a crash dump was non-trivial. Multiple approaches failed before\nsucceeding:\n\n### 1. WER Registry (failed)\nConfigured Windows Error Reporting via registry keys\n(`HKLM:\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps`) to\nwrite full dumps. No dumps were produced — WER on GitHub Actions runners\napparently doesn't honour these settings.\n\n### 2. Procdump as JIT Debugger (failed)\nInstalled Sysinternals `procdump` and registered it as the JIT debugger\n(`procdump -accepteula -i <dir>`). No dumps were produced — the Rust\nruntime's own exception handling catches the structured exception before\nWindows dispatches it to the JIT debugger.\n\n### 3. Procdump -x (succeeded)\nRan the test executable **under** procdump directly:\n```\nprocdump -accepteula -e -ma -x <dump_dir> <test_exe> --nocapture\n```\nThis works because procdump monitors the child process's exceptions\nin-process rather than relying on the JIT debugger dispatch.\n\n**Exit code headaches:** procdump exits 1 when no dumps are captured (i.e.\ntests pass normally). Fixes required:\n- `$PSNativeCommandUseErrorActionPreference = $false` for PowerShell 7.4+\n- Explicit `exit 0` at end of script to clear `$LASTEXITCODE`\n- Detection logic: check for `.dmp` files to determine crash vs clean pass\n\n### CI Workflow Setup\n\nBoth `intermittency.yml` and `main.yml` now:\n1. Download and extract procdump\n2. Build tests with `cargo test --no-run`\n3. Parse test executable paths from build output\n4. Run each executable under `procdump -e -ma -x`\n5. Check for `.dmp` files after each run (exit 1 if found)\n6. Upload crash dumps as artifacts on failure\n\nThe intermittency workflow runs 50 iterations per target (x86_64, i686) to\nincrease the chance of reproducing.\n\n## Crash Dump Analysis\n\nDump file: `scratch/ipc_channel_mux-e5e6125c0f2cadb5.exe_260326_174321.dmp`\nAnalysed with `minidump-stackwalk`.\n\n### Key Finding: STATUS_HEAP_CORRUPTION\n\nThe actual crash reason is **`STATUS_HEAP_CORRUPTION`** (0xC0000374), not\nACCESS_VIOLATION. Windows surfaces this as exit code 0xc0000005 to the parent\nprocess.\n\n- **Crashing thread:** Thread 4, running `mux_test::bytes_cross_thread`\n- **Crash location:** `ntdll.dll` heap management code (RtlpHeapHandleError)\n- **Other active test threads at crash time:**\n  - Thread 0 (main): waiting\n  - Thread 5: `mux_test::bytes_disconnect_all_cloned_senders_dropped`\n  - Thread 6: `mux_test::bytes_disconnect_cloned_sender_partial_drop`\n\n### What This Means\n\nHeap corruption means something wrote to freed memory, double-freed, or\noverflowed a heap buffer. The corruption happens at one point but the crash\noccurs later when the heap detects it during a subsequent allocation or free.\nThis explains:\n\n1. **Intermittency** — the corruption must be detected by a heap operation,\n   which depends on timing and allocation patterns\n2. **No Rust backtrace** — the crash is in the Windows heap manager, not in\n   Rust code, so the panic handler never runs\n3. **The faulting thread may not be the culprit** — `bytes_cross_thread`\n   triggered a heap operation that detected corruption caused by a different\n   thread or test\n\n### Stack Trace Summary (Thread 4, crashed)\n\n```\n 0  ntdll.dll + 0x117aa5          (RtlpHeapHandleError / heap validation)\n 3  VCRUNTIME140.dll + 0x55e2     (C runtime free/malloc)\n10  ipc_channel_mux + 0x34fbcf    (test executable code)\n11  ipc_channel_mux + 0x34f999\n...\n34  KERNELBASE.dll + 0xf347f\n```\n\nWithout debug symbols, the exact function names within the test executable\nare not resolved. The stack is mostly `ntdll.dll` heap routines interleaved\nwith test executable frames.\n\n## Known ipc-channel Bug (separate issue)\n\nThere is a known bug in ipc-channel 0.21.0 documented in\n`scratch/IPC_CHANNEL_BUG.md` where `try_recv_timeout` can silently lose\nmessages on Windows due to a race between `CancelIoEx` and read completion\nin `MessageReader::issue_async_cancel`. This is tracked via ipc-channel\nPR #449. Tests that trigger this bug are `#[ignore]`d.\n\nThe heap corruption may or may not be related to the same area of\nipc-channel's Windows named pipe handling.\n\n## Potential Root Causes\n\n1. **ipc-channel use-after-free in named pipe handling** — The Windows\n   implementation uses `AliasedCell` for overlapped I/O buffers. If a buffer\n   is freed while an overlapped operation is still in progress, the kernel\n   writes to freed memory → heap corruption.\n\n2. **Double-free in ipc-channel handle management** — `WinHandle` implements\n   `Drop` to call `CloseHandle`. If a handle is duplicated incorrectly or\n   the same handle value is closed twice, this could corrupt the heap.\n\n3. **Buffer overrun in deserialization** — If ipc-channel's message framing\n   is off by one or a message length field is corrupted, deserialization\n   could write past the end of a buffer.\n\n## Recommended Next Steps\n\n1. **Enable Page Heap** (`gflags /p /enable ipc_channel_mux*.exe /full`) in\n   CI to catch the corruption at the point it happens rather than when the\n   heap later detects it. This will give a much more useful stack trace\n   pointing to the actual offending code.\n\n2. **Build with debug symbols** and publish a symbol file alongside the dump\n   so `minidump-stackwalk` (or WinDbg) can resolve function names.\n\n3. **Run under Address Sanitizer** if MSVC ASan is available in the CI\n   toolchain (`-Zsanitizer=address` on nightly).\n\n## Additional Crash Dumps\n\nThree crash dumps have been captured and analysed. All show the same\nroot cause (`STATUS_HEAP_CORRUPTION`) but the crashing thread varies:\n\n| Dump file | Crashing thread | Test |\n|-----------|----------------|------|\n| `ipc_channel_mux-e5e6125c0f2cadb5.exe_260326_174321.dmp` | Thread 4 | `bytes_cross_thread` |\n| `ipc_channel_mux-e5e6125c0f2cadb5.exe_260326_175138.dmp` | Thread 0 | `main` |\n| `ipc_channel_mux-0b408fd255c8b4f7.exe_260330_160714.dmp` | Thread 5 | `receiving_many_subchannels` |\n\nAll three dumps share:\n- **OS:** Windows NT 10.0.26100 (Windows 11 24H2 / Server 2025) — the\n  `windows-latest` runner image\n- **Crash reason:** `STATUS_HEAP_CORRUPTION` (0xC0000374)\n- **Crash site:** `ntdll.dll + 0x117aa5` (`RtlpHeapHandleError`)\n- **Process uptime:** 0–1 seconds\n\nThe fact that different threads and different tests trigger the crash\nreinforces the theory that the corruption happens earlier and is only\ndetected when a later heap operation (malloc/free) runs the heap\nintegrity checks.\n\n## Runner Image Hypothesis\n\nAll dumps were captured on `windows-latest`, which currently resolves to\na **Windows Server 2025 / Windows 11 24H2** image (OS build 26100). The\nheap manager in this OS version may have stricter validation or different\nallocation patterns that surface latent corruption more aggressively than\nolder images.\n\nAs a mitigation, the CI workflows (`main.yml` and `intermittency.yml`)\nhave been pinned to `windows-2022` (Windows Server 2022, OS build\n20348). If the crashes stop on `windows-2022`, that would suggest either:\n- The corruption is triggered by a behavioural difference in the newer\n  Windows heap/pipe implementation, or\n- The newer heap manager detects pre-existing corruption that the older\n  one silently tolerates.\n\nEither way, pinning to `windows-2022` buys time while the upstream\nipc-channel issue is investigated.\n\n## Branch History\n\n```\n58e8160 Add intermittency workflow\n8ffa563 Enable Windows crash dump collection in CI workflows\nf94640c Switch from WER to procdump for crash dump collection\ne0ee3f6 Create CrashDumps directory before installing procdump\n26bed9a Run test executables under procdump instead of using JIT debugger\n8b35ec5 Use child process exit code instead of procdump exit code\nc0c7117 Fix procdump exit code handling in PowerShell 7.4+\n8d743c9 Exit 0 explicitly after procdump loop to clear LASTEXITCODE\nebea73d Re-enable tests\nade7f03 Pin Windows CI runners to windows-2022\n```\n"
+  }
+ ]
+}

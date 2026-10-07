@@ -1,0 +1,33 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 5776218,
+ "url": "https://stackoverflow.com/questions/5776218/dynamic-allocated-linked-list-in-c-what-to-do-after-exception-to-prevent-memor",
+ "title": "Dynamic allocated linked list in c++.What to do after exception to prevent memory leak?",
+ "tags": [
+  "c++",
+  "memory-leaks",
+  "linked-list",
+  "dynamic-allocation"
+ ],
+ "score": -1,
+ "view_count": 275,
+ "answer_count": 0,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2011-04-25T07:26:37Z",
+ "last_activity_utc": "2011-04-25T07:52:23Z",
+ "license": null,
+ "author_user_id": 466056,
+ "author_display_name": "YAKOVM",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/5776218/dynamic-allocated-linked-list-in-c-what-to-do-after-exception-to-prevent-memor",
+ "body_html": "<blockquote>\n  <p><strong>Possible Duplicate:</strong><br>\n  <a href=\"https://stackoverflow.com/questions/5776206/dynamically-allocated-linked-list-in-c-what-to-do-after-exception-to-prevent-me\">Dynamically allocated linked list in c++.What to do after exception to prevent memory leak?</a>  </p>\n</blockquote>\n\n\n\n<p>I like to implement linked list in c++ ,while adding new node I dynamically allocate it,\nif some allocation fails I would like my program to stop the execution.</p>\n\n<p>After the \"new Node\" fails the exception is thrown so do I have to call the destructor explicitly in the exception handler.\nhow can I deal with this situation in order to prevent memory leak?\nOk here is my code</p>\n\n<p>LinkedList.h</p>\n\n<pre><code>#pragma once\n#include &lt;iostream&gt;\n#include &lt;string.h&gt;\nusing namespace std;\n\nclass LinkedList\n{\npublic:\n    class Iterator; \nprivate:\n    class Node\n    {\n        friend class Iterator;\n        friend class LinkedList;\n        char* m_word;\n        Node *m_next;\n        Node(const char* word,Node* next = NULL,Node* prev = NULL);\n        ~Node();\n    };\n    Node *m_head,*m_tail;\n    size_t m_num;\npublic:\n    LinkedList():m_head(NULL),m_tail(NULL),m_num(0){};\n    ~LinkedList();\n    LinkedList&amp; addFirst(const char* word);\n    LinkedList&amp; addLast(const char* word);\n    Iterator erase(Iterator&amp; it);\n    Iterator begin();\n    Iterator end();\n    Iterator find(const char* word);\n    size_t size()const{return m_num;};\n    void print();\n\n    friend class Iterator;\n    class Iterator\n    {\n        LinkedList&amp; m_list;\n        Node *m_prev,*m_cur;\n        friend class LinkedList;\n        void next();\n        void setLast(){m_cur = NULL,m_prev = m_list.m_tail;}\n    public:\n        Iterator(LinkedList&amp; linkedList):m_list(linkedList),m_prev(NULL),m_cur(linkedList.m_head){}\n        Iterator&amp; operator++();\n        char* operator*();\n        bool operator != (Iterator&amp; it){return (m_cur != it.m_cur || m_prev != it.m_prev);}\n    };\n};\n</code></pre>\n\n<p>LinkedList.cpp</p>\n\n<pre><code>#include \"LinkedList.h\"\n\n\nLinkedList::Node::Node(const char* word,LinkedList::Node* prev,LinkedList::Node *next)\n{\n    char* tmpWord = new char[strlen(word)+1];\n    strcpy(tmpWord,word);\n    m_word = tmpWord;\n    m_next = next;\n    if(prev != NULL)\n        prev-&gt;m_next = this;\n}\nLinkedList::Node::~Node()\n{\n    delete[] m_word;\n}\n\nLinkedList::~LinkedList(void)\n{\n    for(Iterator it = begin();it != end();)\n        erase(it);\n}\nLinkedList&amp; LinkedList::addFirst(const char* word)\n{\n    Node* node = new Node(word,NULL,m_head);\n    m_head = node;\n    if(m_tail == NULL)\n        m_tail = m_head;\n    ++m_num;\n    return *this;\n}\nLinkedList&amp; LinkedList::addLast(const char*word)\n{\n    if(m_head == NULL)\n        addFirst(word);\n    else\n    {\n        Node* node = new Node(word,m_tail,NULL);\n        m_tail = node;\n    }\n    ++m_num;\n    return *this;\n}\nLinkedList::Iterator LinkedList::begin()\n{\n    Iterator it(*this);\n    return it;\n}\nLinkedList::Iterator LinkedList::end()\n{\n    Iterator it(*this);\n    it.setLast();\n    return it;\n}\nLinkedList::Iterator LinkedList::erase(LinkedList::Iterator&amp; it)\n{\n    if(it.m_cur != NULL)\n    {\n        Node* tmp = it.m_cur;\n        if(it.m_prev != NULL)\n            it.m_cur = it.m_prev-&gt;m_next = tmp-&gt;m_next;\n        else\n            it.m_cur = it.m_list.m_head = tmp-&gt;m_next;\n        if(tmp == it.m_list.m_tail)\n            it.m_list.m_tail = NULL;\n        delete tmp;\n        --m_num;\n    }\n    return it;\n}\nLinkedList::Iterator LinkedList::find(const char* word)\n{\n    Iterator it = begin();\n    for(;it != end();++it)\n    {\n        if(!strcmp(it.m_cur-&gt;m_word,word))\n            break;\n    }\n    return it;\n}\n\nvoid LinkedList::Iterator::next()\n{\n    if(m_cur != NULL)\n    {\n        m_prev = m_cur;\n        m_cur = m_cur-&gt;m_next;\n    }\n    else\n        m_prev = NULL;\n    return;\n}\nvoid LinkedList::print()\n{\n    for(Iterator it = begin();it !=end();++it)\n        cout &lt;&lt; it.m_cur-&gt;m_word;\n}\nLinkedList::Iterator&amp; LinkedList::Iterator::operator ++()\n{\n    next();\n    return *this;\n}\nchar* LinkedList::Iterator::operator *()\n{\n    return m_cur-&gt;m_word;\n}\n\n//int main()\n//{\n//  LinkedList ll;\n//  ll.addFirst(\"1\");\n//  ll.addFirst(\"2\");\n//  ll.addLast(\"3\");\n//  ll.addLast(\"4\");\n//  LinkedList::Iterator it = ll.find(\"5\");\n//  return 0;\n//}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": []
+}

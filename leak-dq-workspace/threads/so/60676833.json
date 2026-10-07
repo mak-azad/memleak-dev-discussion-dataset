@@ -1,0 +1,69 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 60676833,
+ "url": "https://stackoverflow.com/questions/60676833/why-valgrind-report-my-memory-as-definitely-lost-12-or-24-bytes-using-glut-and-p",
+ "title": "Why valgrind report my memory as definitely lost 12 or 24 bytes using GLUT and PORTAUDIO",
+ "tags": [
+  "c++",
+  "opengl",
+  "valgrind",
+  "freeglut",
+  "portaudio"
+ ],
+ "score": 2,
+ "view_count": 250,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2020-03-13T20:22:44Z",
+ "last_activity_utc": "2020-03-13T20:59:42Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 13059033,
+ "author_display_name": "ivan rojas",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/60676833/why-valgrind-report-my-memory-as-definitely-lost-12-or-24-bytes-using-glut-and-p",
+ "body_html": "<p>I wrote some code with <code>portaudio</code> and tested it with Valgrind. As a result, I got \"0 bytes definitely lost\". But, when I mixed it with the <code>glut</code> (freeglut) library to include graphics, I got \"24 bytes definitely lost\".</p>\n\n<p>In the code below I simply added <code>glutCreateWindow( \"OpenGL\" )</code> and then I got the memory leak in Valgrind's report. I'm using glew, freeglut, portaudio, sndfile libraries. Does any know what is happening here?</p>\n\n<pre><code>#include \"util.h\"\n#include \"sound.h\"\n#include &lt;unistd.h&gt;\n\n/*Funcion main para creacion de hilos de reproduccion*/\nint main(int argc, char* args[]){\n    sound::loadStream(\"../pacman.wav\");// this function do Pa_Initiliaze()/Pa_OpenDefaultStream()/ \n                                       //Pa_StartStream()/\n    sound::loadStream(\"../ya_te.wav\");\n     glutInit( &amp;argc, args );\n    //Create OpenGL 2.1 context\n    glutInitContextVersion( 2, 1 );\n    //Create Double Buffered and RGBA Window\n    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH );\n    glutInitWindowSize( 1920, 1080 ); //size of window\n    glutCreateWindow( \"OpenGL\" ); // leak memory start at this line\n    sound::changeState(0,PLAY);  //this fucntion change pacman.wav state to PLAY in portaudio \n                                 //callback\n    sound::changeState(1,PLAY); // this function change ya_te.wav state to PLAY in portaudio \n                                //callback\n    sleep(1); // sleep for 1 second\n    sound::soundTerminate(); // this function do Pa_closeStream , Pa_terminate();\n    glutDestroyWindow(glutGetWindow());\n    return 0;\n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 60676920,
+   "parent_id": 60676833,
+   "author_user_id": 10871073,
+   "author_display_name": "Adrian Mole",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/60676920",
+   "score": 1,
+   "created_utc": "2020-03-13T20:32:19Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2020-03-13T20:32:19Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>You aren't 'keeping track' of the window created in your call to <code>glutCreateWindow</code>, which means that (as Valgrind sees it) you can never properly free the memory used by that window.</p>\n\n<p>You should store the return value of the call, like this:</p>\n\n<pre class=\"lang-cpp prettyprint-override\"><code>int winID = glutCreateWindow( \"OpenGL\" );\n</code></pre>\n\n<p>and then use the saved window identifier in your subsequent call to destroy it:</p>\n\n<pre class=\"lang-cpp prettyprint-override\"><code>glutDestroyWindow(winID);\n</code></pre>\n\n<p>NOTE: Even though your use of <code>glutGetWindow()</code> will (most likely) return the same value, Valgrind does not (or cannot) know this.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 111802674,
+   "parent_id": 60676920,
+   "parent_type": "answer",
+   "author_user_id": 4410376,
+   "author_display_name": "Hack06",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/60676833/#comment111802674_60676920",
+   "score": 0,
+   "created_utc": "2020-08-03T08:34:05Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "While this is a good informative answer, but I still keep getting valgrind complaining about lost memory."
+  }
+ ]
+}

@@ -1,0 +1,68 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 7875764,
+ "url": "https://stackoverflow.com/questions/7875764/using-qsharedpointer-with-new-yields-mismatched-free-delete-delete-i",
+ "title": "Using QSharedPointer with new[] yields \"Mismatched free() / delete / delete[]\" in valgrind",
+ "tags": [
+  "c++",
+  "qt",
+  "smart-pointers",
+  "qsharedpointer"
+ ],
+ "score": 4,
+ "view_count": 2506,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 7875821,
+ "created_utc": "2011-10-24T12:40:22Z",
+ "last_activity_utc": "2015-10-22T16:09:17Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 818924,
+ "author_display_name": "arne",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/7875764/using-qsharedpointer-with-new-yields-mismatched-free-delete-delete-i",
+ "body_html": "<p>I have the following code:</p>\n\n<pre><code>QPair&lt;QSharedPointer&lt;unsigned int&gt;, int&gt; someclass::somefunction() {\n    int siz = data_size();\n    QSharedPointer&lt;unsigned int&gt; buffer(new unsigned int[siz]);\n\n    // Fill the buffer...\n\n    return qMakePair(buffer, siz);\n}\n</code></pre>\n\n<p>At some point, the <code>QSharedPointer</code> returned by this function will go out of scope and the pointer set in the constructor will be free'd. Using valgrind 3.6.1, I get a \"Mismatched free() / delete / delete[]\" error. Is there anything wrong with my use of <code>QSharedPointer</code> or do I just have to live with this valgrind warning?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 7875821,
+   "parent_id": 7875764,
+   "author_user_id": 818924,
+   "author_display_name": "arne",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/7875821",
+   "score": 12,
+   "created_utc": "2011-10-24T12:44:39Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2011-10-24T12:44:39Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>One way to fix this is to write a custom deleter and pass that to the constructor of <code>QSharedPointer</code> like so:</p>\n\n<pre><code>template &lt;typename T_&gt;\nvoid do_delete(T_ buf[])\n{\n    delete[] buf;\n}\n</code></pre>\n\n<p>And then</p>\n\n<pre><code>QSharedPointer&lt;unsigned int&gt; buffer(new unsigned int[siz], do_delete&lt;unsigned int&gt;);\n</code></pre>\n\n<p>I am not sure whether there is a more elegant solution (which would be nice)</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 9610047,
+   "parent_id": 7875821,
+   "parent_type": "answer",
+   "author_user_id": 229686,
+   "author_display_name": "edA-qa mort-ora-y",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/7875764/#comment9610047_7875821",
+   "score": 3,
+   "created_utc": "2011-10-24T12:50:49Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "Qt is simply missing the array counterpart, like boost::shared_array. So is C++11 missing that. So you have the best solution."
+  }
+ ]
+}

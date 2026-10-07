@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/tuna-os/tunaos-packages/issues/540",
+ "passes": [
+  "main"
+ ],
+ "title": "gtk4 is served but uninstallable: nothing provides libgstplay-1.0.so.0 (gstreamer1-plugins-bad-free unbuilt)",
+ "author_login": "hanthor",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:37Z",
+ "final_url": "https://github.com/tuna-os/tunaos-packages/issues/540",
+ "repo": "tuna-os/tunaos-packages",
+ "repo_language": "Python",
+ "number": 540,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-26T08:44:01Z",
+ "updated_at": "2026-09-30T14:16:45Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "hanthor",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-26T08:44:01Z",
+   "updated_utc": "2026-09-30T14:16:45Z",
+   "permalink": "https://github.com/tuna-os/tunaos-packages/issues/540",
+   "body_markdown": "`gtk4` is published in the hummingbird prefix and **cannot install**. Everything behind it — the GNOME 51 stack — is blocked on one unbuilt package.\n\n## Measured\n\nRead from the served indexes, not inferred:\n\n```\ngtk4       (gtk4-4.22.1-2.fc43.src.rpm)  unmet: gstreamer1-plugins-bad-free-libs(x86-64)\n                                                libgstplay-1.0.so.0()(64bit)\ngtk4-devel (gtk4-4.22.1-2.fc43.src.rpm)  unmet: libgstplay-1.0.so.0()(64bit)\n```\n\nNeither capability is provided by the hummingbird base (`packages.redhat.com/.../public-hummingbird/x86_64/`) nor by anything the factory has published to `repo.tunaos.org/hummingbird/20251124-x86_64/`. `gstreamer1-plugins-bad-free-libs` is not in either index.\n\n**A near miss worth recording**, because it is easy to convince yourself otherwise: a substring search for `libgstplay` in the served provides *does* hit — on `libgstplayback.so()(64bit)`, from `gstreamer1-plugins-base`. That is a different library. `libgstplayback.so` is a playback **plugin** from `-base`; `libgstplay-1.0.so.0` is the **GstPlay library** from `-bad-free`. Match the exact capability string.\n\n## Why it matters\n\n`gstreamer1-plugins-bad-free` sits at **layer-05** of `build-order-hummingbird-desktops.yml`, beside `gstreamer1-plugins-base` and `gtk4` — both of which build and are served. It is one of 103 source packages out of 673 that the chain has not produced. Because `gtk4` is a dependency of essentially the whole desktop, this single package gates the GNOME 51 goal.\n\n## What is NOT the cause\n\nRuled out rather than assumed:\n\n- **Not unsatisfiable BuildRequires.** `scripts/preflight-buildrequires.py --target hummingbird` reports exactly one package that cannot build across all 673, and it is `SwayNotificationCenter` (`pkgconfig(granite-7)`, a Fedora-wide FTBFS). `gstreamer1-plugins-bad-free` is not blocked at the name or the version level.\n- **Not a missing recipe.** It is a `distgit:` entry, so `src/hummingbird/gstreamer1-plugins-bad-free/` is absent on disk by design and materialized at build time.\n- **Probably not its `bootstrap: true` key.** A reduced bootstrap build that omits GstPlay would explain a package that succeeds without producing `libgstplay-1.0.so.0`, but nothing in `scripts/build-chain.sh` or `scripts/run-package-factory-cell.sh` reads a per-package `bootstrap` key — `scripts/copr-build-chain.py` filters spec *filenames* containing `bootstrap`, which is a different thing. Recorded as a hypothesis that did not survive checking, not as a finding.\n\n## What would answer it\n\nThe chain log for the cell that last attempted layer-05. Job logs return HTTP 404 while a job is running, so this needs a completed run. When reading it, find the package's own `package     : gstreamer1-plugins-bad-free` block rather than the nearest `ERROR:` line — the chain runs `jobs=2` and interleaves output, so a failure routinely prints inside a different package's mock lines.\n\nTwo outcomes to distinguish:\n\n1. It **fails to build** — then the error is the work.\n2. It **builds but ships no `libgstplay`** — then the packaging is the work, and `gtk4`'s requirement is the thing that is wrong.\n\n## Do not work around it by relaxing gtk4\n\n`gtk4.spec` carries a `%{rhel}` guard that drops the GStreamer dependency, and extending it to hummingbird would make `gtk4` installable immediately. That exemption exists because the dependency is genuinely circular on EL10 — `bad-free-libs` needs gtk3, which EL10 dropped. Hummingbird builds gtk3 and serves it, so the reasoning does not carry over. Taking that shortcut trades GTK4 video playback for build-order convenience."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5913105807,
+   "author_login": "hanthor",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-30T14:16:45Z",
+   "updated_utc": "2026-09-30T14:16:45Z",
+   "permalink": "https://github.com/tuna-os/tunaos-packages/issues/540#issuecomment-5913105807",
+   "body_markdown": "Following the convergence refactor in #631 (commit `447c37e`), GNOME 51 on Hummingbird is consumed from `projectbluefin/utah-packages` by digest.\n\nMeasurement against the live indexes via `scripts/check-hummingbird-installability.py` confirms:\n- Consumed `gtk4` (from `utah-packages`) and published `qt6-qtmultimedia` (from `tunaos-hummingbird`) both require `libgstplay-1.0.so.0()(64bit)` provided by `gstreamer1-plugins-bad-free-libs`.\n- Neither `public-hummingbird`, `utah-packages`, nor the published `tunaos-hummingbird` repository currently provides `gstreamer1-plugins-bad-free-libs`.\n- In `tunaos-packages`, `gstreamer1-plugins-bad-free` is properly declared in `manifests/catalog.yaml` and placed at `layer-14` in `build-order-hummingbird-desktops.yml` as a dist-git package. Rawhide's spec correctly packages `libgstplay-1.0.so.0` in the `-libs` subpackage.\n\nThis issue is blocked waiting for the package factory pipeline to build and publish `gstreamer1-plugins-bad-free` (layer-14) to the Hummingbird repository prefix `repo.tunaos.org/hummingbird/20251124-x86_64/` (or for upstream `projectbluefin/utah-packages` to build and publish it).\n\n— hive: backend=agy model=gemini-3.7-flash-high effort=low\n\n---\n🐝 **Hive Agent**: `contributor` | **SHA:** `c68ec01`"
+  }
+ ]
+}

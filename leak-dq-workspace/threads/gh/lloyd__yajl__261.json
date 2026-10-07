@@ -1,0 +1,65 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lloyd/yajl/issues/261",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug]memory leak in yajl_tree_parse on parse-failure path (CWE-401)",
+ "author_login": "1820893135-pixel",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:03Z",
+ "final_url": "https://github.com/lloyd/yajl/issues/261",
+ "repo": "lloyd/yajl",
+ "repo_language": "C",
+ "number": 261,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-03T07:45:44Z",
+ "updated_at": "2026-09-23T07:09:21Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "789",
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "1820893135-pixel",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-03T07:45:44Z",
+   "updated_utc": "2026-09-23T07:09:21Z",
+   "permalink": "https://github.com/lloyd/yajl/issues/261",
+   "body_markdown": "## Summary\n\nWhen parsing **fails partway** (e.g. unterminated array/object, syntax error), `yajl_tree_parse()` only calls `yajl_free(handle)` to release the parser handle, but the **partially-built DOM tree already allocated on the heap through the callbacks (`ctx.root` and all its children) is never freed**, and the function returns NULL. The memory allocated by `context_push`/`value_alloc` leaks. Continuously feeding malicious/malformed JSON to a service using `yajl_tree_parse` accumulates memory until the process runs out (measured: ~43,384,151 allocations ≈ 1.2 GB leaked in a 60-second fuzz run), i.e. a **memory-exhaustion DoS**.\n\n- **Affected versions**: YAJL 2.1.1 / HEAD `5e3a785` (2015-09-24)\n- **Severity**: Medium (remote DoS, no RCE; can exhaust memory without authentication)\n- **CWE**: CWE-401 (Missing Release of Memory after Effective Lifetime)\n\n## Detail\n\n### Affected code\n\nThe leak root cause is in `src/yajl_tree.c`. The DOM builder relies on heap allocations in `value_alloc` and `context_push`:\n\n```c\n/* src/yajl_tree.c:60-72 */\nstatic yajl_val value_alloc (yajl_type type)\n{\n    yajl_val v;\n\n    v = malloc (sizeof (*v));          /* heap allocation, must be freed on error path */\n    if (v == NULL) return (NULL);\n    memset (v, 0, sizeof (*v));\n    v->type = type;\n\n    return (v);\n}\n\n/* src/yajl_tree.c:113-133 */\nstatic int context_push(context_t *ctx, yajl_val v)\n{\n    stack_elem_t *stack;\n\n    stack = malloc (sizeof (*stack));  /* heap allocation, must be freed on error path */\n    if (stack == NULL)\n        RETURN_ERROR (ctx, ENOMEM, \"Out of memory\");\n    memset (stack, 0, sizeof (*stack));\n\n    assert ((ctx->stack == NULL)\n            || YAJL_IS_OBJECT (v)\n            || YAJL_IS_ARRAY (v));\n\n    stack->value = v;\n    stack->next = ctx->stack;\n    ctx->stack = stack;\n\n    return (0);\n}\n```\n\nThe error-handling path of `yajl_tree_parse` **only frees the handle, not the built tree**:\n\n```c\n/* src/yajl_tree.c:403-445 (excerpt) */\nyajl_val yajl_tree_parse (const char *input,\n                          char *error_buffer, size_t error_buffer_size)\n{\n    ...\n    context_t ctx = { NULL, NULL, NULL, 0 };\n    ...\n    handle = yajl_alloc (&callbacks, NULL, &ctx);\n    yajl_config(handle, yajl_allow_comments, 1);\n\n    status = yajl_parse(handle,\n                        (unsigned char *) input,\n                        strlen (input));\n    status = yajl_complete_parse (handle);\n    if (status != yajl_status_ok) {\n        if (error_buffer != NULL && error_buffer_size > 0) {\n               internal_err_str = (char *) yajl_get_error(handle, 1,\n                     (const unsigned char *) input,\n                     strlen(input));\n             snprintf(error_buffer, error_buffer_size, \"%s\", internal_err_str);\n             YA_FREE(&(handle->alloc), internal_err_str);\n        }\n        yajl_free (handle);            /* <-- frees only the handle */\n        return NULL;                   /* <-- DOM tree on ctx.root is dropped, leaks */\n    }\n\n    yajl_free (handle);\n    return (ctx.root);\n}\n```\n\n`context_t` holds `root` and the parse stack `stack`, but the error path never touches them:\n\n```c\n/* src/yajl_tree.c:32-44 */\nstruct context_s\n{\n    stack_elem_t *stack;    /* parse stack, contains intermediate pushed nodes */\n    yajl_val root;          /* root of the partially-built DOM tree */\n    char *errbuf;\n    size_t errbuf_size;\n};\ntypedef struct context_s context_t;\n```\n\n**Root cause**: the callbacks (`handle_start_array`/`handle_start_map`/`handle_number`, etc.) attach nodes to `ctx` via `value_alloc` + `context_push`, but when `yajl_complete_parse` returns failure, only `yajl_free(handle)` is called — **none of the heap nodes reachable from `ctx.stack` and `ctx.root` are reclaimed**.\n\n`yajl_tree_free` already exists (see below), showing the author knew the tree must be released recursively; the **error path simply forgot to call it**:\n\n```c\n/* src/yajl_tree.c:478-503 */\nvoid yajl_tree_free (yajl_val v)\n{\n    if (v == NULL) return;\n\n    if (YAJL_IS_STRING(v))\n    {\n        free(v->u.string);\n        free(v);\n    }\n    else if (YAJL_IS_NUMBER(v))\n    {\n        free(v->u.number.r);\n        free(v);\n    }\n    else if (YAJL_GET_OBJECT(v))\n    {\n        yajl_object_free(v);\n    }\n    else if (YAJL_GET_ARRAY(v))\n    {\n        yajl_array_free(v);\n    }\n    else\n    {\n        free(v);\n    }\n}\n```\n\n## POC\n\nTriggering input (7 bytes, cfg 0x40 enables the DOM parser):\n\n```bash\n# Input bytes (hex): 40 5b 31 2c 32 2c 33  i.e. @[1,2,3 (unterminated array)\n# 0x40 = cfg bit, enables the yajl_tree_parse DOM path\n\n# Repro command (leak detection enabled)\nASAN_OPTIONS=detect_leaks=1 ./yajl_fuzzer -runs=0 verify/repro_tree_parse_leak.bin\n```\n\nRepro directly via the `yajl_tree_parse` API:\n\n```c\n#include <yajl/yajl_tree.h>\nint main(void) {\n    for (int i = 0; i < 100000; i++) {\n        char *errbuf[200];\n        yajl_val v = yajl_tree_parse(\"[1,2,3\", errbuf, sizeof(errbuf));\n        /* returns NULL on parse failure, but the partial DOM leaks */\n        /* if non-NULL, yajl_tree_free(v) must also be called */\n    }\n    return 0;\n}\n```\n\n## Trigger result\n\n```\n==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 24 bytes in 1 object(s) allocated from:\n    #0 __interceptor_malloc\n    #1 context_push  src/yajl_tree.c:117\n    #2 handle_start_array  src/yajl_tree.c:233\n    #3 ...\n\nIndirect leak of 8 bytes in 1 object(s) allocated from:\n    #0 __interceptor_malloc\n    #1 value_alloc  src/yajl_tree.c:63\n    #2 handle_number  src/yajl_tree.c:298\n    ...\n```\n\n- Replay exit code: `77` (LSAN fails by default)\n- Measured leak scale: ~**43,384,151 allocations ≈ 1.2 GB** leaked in a 60-second fuzz run, blowing through libFuzzer's 2048 MB / 8192 MB RSS limits and triggering an OOM abort\n\n## Suggested fix\n\n1. **Call `yajl_tree_free` in the failure branch of `yajl_tree_parse` to recursively release the built tree**:\n\n```c\nif (status != yajl_status_ok) {\n    if (error_buffer != NULL && error_buffer_size > 0) {\n        internal_err_str = (char *) yajl_get_error(handle, 1,\n              (const unsigned char *) input, strlen(input));\n        snprintf(error_buffer, error_buffer_size, \"%s\", internal_err_str);\n        YA_FREE(&(handle->alloc), internal_err_str);\n    }\n    yajl_free (handle);\n    yajl_tree_free (ctx.root);        /* <-- new: free the built DOM */\n    ctx.root = NULL;\n    return NULL;\n}\n```\n\n2. **Release every `stack_elem_t` still on the parse stack `ctx.stack`** (including its `value`), since those nodes have not yet been linked into `root`:\n\n```c\nstatic void context_stack_free(context_t *ctx) {\n    stack_elem_t *cur = ctx->stack;\n    while (cur) {\n        stack_elem_t *next = cur->next;\n        yajl_tree_free(cur->value);\n        free(cur);\n        cur = next;\n    }\n    ctx->stack = NULL;\n}\n```\n\n3. **Walk the stack before `yajl_free(handle)`** — the top of the stack holds partially-built containers, so free them recursively and null out the root:\n\n```c\nif (status != yajl_status_ok) {\n    ...\n    context_stack_free(&ctx);\n    yajl_tree_free(ctx.root);\n    yajl_free (handle);\n    return NULL;\n}\n```\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5183728493,
+   "author_login": "robohack",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-08-04T19:35:59Z",
+   "updated_utc": "2026-08-04T19:35:59Z",
+   "permalink": "https://github.com/lloyd/yajl/issues/261#issuecomment-5183728493",
+   "body_markdown": "This also looks like AI slop.\n\nThere is a related bug in the this original yajl version, #223, but these suggested fixes are all wrong.\n\nSee this commit in my version:  https://github.com/robohack/yajl/commit/38220afaffaf4fdf6770cdfad42960e19de164ed\n\nThat fix in my version has actually been tested rigorously.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5790600689,
+   "author_login": "1820893135-pixel",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-23T07:09:21Z",
+   "updated_utc": "2026-09-23T07:09:21Z",
+   "permalink": "https://github.com/lloyd/yajl/issues/261#issuecomment-5790600689",
+   "body_markdown": "Fixed in #264 (the failure path now releases the open stack elements and the partially built tree before returning NULL)."
+  }
+ ]
+}

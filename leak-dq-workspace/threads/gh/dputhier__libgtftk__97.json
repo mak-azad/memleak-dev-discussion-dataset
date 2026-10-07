@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/dputhier/libgtftk/issues/97",
+ "passes": [
+  "main"
+ ],
+ "title": "pointer being freed was not allocated",
+ "author_login": "dputhier",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:57Z",
+ "final_url": "https://github.com/dputhier/libgtftk/issues/97",
+ "repo": "dputhier/libgtftk",
+ "repo_language": "C",
+ "number": 97,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2019-02-01T09:50:07Z",
+ "updated_at": "2019-02-01T09:51:23Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dputhier",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-02-01T09:50:07Z",
+   "updated_utc": "2019-02-01T09:51:23Z",
+   "permalink": "https://github.com/dputhier/libgtftk/issues/97",
+   "body_markdown": "Consider the following (in branch **blast_to_gtf of pygtftk**). This branch contains the latest ligtftk release (develop branch).\r\n\r\n\tfrom pygtftk.gtf_interface import GTF\r\n\tdef native_str(x):\r\n\t\treturn bytes(x.encode())\r\n\tblast = GTF._dll.load_blast(native_str('blastn.blast'))\r\n        blast.size\r\n       [1]    22657 segmentation fault  ipython\r\n\r\n\r\nNB: in this branch, **blastn.blast** can be found in **pygtftk/data/mini_real_10M/ (as a gzip file)**. This file was obtained by blasting the computed sequence of transcripts (**mini_real_10M_tx_seq.fa**) against the genome region (**chr1_hg38_10M.fa**).\r\n\r\nCheers"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 459666908,
+   "author_login": "dputhier",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-02-01T09:51:23Z",
+   "updated_utc": "2019-02-01T09:51:23Z",
+   "permalink": "https://github.com/dputhier/libgtftk/issues/97#issuecomment-459666908",
+   "body_markdown": "I guess this could be a OSX one..."
+  }
+ ]
+}

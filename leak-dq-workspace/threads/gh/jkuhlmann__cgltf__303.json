@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/jkuhlmann/cgltf/issues/303",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug] Memory leak in cgltf_write_file() when fopen() fails",
+ "author_login": "trustqq",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:58Z",
+ "final_url": "https://github.com/jkuhlmann/cgltf/issues/303",
+ "repo": "jkuhlmann/cgltf",
+ "repo_language": "C",
+ "number": 303,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-27T03:25:31Z",
+ "updated_at": "2026-08-27T08:59:56Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "trustqq",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-27T03:25:31Z",
+   "updated_utc": "2026-08-27T08:59:56Z",
+   "permalink": "https://github.com/jkuhlmann/cgltf/issues/303",
+   "body_markdown": "## Summary\n\n`cgltf_write_file()` allocates a buffer, serializes the entire document into it, and then — if the output file cannot be opened — returns `cgltf_result_file_not_found` without freeing the buffer. The buffer holds the fully serialized output (as large as the file itself would be), so every failed call leaks that amount of memory.\n\n## Affected code\n\n`cgltf_write.h`, function `cgltf_write_file()`\n(verified on master @ `85cd62382dfea638278962690cf515023f33ed00`)\n\n## Details\n\nThe allocation and serialization happen before the file is opened:\n\n```c\n/* cgltf_write.h:1247-1249 */\ncgltf_size expected = cgltf_write(options, NULL, 0, data);\nchar* buffer = (char*) malloc(expected);\ncgltf_size actual = cgltf_write(options, buffer, expected, data);\n```\n\nThe error path then returns without freeing `buffer`:\n\n```c\n/* cgltf_write.h:1253-1257 */\nFILE* file = fopen(path, \"wb\");\nif (!file)\n{\n    return cgltf_result_file_not_found;   /* buffer leaks here */\n}\n```\n\nThe success path frees the buffer at line 1266 (`free(buffer);`), so only this error path is missing the `free()`.\n\n## Steps to reproduce\n\n```c\ncgltf_options options = {0};\n/* data: any valid cgltf_data */\n\n/* Output directory does not exist (or path is not writable): */\ncgltf_result res = cgltf_write_file(&options, \"/nonexistent_dir/out.gltf\", data);\n/* res == cgltf_result_file_not_found; `expected` bytes leaked */\n```\n\nNo OOM is involved — any unopenable output path (missing directory, no write permission) triggers the leak. Because the leaked amount equals the size of the fully serialized file, a long-running application that retries saving can accumulate significant memory.\n\n## Suggested fix\n\n```c\nFILE* file = fopen(path, \"wb\");\nif (!file)\n{\n    free(buffer);   /* add this line */\n    return cgltf_result_file_not_found;\n}\n```\n\n## Metadata\n\n- Detector: static analysis (MemLeak)\n- CWE: CWE-401 (Missing Release of Memory after Effective Lifetime)\n- Severity: MEDIUM\n"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/eclipse-paho/paho.mqtt.cpp/issues/576",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in property::operator= (copy and move)",
+ "author_login": "ErikDervishi03",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:52Z",
+ "final_url": "https://github.com/eclipse-paho/paho.mqtt.cpp/issues/576",
+ "repo": "eclipse-paho/paho.mqtt.cpp",
+ "repo_language": "C++",
+ "number": 576,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-10T11:43:27Z",
+ "updated_at": "2026-07-11T16:26:18Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ErikDervishi03",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-10T11:43:27Z",
+   "updated_utc": "2026-07-11T16:26:18Z",
+   "permalink": "https://github.com/eclipse-paho/paho.mqtt.cpp/issues/576",
+   "body_markdown": "Both assignment operators of mqtt::property (src/properties.cpp) overwrite the internal MQTTProperty without freeing the heap buffer the object already owns. \ncopy() does memcpy then malloc, never freeing the old buffers\nmove-assign does memcpy + memset, never freeing the old buffers\n\nConfirmed on 1.6.0\n\n```bash\n./leak_poc copy\n\n=================================================================\n==41539==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 100 byte(s) in 1 object(s) allocated from:\n    #0 0x7f60f14b89cf in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69\n    #1 0x7f60f13b464e in mqtt::property::property(mqtt::property::code, mqtt::buffer_ref<char>) (/usr/local/lib/libpaho-mqttpp3.so.1+0x10e64e)\n    #2 0x55f963829aaf in leak_via_copy /home/.../mqtt/leak_poc.cpp:24\n    #3 0x55f963829e41 in main /home/.../mqtt/leak_poc.cpp:33\n    #4 0x7f60f0d65249 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\n\nSUMMARY: AddressSanitizer: 100 byte(s) leaked in 1 allocation(s).\n```\n```bash\n./leak_poc move     \n\n=================================================================\n==41585==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 100 byte(s) in 1 object(s) allocated from:\n    #0 0x7fac8b4b89cf in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69\n    #1 0x7fac8b3b464e in mqtt::property::property(mqtt::property::code, mqtt::buffer_ref<char>) (/usr/local/lib/libpaho-mqttpp3.so.1+0x10e64e)\n    #2 0x564b4286f609 in leak_via_move /home/.../mqtt/leak_poc.cpp:17\n    #3 0x564b4286fdf9 in main /home/.../leak_poc.cpp:32\n    #4 0x7fac8ad65249 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\n\nSUMMARY: AddressSanitizer: 100 byte(s) leaked in 1 allocation(s).\n```\n\nyou can find the poc here https://gist.github.com/ErikDervishi03/7e56e7775b755a79392cf9e6cedc37dc\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4947605085,
+   "author_login": "fpagliughi",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-11T16:25:14Z",
+   "updated_utc": "2026-07-11T16:25:14Z",
+   "permalink": "https://github.com/eclipse-paho/paho.mqtt.cpp/issues/576#issuecomment-4947605085",
+   "body_markdown": "Thanks for the report. I'll have a look."
+  }
+ ]
+}

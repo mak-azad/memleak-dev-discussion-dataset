@@ -1,0 +1,34 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 28475194,
+ "url": "https://stackoverflow.com/questions/28475194/clang-address-sanitizer-detect-leaks-for-sdl2",
+ "title": "Clang address sanitizer detect leaks for SDL2",
+ "tags": [
+  "c++",
+  "memory-leaks",
+  "sdl",
+  "sdl-2",
+  "clang++"
+ ],
+ "score": 4,
+ "view_count": 648,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2015-02-12T10:35:05Z",
+ "last_activity_utc": "2015-02-12T10:35:05Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 2352158,
+ "author_display_name": "coincoin",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/28475194/clang-address-sanitizer-detect-leaks-for-sdl2",
+ "body_html": "<p>I get leaks whenever I initialize SDL2 routines.\ne.g this simple code </p>\n\n<pre><code>#include &lt;iostream&gt;\n#include &lt;SDL.h&gt;\n\nint main() {\n    if (SDL_Init(SDL_INIT_VIDEO) != 0){\n        std::cerr &lt;&lt; \"SDL_Init error: \" &lt;&lt; SDL_GetError() &lt;&lt; std::endl;\n        return 1;\n    }\n\n    SDL_Quit();\n    return 0;\n}\n</code></pre>\n\n<p>gives me using Clang flag -fsanitize=address :</p>\n\n<pre><code>==11672==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 12 byte(s) in 2 object(s) allocated from:\n    #0 0x49b1db in malloc (/home/***/build/a.out+0x49b1db)\n    #1 0x7f979eb12f39 in __GI___strdup (/usr/lib/libc.so.6+0x7ff39)\n\nSUMMARY: AddressSanitizer: 12 byte(s) leaked in 2 allocation(s).\n</code></pre>\n\n<p>Why do I have these memory leaks whereas gcc does not tell me anything.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": []
+}

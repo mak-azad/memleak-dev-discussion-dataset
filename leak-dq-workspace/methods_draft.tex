@@ -1,0 +1,55 @@
+% Draft methods text for the developer-discussion dataset. Every number comes from a file in this workspace.
+% Sources: advisor_requirement_plan.md (sections 0 and 8), coverage_so_summary.md, coverage_gh_summary.md,
+% results/so_units_by_post_type.csv, item_source_map.csv.
+
+\subsection{Data Collection}
+We collected developer discussions about C/C++ memory leaks and invalid frees from Stack Overflow and from GitHub issues on 2026-10-05.
+The Stack Overflow data comes from the StackExchange API (v2.3) and the GitHub data from the GitHub issue-search API and the issue pages.
+A main pass targets seven CWEs (CWE-401, -459, -590, -761, -762, -763, and -789), and an outside-the-seven pass targets leak-related problems that these CWEs do not cover, such as file-descriptor leaks, growth caused by allocator retention, and use after free.
+The search queries of both passes are part of the replication package.
+
+For Stack Overflow, the main pass ran 55 queries in two sort orders (relevance and votes), took the top 10 results of each, and returned 745 unique questions that were asked between 2008-08-04 and 2026-08-28.
+For GitHub, the main pass ran 32 queries, took the top 10 results of each, and returned 305 unique issues.
+The outside-the-seven pass retrieved 241 targeted Stack Overflow questions (38 queries) and 179 unique GitHub issues (18 queries).
+GitHub issues in the full dataset were created between 2004-09-03 and 2026-10-05.
+We stored each thread in full: the question or issue body with its code blocks, every answer and comment, authors, timestamps, scores, and accepted-answer status.
+On 2026-10-07 we queried every Stack Overflow question and GitHub issue again.
+The main Stack Overflow pass had no deleted or edited post, and no GitHub issue was unavailable.
+
+\subsection{Selection}
+A Stack Overflow thread of the main pass is kept if it has a C or C++ tag, an allocation keyword, and at least one CWE regular-expression signature.
+This filter keeps 480 of the 745 retrieved questions.
+We de-duplicated threads by question identifier and by issue URL, and we de-duplicated sentences within a thread.
+We did not check for duplicates across the two sites.
+GitHub issues were not filtered after the search.
+Some retrieved issues belong to repositories in other languages (for example Rust and Go), and the coder marked their units as not relevant.
+By the primary language that GitHub reports, 266 of the 305 main-pass issues and 165 of the 179 outside-the-seven issues are in C or C++ repositories.
+
+\subsection{Units and Coding}
+The unit of analysis is a sentence.
+We extracted interrogative sentences from all posts and from GitHub also declarative sentences that a diagnostic-question regular expression selected.
+Units are verbatim sentences from the fetched posts, except that GitHub text was shortened to at most 300 characters and its URLs were replaced by a placeholder.
+The main pass yielded 1{,}107 Stack Overflow units and 736 GitHub units.
+Of these, 915 Stack Overflow units in 346 threads and 521 GitHub units in 191 issues received at least one diagnostic or non-diagnostic code, and the rest were marked as not relevant.
+Within the 915 Stack Overflow units, 39.1\% come from question bodies, 14.8\% from question titles, 37.3\% from comments, and 8.9\% from answers.
+
+We built the codebook of diagnostic questions in two steps.
+We seeded it from the evidence dimensions of allocation, ownership, deallocation, escape, control flow, lifetime, and aliasing.
+We then extended it during coding with report interpretation, composite cleanup, cross-module heaps, and four non-diagnostic codes, and with four more codes in the outside-the-seven pass.
+A unit can have several codes.
+
+A single large language model (Claude) assigned all codes.
+The model read only the extracted sentences, each with its role (asker or responder), and it did not read whole threads.
+Questions, answers, and comments outside the extracted sentences were collected but not labelled.
+The asker role is the post author who also owns the question.
+On GitHub, the issue author is the reporter, and owners, members, and collaborators are maintainers.
+
+\subsection{Threats to Validity}
+No human coder has validated the labels, so we report no agreement figures.
+The labels of all coded units, and the decision to mark a unit as not relevant, rest on one model.
+CWE labels of threads come from regular expressions and are noisy.
+The outside-the-seven Stack Overflow codes come from a first collection that cut answers and comments to 100 per request batch.
+A complete re-fetch adds 96 Stack Overflow units that carry no code.
+A complete re-fetch of the GitHub issues through the REST API adds 492 uncoded units to the main pass and 274 to the outside-the-seven pass, because the first collection read issue timelines in a browser that did not show every comment.
+We kept the published counts fixed and treat the added units as uncoded.
+GitHub reports 16 comments in 13 issues that its REST endpoint does not return, so their text is missing.

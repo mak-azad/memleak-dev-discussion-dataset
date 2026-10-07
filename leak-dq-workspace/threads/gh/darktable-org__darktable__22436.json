@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/darktable-org/darktable/issues/22436",
+ "passes": [
+  "main"
+ ],
+ "title": "darktable-cli: `-t N` below the CPU count corrupts the heap",
+ "author_login": "kofa73",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:51Z",
+ "final_url": "https://github.com/darktable-org/darktable/issues/22436",
+ "repo": "darktable-org/darktable",
+ "repo_language": "C",
+ "number": 22436,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-29T04:30:44Z",
+ "updated_at": "2026-09-29T13:25:41Z",
+ "closed_at": null,
+ "labels": [
+  "priority: low",
+  "scope: threading"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "kofa73",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-29T04:30:44Z",
+   "updated_utc": "2026-09-29T13:25:41Z",
+   "permalink": "https://github.com/darktable-org/darktable/issues/22436",
+   "body_markdown": "**TL;DR:** GraphicsMagick's initialization resets the OpenMP thread count that\n`-t N` set, so parallel loops on the main thread run with more threads than\nthe per-thread buffers were sized for. darktable-cli then crashes. One-line\nfix: re-apply the thread count after the Magick init in `dt_init()`.\n\n## Reproduce\n\nOn a machine with more than 4 CPUs, with a GraphicsMagick build:\n\n```\ndarktable-cli src/tests/integration/images/xtransIV.raf out.png \\\n  --core --disable-opencl -t 4 --configdir /tmp/dtcfg\n```\n\nResult: `free(): invalid size`, `munmap_chunk(): invalid pointer`, or SIGSEGV.\nWithout `-t`, or with `-t` equal to the CPU count, the export works.\n\n## Cause\n\n1. `dt_init()` calls `omp_set_num_threads(N)` (`src/common/darktable.c:1668`).\n2. Later, `InitializeMagickEx()` (`:2052`) calls `omp_set_num_threads()` with\n   the CPU count, through `InitializeMagickResources()`.\n3. `dt_get_num_threads()` still returns N, so the pools from\n   `dt_alloc_perthread()` hold N slots, but OpenMP starts one thread per CPU.\n   Threads N and up write past the end (e.g. X-Trans Markesteijn/FDC\n   demosaic).\n\nThe pipe worker threads in the GUI set their own thread count\n(`src/control/jobs.c`), so the GUI is not affected. darktable-cli renders\non the main thread.\n\n## Fix\n\nAfter the GraphicsMagick / ImageMagick init block in `dt_init()`:\n\n```c\n#ifdef _OPENMP\n  // InitializeMagickResources() sets the thread count to the number of CPUs\n  omp_set_num_threads(darktable.num_openmp_threads);\n#endif\n```\n\nTested on a 12-CPU machine: `-t 1`, `-t 4` and `-t 8` then succeed.\n\n## Notes\n\n- The integration test runner is not affected: it exports\n  `OMP_THREAD_LIMIT=4` alongside `-t 4`. Running a test's command by hand\n  without it crashes on `0068`, `0100` and `0145` (X-Trans).\n- Whether the bug appears depends on init order. If G'MIC's static\n  constructor initializes GraphicsMagick before `dt_init()`, darktable's\n  setting comes last and nothing overflows.\n- Related: #13727 / PR #13736 clamped `-t` to the CPU count, which fixed\n  `-t` above the CPU count, not below it.\n- Not checked: ImageMagick builds (`MagickWandGenesis()`).\n"
+  }
+ ]
+}

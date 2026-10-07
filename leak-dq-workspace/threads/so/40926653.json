@@ -1,0 +1,69 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 40926653,
+ "url": "https://stackoverflow.com/questions/40926653/memory-leak-when-rewriteing-a-2d-array",
+ "title": "Memory leak when rewriteing a 2d array",
+ "tags": [
+  "c",
+  "pointers",
+  "memory-leaks",
+  "malloc",
+  "dynamic-memory-allocation"
+ ],
+ "score": 0,
+ "view_count": 228,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2016-12-02T07:08:22Z",
+ "last_activity_utc": "2016-12-02T07:31:59Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 7239892,
+ "author_display_name": "Mihai Podaru",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/40926653/memory-leak-when-rewriteing-a-2d-array",
+ "body_html": "<p>I want to call a function that uses my 2d dynamic array to create another 2d dynamic array and then rewrite the value for my first array. So the code is something like this:</p>\n\n<pre><code>#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\nint **bigger(int **A)\n{\n    int i;\n    int **A2 = (int **)malloc(10 * sizeof(int *));\n\n    for(i = 0; i &lt; 10; i++)\n        A2[i] = (int *)malloc(10 * sizeof(int));\n\n    return A2; \n    }\n\nint main(void)\n{\n    int i;\n    int **A = (int **)malloc(5 * sizeof(int *));\n\n    for(i = 0; i &lt; 5; i++)\n        A[i] = (int *)malloc(5 * sizeof(int));\n\n    A = bigger(A);\n\n    for(i = 0; i &lt; 10; i++)\n        free(A[i]);\n\n    free(A);\n\n    return 0;\n}\n</code></pre>\n\n<p>If I check it with <code>valgrind --leak-check=yes</code> I get total heap usage: 6 allocs, 3 frees, 240 bytes allocated. How can I solve this memory leak ?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 40926673,
+   "parent_id": 40926653,
+   "author_user_id": 2173917,
+   "author_display_name": "Sourav Ghosh",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/40926673",
+   "score": 4,
+   "created_utc": "2016-12-02T07:10:16Z",
+   "last_edit_utc": "2016-12-02T07:31:09Z",
+   "last_activity_utc": "2016-12-02T07:31:09Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p><strong>TL:DR</strong>, you're not <em>re-writing</em>, you're <em>overwriting</em>.</p>\n\n<p>The problem is in</p>\n\n<pre><code> A = bigger(A);\n</code></pre>\n\n<p>inside <code>bigger()</code> function, you're allocating new memories and then, storing the same back into <code>A</code>, which makes you lose the pointer to previously allocated memories, thus rendering them <em>unreachable</em> and are not <code>free()</code>-d. Those causes the leak here.</p>\n\n<p>You need to use <a href=\"https://linux.die.net/man/3/realloc\" rel=\"nofollow noreferrer\"><code>realloc()</code></a> for resizing already <code>malloc()</code>ed memory regions.</p>\n\n<p>Otherwise, before you call <code>malloc()</code> again, inside the <code>bigger()</code>, you ought to <code>free()</code> the available memories.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 69065789,
+   "parent_id": 40926673,
+   "parent_type": "answer",
+   "author_user_id": 7239892,
+   "author_display_name": "Mihai Podaru",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/40926653/#comment69065789_40926673",
+   "score": 0,
+   "created_utc": "2016-12-02T07:55:38Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "But how do i solve the problem if i need another copy of the original array in my function, let&#39;s say A and A2, i do my tasks and then i return A2 ?"
+  }
+ ]
+}

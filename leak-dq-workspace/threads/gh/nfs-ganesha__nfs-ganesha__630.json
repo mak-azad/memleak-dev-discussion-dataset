@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/nfs-ganesha/nfs-ganesha/issues/630",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Thread Local Storage refcount leak tracking",
+ "author_login": "dang",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:39Z",
+ "final_url": "https://github.com/nfs-ganesha/nfs-ganesha/issues/630",
+ "repo": "nfs-ganesha/nfs-ganesha",
+ "repo_language": "C",
+ "number": 630,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-09-01T14:42:35Z",
+ "updated_at": "2025-11-05T18:22:46Z",
+ "closed_at": null,
+ "labels": [
+  "Enhancement"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dang",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-09-01T14:42:35Z",
+   "updated_utc": "2025-11-05T18:22:46Z",
+   "permalink": "https://github.com/nfs-ganesha/nfs-ganesha/issues/630",
+   "body_markdown": "After #624 merges, we can track normal refcount increments and decrements in a TLS variable, and the result should be 0 at the end of the op.  This can help us track leaks."
+  }
+ ]
+}

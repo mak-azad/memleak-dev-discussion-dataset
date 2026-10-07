@@ -1,0 +1,175 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/cms-sw/cmssw/issues/51449",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "(Tiny) Memory Leak observed in a particle gun sample",
+ "author_login": "DickyChant",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:26Z",
+ "final_url": "https://github.com/cms-sw/cmssw/issues/51449",
+ "repo": "cms-sw/cmssw",
+ "repo_language": "C++",
+ "number": 51449,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-08T12:58:11Z",
+ "updated_at": "2026-07-21T09:56:24Z",
+ "closed_at": null,
+ "labels": [
+  "simulation-pending",
+  "generators-pending",
+  "pending-signatures"
+ ],
+ "comments_reported": 11,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "DickyChant",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-08T12:58:11Z",
+   "updated_utc": "2026-07-21T09:56:24Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449",
+   "body_markdown": "Dear experts, \n\nDuring a recent production of a particle gun workflow, we experienced a glitch related to memory setup:\n\n- The memory was measured from run tests with hundreds of events, and measured a memory requirement of <~ 4GB at 8 cores\n- The task chain was then formed, with 6GB memory consumption, spawning 8 cores, accounting for a certain margin. \n- But the task chain failed in production, with memory consumption exceeding 6GB.\n\nWhile it is true that we might not want to run workflows with 6GB memory while 8 threads by construction (the improvement is now under discussion), we got interested in why such an issue happens, and here is a summary of what I found:\n\nBasically, this particular workflow shows continuous RSS growth over events that a short 100-event validation completely hides. \n- **At the default validation size (100 events, 1 thread), peak RSS is a flat 1.5 GB;** \n- ** Scaled to a realistic 8 threads / 10,000 events, it climbs to 5.48 GB and is still rising at job end.**\n\nAfter a full investigation, the growth is not a leak: it is high-water-mark retention of transient Geant4 (g4SimHits) memory, set by the largest EM shower seen so far (and, in this case, driven by the rare high-pT tail of the EE_FlatPT-1to500 (1–500 GeV) flat-pT particle gun). glibc keeps the freed peak pages instead of returning them to the OS, so RSS ratchets upward and slowly decelerates.\n\nThe cmsDriver sequence is:\n\n```\ncmsDriver.py Configuration/GenProduction/python/HIN-HINPbPbWinter25GSHIMix-00003-fragment.py --pileup HiMixGEN --scenario HeavyIons --era Run3_pp_on_PbPb_2025 --customise Configuration/DataProcessing/Utils.addMonitoring --beamspot MatchHI --step GEN,SIM --geometry DB:Extended --conditions 151X_mcRun3_2025_realistic_HI_v5 --customise_commands process.source.numberEventsInLuminosityBlock=\"cms.untracked.uint32(100)\" --datatier GEN-SIM --eventcontent RAWSIM --python_filename HIN-HINPbPbWinter25GSHIMix-00003_1_cfg.py --fileout file:HIN-HINPbPbWinter25GSHIMix-00003.root --number 100 --number_out 100 --pileup_input \"dbs:/Hydjet_Quenched_MinBias_TuneCELLO_5p36TeV_pythia8/HINPbPbWinter25GS-151X_mcRun3_2025_realistic_HI_v4-v2/GEN-SIM\" --no_exec --mc || exit $? ;\n```\nWith the fragment shown below:\n\n```\nimport FWCore.ParameterSet.Config as cms\n\ngenerator = cms.EDFilter(\"Pythia8PtGun\",\n    PGunParameters = cms.PSet(\n        MaxPt = cms.double(500.0),\n        MinPt = cms.double(1.0),\n        ParticleID = cms.vint32(11),\n        AddAntiParticle = cms.bool(True),\n        MaxEta = cms.double(3.1),\n        MaxPhi = cms.double(3.14159265359),\n        MinEta = cms.double(-3.1),\n        MinPhi = cms.double(-3.14159265359) ## in radians\n    ),\n    Verbosity = cms.untracked.int32(0), ## set to 1 (or greater)  for printouts\n    psethack = cms.string('double electron pt 1.0 to 500'),\n    firstRun = cms.untracked.uint32(1),\n    PythiaParameters = cms.PSet(parameterSets = cms.vstring())\n)\n```\nFurther details:\n--------------------\n### 1. Peak memory scales with threads and keeps growing with events\n\n| config | events | threads | peak RSS | peak VSIZE | avg RSS | time/event |\n|--|--:|--:|--:|--:|--:|--:|\n| default validation | 100 | 1 | **1,498 MB** | 2,361 MB | — | 9.27 s |\n| realistic | 10,000 | 8 | **5,484 MB** | 9,010 MB | 3,719 MB | 1.61 s |\n\nThe 100-event single-thread job looks perfectly flat — the growth is only visible at scale.\n\n### 2. RSS grows continuously; it does not saturate by 10k events\n\nPer-1,000-event window **max RSS** (8 threads, with pileup):\n\n| events | 1–1k | 2–3k | 3–4k | 4–5k | 5–6k | 6–7k | 7–8k | 8–9k | 9–10k |\n|--|--:|--:|--:|--:|--:|--:|--:|--:|--:|\n| max RSS (MB) | 3,249 | 3,412 | 3,736 | 4,075 | 4,308 | 4,506 | 4,969 | 5,233 | 5,484 |\n\nGrowth decelerates (~0.33 → ~0.25 MB/event) but never flattens.\n\n### 3. The growth is `g4SimHits` (Geant4), not GenJets or pileup\n\nEnd-of-job `SimpleMemoryCheck` `ModuleMemoryReport` (average VSIZE increase per module execution):\n\n| module | avg increase (MB/exec) | max (MB) |\n|--|--:|--:|\n| **`g4SimHits`** | **3.90** | 487 |\n| `genParticles` | 0.62 | 324 (early) |\n| `ak2HiGenJets` | 0.12 | 80 |\n| `ak6HiGenJets` | 0.053 | 64 |\n| `RAWSIMoutput` | 0.068 | 56 |\n| `mix` (pileup) | 0.047 | 56 |\n| `ak1/ak5/ak7HiGenJets` | 0.01–0.035 | 12–32 |\n\n`g4SimHits` dominates by ~30×. GenJets and pileup mixing are negligible.\n\n### 4. It is anonymous heap, not mmapped pileup files\n\nLive `/proc/<pid>/smaps_rollup` on the worker at ~3.7 GB RSS:\n\n- Anonymous / `Private_Dirty`: **3.55 GB (~98% of RSS)**\n- `Pss_File` (all mmapped libs + ROOT files combined): **58 MB**\n- Open pileup `.root` fds: **9, stable** (opened only at init; none accumulate)\n\nSo to me it is not \"keep opening/holding pileup files\"\n\n### 5. It is not glibc arena fragmentation\n\nA control run with `MALLOC_ARENA_MAX=2` reached the **same ~3.7 GB peak at 4,000 events** as the\ndefault-allocator baseline (3,770 vs 3,736 MB, within ~1%). Capping arenas changed nothing.\n\n### 6. It is pileup-independent (only the baseline depends on pileup)\n\nCreep magnitude over the first 4,000 events, with and without pileup:\n\n| run | config | baseline RSS (~1k ev) | peak RSS @4k | creep |\n|--|--|--:|--:|--:|\n| with PU | 8t | 3,249 | 3,736 | **+487** |\n| with PU, arenas=2 | 8t | 3,182 | 3,770 | **+588** |\n| **no PU** | 8t | 1,951 | 2,509 | **+558** |\n\nThe slope is the same (~+500–590 MB / 4k events) with or without pileup. \n\n### 7. Memory jumps correlate with rare high-energy events (the smoking gun)\n\nA single-thread run correlating per-event processing time (a proxy for shower energy) with VSIZE\nsteps:\n\n- Per-event cost spans **0.13 s → 93 s** (median 6.7 s) — the 1–500 GeV flat-pT spectrum.\n- VSIZE steps up on only **~2–3 % of events**, and those events are **~4× slower than median**\n  (median 25 s vs 6.7 s) which, to me, is the high-energy showers.\n\n--------------------\nI got some hint that we can trim `malloc` harder, but i guess this is not the best \"fix\" if we ever want one? \n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915019989,
+   "author_login": "cmsbuild",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T12:58:34Z",
+   "updated_utc": "2026-07-08T13:24:23Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915019989",
+   "body_markdown": "cms-bot internal usage<!-- bot cache: {\"commits\":{},\"emoji\":{\"4915188580\":\"+1\",\"4915243739\":\"+1\"},\"signatures\":{}} -->"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915020076,
+   "author_login": "cmsbuild",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T12:58:34Z",
+   "updated_utc": "2026-07-08T12:58:34Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915020076",
+   "body_markdown": "A new Issue was created by  @DickyChant.\n\n@Dr15Jones, @ftenchini, @makortel, @mandrenguyen, @sextonkennedy, @smuzaffar can you please review it and eventually sign/assign? Thanks.\n\ncms-bot commands are listed <a href=\"http://cms-sw.github.io/cms-bot-cmssw-issues.html\">here</a>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915188580,
+   "author_login": "Dr15Jones",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T13:17:38Z",
+   "updated_utc": "2026-07-08T13:17:38Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915188580",
+   "body_markdown": "assign generators"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915191391,
+   "author_login": "cmsbuild",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T13:17:56Z",
+   "updated_utc": "2026-07-08T13:17:56Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915191391",
+   "body_markdown": "New categories assigned: generators\n\n@lviliani,@mkirsano,@sensrcn,@theofil you have been requested to review this Pull request/Issue and eventually sign? Thanks"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915237172,
+   "author_login": "Dr15Jones",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T13:23:11Z",
+   "updated_utc": "2026-07-08T14:11:23Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915237172",
+   "body_markdown": "Note, cmsRun does not use glibc allocator, it uses jemalloc. You can force the use of glibc by running cmsRunGlibC instead."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915243739,
+   "author_login": "Dr15Jones",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T13:23:57Z",
+   "updated_utc": "2026-07-08T13:23:57Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915243739",
+   "body_markdown": "assign simulation"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915247358,
+   "author_login": "cmsbuild",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T13:24:21Z",
+   "updated_utc": "2026-07-08T13:24:21Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915247358",
+   "body_markdown": "New categories assigned: simulation\n\n@civanch,@kpedro88,@mdhildreth you have been requested to review this Pull request/Issue and eventually sign? Thanks"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4915260465,
+   "author_login": "Dr15Jones",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-08T13:25:44Z",
+   "updated_utc": "2026-07-08T13:25:44Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4915260465",
+   "body_markdown": "Using ModuleAllocMonitor (or EventModuleAllocMonitor) can directly pin which module is hoarding/leaking memory. See\n\nhttps://github.com/cms-sw/cmssw/tree/master/PerfTools/AllocMonitor#moduleallocmonitor"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4969981083,
+   "author_login": "makortel",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-14T13:56:28Z",
+   "updated_utc": "2026-07-14T13:56:28Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4969981083",
+   "body_markdown": "> End-of-job `SimpleMemoryCheck` `ModuleMemoryReport` (average VSIZE increase per module execution):\n\nAre these reports from a multithreaded job? If they are, I'm afraid the per-module information from `SimpleMemoryCheck` is unreliable, because the service monitors the global state of the application and the memory increase reported for a \"spectator\" module can easily be caused by other modules being run in parallel."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4969992302,
+   "author_login": "makortel",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-14T13:57:25Z",
+   "updated_utc": "2026-07-14T13:57:25Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-4969992302",
+   "body_markdown": "What CMSSW version was used?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5032588924,
+   "author_login": "civanch",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-07-21T09:56:24Z",
+   "updated_utc": "2026-07-21T09:56:24Z",
+   "permalink": "https://github.com/cms-sw/cmssw/issues/51449#issuecomment-5032588924",
+   "body_markdown": "Currently in Geant4 developments a tiny problem is identified and fixed. This may increase run time memory, the memory is cleaned end of run. I am not sure if this issue may explain observed problem in this issue, but may backport the fix to CMSSW if it is Ok."
+  }
+ ]
+}

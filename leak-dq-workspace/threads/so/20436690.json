@@ -1,0 +1,51 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 20436690,
+ "url": "https://stackoverflow.com/questions/20436690/best-fit-vs-segregated-fit-vs-buddy-system-for-least-fragmentation",
+ "title": "Best fit vs segregated fit vs buddy system for least fragmentation",
+ "tags": [
+  "c",
+  "memory",
+  "memory-management",
+  "theory"
+ ],
+ "score": 7,
+ "view_count": 2267,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2013-12-07T02:06:19Z",
+ "last_activity_utc": "2014-06-04T15:26:25Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 2644819,
+ "author_display_name": "user2644819",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/20436690/best-fit-vs-segregated-fit-vs-buddy-system-for-least-fragmentation",
+ "body_html": "<p>I am working on a dynamic memory allocation simulation(malloc() and free()) using a fixed sized array in C and i would like to know which of these will give the least amount of fragmentation(internal and external)? I do not care about speed, being able to reduce fragmentation is the issue i want to solve. </p>\n\n<p>For the buddy system i've read that it has high internal fragmentation because most requested size are not to the power of 2.</p>\n\n<p>For the best fit, the only negative i've heard of is that it is sequential so it takes a long time to search(not a problem in my case). In any case i can use a binary tree from my understanding to search instead. I could also split the fixed sized array into two where the left size is for smaller blocks and the right size is for bigger blocks. I don't know of any other negatives.</p>\n\n<p>For segregated fit it is similar to the buddy system but i'm not sure if it has the same problems for fragmentation since it does not split by a power of 2. </p>\n\n<p>Does anyone have some statistics or know the answer to my question from having used these before?</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 24041524,
+   "parent_id": 20436690,
+   "author_user_id": 466932,
+   "author_display_name": "Unmanned Player",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/24041524",
+   "score": 2,
+   "created_utc": "2014-06-04T15:26:25Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2014-06-04T15:26:25Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Controlling fragmentation is use-case dependent. The only scenario where fragmentation will never occur is when your malloc() function returns a fixed size memory chunk whenever you call it. This is more in to memory pooling. Some high-end servers often do this in an attempt to boost performance when they know what they are going to allocate and for how long they will keep that allocation.</p>\n\n<p>The moment you start thinking of reducing fragmentation in a general purpose memory manager, these simple algorithms you mentioned will do no good. There are complex memory management algorithms like <a href=\"https://www.facebook.com/notes/facebook-engineering/scalable-memory-allocation-using-jemalloc/480222803919\" rel=\"nofollow\">jemalloc</a>, <a href=\"http://jamesgolick.com/2013/5/19/how-tcmalloc-works.html\" rel=\"nofollow\">tcmalloc</a> and <a href=\"http://phk.freebsd.dk/pubs/malloc.pdf\" rel=\"nofollow\">Poul-Henning Kamp malloc</a> that deal with this kind of problem. There are many whitepapers published around this. ACM and IEEE have plethora of literature around this.</p>\n"
+  }
+ ]
+}

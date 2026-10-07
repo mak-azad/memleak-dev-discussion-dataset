@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/awmc000/readability/issues/1",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Memory leaks",
+ "author_login": "awmc000",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:57Z",
+ "final_url": "https://github.com/awmc000/readability/issues/1",
+ "repo": "awmc000/readability",
+ "repo_language": "C",
+ "number": 1,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-08-25T05:13:55Z",
+ "updated_at": "2023-08-25T18:16:52Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "UNINIT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "awmc000",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-08-25T05:13:55Z",
+   "updated_utc": "2023-08-25T18:16:52Z",
+   "permalink": "https://github.com/awmc000/readability/issues/1",
+   "body_markdown": "There are memory leaks in the program. In particular it appears that line buffers and words in word lists (represented by hash tables) are not being freed. I have fixed a couple of the leaks but most including the biggest remain. When testing I use a single line of text with 5 words, the minimum data for a readability score.\r\nNote: 5,742 blocks are lost in the biggest leak. This is the exact number of proper nouns on the current list.\r\n\r\n\r\nHere is the section of the report on the most egregious leak:\r\n```\r\n==311743== 40,095 bytes in 5,742 blocks are definitely lost in loss record 5 of 5\r\n==311743==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==311743==    by 0x10994C: hashtable_load_words_from_file (hash_table.c:169)\r\n==311743==    by 0x10A0E5: get_table_from_list_file (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x10A22C: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n```\r\n\r\n\r\nHere is the full report:\r\n```\r\n==311743== Memcheck, a memory error detector\r\n==311743== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.\r\n==311743== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info\r\n==311743== Command: ./readability testdata/oneline\r\n==311743== \r\ntestdata/oneline\r\nlists/dale-expanded loaded successfully.\r\nlists/proper-nouns loaded successfully.\r\n==311743== Conditional jump or move depends on uninitialised value(s)\r\n==311743==    at 0x48FB18B: getdelim (iogetdelim.c:59)\r\n==311743==    by 0x10A3B4: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== Conditional jump or move depends on uninitialised value(s)\r\n==311743==    at 0x109BB5: hashtable_delete (hash_table.c:232)\r\n==311743==    by 0x10A3D6: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== Use of uninitialised value of size 8\r\n==311743==    at 0x109B6E: hashtable_delete (hash_table.c:234)\r\n==311743==    by 0x10A3D6: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== Use of uninitialised value of size 8\r\n==311743==    at 0x109B88: hashtable_delete (hash_table.c:236)\r\n==311743==    by 0x10A3D6: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\nFreed 14921 strings from a ht with 0 elemsand total size 29842.\r\n==311743== Conditional jump or move depends on uninitialised value(s)\r\n==311743==    at 0x109BB5: hashtable_delete (hash_table.c:232)\r\n==311743==    by 0x10A3E2: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\nFreed 0 strings from a ht with 5742 elemsand total size 11484.\r\nDale-Chall score of 0.25\r\nBreakdown: 0 hard of 5 words, 1 sentences.\r\n avg.  5 words per sentence. 0.00% difficult words.\r\nEasily understood by an average student in 4th grade or lower\r\nComputed score in 228.7554 ms.\r\n==311743== \r\n==311743== HEAP SUMMARY:\r\n==311743==     in use at exit: 41,335 bytes in 5,746 blocks\r\n==311743==   total heap usage: 20,793 allocs, 15,047 frees, 1,017,780 bytes allocated\r\n==311743== \r\n==311743== 256 bytes in 1 blocks are definitely lost in loss record 1 of 5\r\n==311743==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==311743==    by 0x10A1CA: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== 256 bytes in 1 blocks are definitely lost in loss record 2 of 5\r\n==311743==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==311743==    by 0x10986C: hashtable_load_words_from_file (hash_table.c:137)\r\n==311743==    by 0x10A0E5: get_table_from_list_file (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x10A214: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== 256 bytes in 1 blocks are definitely lost in loss record 3 of 5\r\n==311743==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==311743==    by 0x10986C: hashtable_load_words_from_file (hash_table.c:137)\r\n==311743==    by 0x10A0E5: get_table_from_list_file (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x10A22C: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== 40,095 bytes in 5,742 blocks are definitely lost in loss record 5 of 5\r\n==311743==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==311743==    by 0x10994C: hashtable_load_words_from_file (hash_table.c:169)\r\n==311743==    by 0x10A0E5: get_table_from_list_file (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x10A22C: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==311743==    by 0x109421: main (main.c:20)\r\n==311743== \r\n==311743== LEAK SUMMARY:\r\n==311743==    definitely lost: 40,863 bytes in 5,745 blocks\r\n==311743==    indirectly lost: 0 bytes in 0 blocks\r\n==311743==      possibly lost: 0 bytes in 0 blocks\r\n==311743==    still reachable: 472 bytes in 1 blocks\r\n==311743==         suppressed: 0 bytes in 0 blocks\r\n==311743== Reachable blocks (those to which a pointer was found) are not shown.\r\n==311743== To see them, rerun with: --leak-check=full --show-leak-kinds=all\r\n==311743== \r\n==311743== Use --track-origins=yes to see where uninitialised values come from\r\n==311743== For lists of detected and suppressed errors, rerun with: -s\r\n==311743== ERROR SUMMARY: 74612 errors from 9 contexts (suppressed: 0 from 0)\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1693628690,
+   "author_login": "awmc000",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-08-25T16:33:38Z",
+   "updated_utc": "2023-08-25T16:33:38Z",
+   "permalink": "https://github.com/awmc000/readability/issues/1#issuecomment-1693628690",
+   "body_markdown": "Regarding the biggest leak:\r\nI call the function to empty out that hash table:\r\n```\r\n    hashtable_delete(proper_nouns);\r\n```\r\nBut it doesn't seem to do anything.\r\n```c\r\nvoid hashtable_delete(struct hash_table *ht)\r\n{\r\n    int freed = 0;\r\n    for (unsigned int i; i < ht->array_size; i++)\r\n    {\r\n        if (ht->strings[i] != NULL)\r\n        {\r\n            free(ht->strings[i]);\r\n            ht->array_elems--;\r\n            freed++;\r\n        }\r\n    }\r\n    printf(\"Freed %d strings from a ht with %d elems\"\r\n        \"and total size %d.\\n\", freed,\r\n        ht->array_elems, ht->array_size);\r\n}\r\n```\r\n\r\nHere is the print from that particular hash table.\r\n\r\n```\r\nFreed 0 strings from a ht with 5742 elems and total size 11484.\r\n```\r\nIt works for the other hash table!\r\n\r\n```\r\nFreed 14921 strings from a ht with 0 elems [remaining] and total size 29842.\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1693760369,
+   "author_login": "awmc000",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-08-25T18:16:51Z",
+   "updated_utc": "2023-08-25T18:16:51Z",
+   "permalink": "https://github.com/awmc000/readability/issues/1#issuecomment-1693760369",
+   "body_markdown": "Fixed the biggest leak. `hashtable_delete` had an uninitialized counter `i`. \r\n\r\n```\r\n==2004179== Memcheck, a memory error detector\r\n==2004179== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.\r\n==2004179== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info\r\n==2004179== Command: ./readability testdata/oneline\r\n==2004179== \r\ntestdata/oneline\r\nlists/dale-expanded loaded successfully.\r\nlists/proper-nouns loaded successfully.\r\n==2004179== Conditional jump or move depends on uninitialised value(s)\r\n==2004179==    at 0x48FB18B: getdelim (iogetdelim.c:59)\r\n==2004179==    by 0x10A3CB: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==2004179==    by 0x109421: main (main.c:20)\r\n==2004179== \r\nFreed 14921 strings from a ht with 0 elemsand total size 29842.\r\nFreed 5742 strings from a ht with 0 elemsand total size 11484.\r\nDale-Chall score of 0.25\r\nBreakdown: 0 hard of 5 words, 1 sentences.\r\n avg.  5 words per sentence. 0.00% difficult words.\r\nEasily understood by an average student in 4th grade or lower\r\nComputed score in 212.8100 ms.\r\n==2004179== \r\n==2004179== HEAP SUMMARY:\r\n==2004179==     in use at exit: 1,240 bytes in 4 blocks\r\n==2004179==   total heap usage: 20,793 allocs, 20,789 frees, 1,017,780 bytes allocated\r\n==2004179== \r\n==2004179== 256 bytes in 1 blocks are definitely lost in loss record 1 of 4\r\n==2004179==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==2004179==    by 0x10A1E1: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==2004179==    by 0x109421: main (main.c:20)\r\n==2004179== \r\n==2004179== 256 bytes in 1 blocks are definitely lost in loss record 2 of 4\r\n==2004179==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==2004179==    by 0x10986C: hashtable_load_words_from_file (hash_table.c:137)\r\n==2004179==    by 0x10A0FC: get_table_from_list_file (in /home/alex/Programming/C/readability/readability)\r\n==2004179==    by 0x10A22B: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==2004179==    by 0x109421: main (main.c:20)\r\n==2004179== \r\n==2004179== 256 bytes in 1 blocks are definitely lost in loss record 3 of 4\r\n==2004179==    at 0x484DA83: calloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==2004179==    by 0x10986C: hashtable_load_words_from_file (hash_table.c:137)\r\n==2004179==    by 0x10A0FC: get_table_from_list_file (in /home/alex/Programming/C/readability/readability)\r\n==2004179==    by 0x10A243: assess_readability (in /home/alex/Programming/C/readability/readability)\r\n==2004179==    by 0x109421: main (main.c:20)\r\n==2004179== \r\n==2004179== LEAK SUMMARY:\r\n==2004179==    definitely lost: 768 bytes in 3 blocks\r\n==2004179==    indirectly lost: 0 bytes in 0 blocks\r\n==2004179==      possibly lost: 0 bytes in 0 blocks\r\n==2004179==    still reachable: 472 bytes in 1 blocks\r\n==2004179==         suppressed: 0 bytes in 0 blocks\r\n==2004179== Reachable blocks (those to which a pointer was found) are not shown.\r\n==2004179== To see them, rerun with: --leak-check=full --show-leak-kinds=all\r\n==2004179== \r\n==2004179== Use --track-origins=yes to see where uninitialised values come from\r\n==2004179== For lists of detected and suppressed errors, rerun with: -s\r\n==2004179== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)\r\n\r\n```\r\nstill need to fix line buffer leaks and possible uninitialized values elsewhere."
+  }
+ ]
+}

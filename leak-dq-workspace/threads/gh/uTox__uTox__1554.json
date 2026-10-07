@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/uTox/uTox/issues/1554",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak",
+ "author_login": "ghost",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:54Z",
+ "final_url": "https://github.com/uTox/uTox/issues/1554",
+ "repo": "uTox/uTox",
+ "repo_language": "C",
+ "number": 1554,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-11-30T04:40:03Z",
+ "updated_at": "2022-11-30T04:40:03Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ghost",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-30T04:40:03Z",
+   "updated_utc": "2022-11-30T04:40:03Z",
+   "permalink": "https://github.com/uTox/uTox/issues/1554",
+   "body_markdown": "```\r\n  --silent                 Set the verbosity level to 0, disable all debugging output.\r\n  --debug=<file>           Set a file for utox to log errors to.\r\n\r\n=================================================================\r\n==30226==ERROR: LeakSanitizer: detected memory leaks\r\n\r\nDirect leak of 11168 byte(s) in 349 object(s) allocated from:\r\n    #0 0x7f97d4e73411 in __interceptor_calloc /usr/src/debug/gcc/libsanitizer/asan/asan_malloc_linux.cpp:77\r\n    #1 0x7f97d46eaf3f  (/usr/lib/libfontconfig.so.1+0xaf3f)\r\n\r\nDirect leak of 4096 byte(s) in 1 object(s) allocated from:\r\n    #0 0x7f97d4e727ea in __interceptor_realloc /usr/src/debug/gcc/libsanitizer/asan/asan_malloc_linux.cpp:85\r\n    #1 0x7f97d46e8df3  (/usr/lib/libfontconfig.so.1+0x8df3)\r\n\r\nDirect leak of 1024 byte(s) in 1 object(s) allocated from:\r\n    #0 0x7f97d4e727ea in __interceptor_realloc /usr/src/debug/gcc/libsanitizer/asan/asan_malloc_linux.cpp:85\r\n    #1 0x7f97d46e8dd5  (/usr/lib/libfontconfig.so.1+0x8dd5)\r\n\r\nDirect leak of 256 byte(s) in 1 object(s) allocated from:\r\n    #0 0x7f97d4e73a89 in __interceptor_malloc /usr/src/debug/gcc/libsanitizer/asan/asan_malloc_linux.cpp:69\r\n    #1 0x7f97d4700f25  (/usr/lib/libfontconfig.so.1+0x20f25)\r\n\r\nIndirect leak of 32 byte(s) in 1 object(s) allocated from:\r\n    #0 0x7f97d4e73411 in __interceptor_calloc /usr/src/debug/gcc/libsanitizer/asan/asan_malloc_linux.cpp:77\r\n    #1 0x7f97d470511d  (/usr/lib/libfontconfig.so.1+0x2511d)\r\n\r\nIndirect leak of 14 byte(s) in 1 object(s) allocated from:\r\n    #0 0x7f97d4e26faa in __interceptor_strdup /usr/src/debug/gcc/libsanitizer/asan/asan_interceptors.cpp:439\r\n    #1 0x7f97d47007d8 in FcValueSave (/usr/lib/libfontconfig.so.1+0x207d8)\r\n\r\nSUMMARY: AddressSanitizer: 16590 byte(s) leaked in 354 allocation(s).\r\n\r\n```\r\n\r\nutox 0.18.1-2\r\n\r\n"
+  }
+ ]
+}

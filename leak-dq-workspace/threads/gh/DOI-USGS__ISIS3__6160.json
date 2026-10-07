@@ -1,0 +1,52 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/DOI-USGS/ISIS3/issues/6160",
+ "passes": [
+  "main"
+ ],
+ "title": "Pvl::setFormatTemplate deletes a Pvl through a non-virtual PvlContainer* (mismatched new/delete size)",
+ "author_login": "ljbade",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:14Z",
+ "final_url": "https://github.com/DOI-USGS/ISIS3/issues/6160",
+ "repo": "DOI-USGS/ISIS3",
+ "repo_language": "C++",
+ "number": 6160,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-19T10:41:34Z",
+ "updated_at": "2026-09-19T10:50:30Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ljbade",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-19T10:41:34Z",
+   "updated_utc": "2026-09-19T10:50:30Z",
+   "permalink": "https://github.com/DOI-USGS/ISIS3/issues/6160",
+   "body_markdown": "## Summary\n\n`Pvl::setFormatTemplate()` stores a heap-allocated `Pvl` object through a `PvlContainer*` member (`m_formatTemplate`), then later `delete`s it through that same base-class pointer. Neither `PvlContainer` nor `PvlObject` (the two classes between `PvlContainer` and `Pvl` in the hierarchy) declares a destructor, virtual or otherwise -- so `delete`ing a `Pvl` object through a `PvlContainer*` is undefined behaviour: it deallocates using `PvlContainer`'s size instead of the actual `Pvl` object's size, and skips the `Pvl`/`PvlObject`-specific destructor logic entirely. Found via `valgrind`, which flags it directly as \"Mismatched new/delete size value\".\n\n**Environment**: Built from source, `dev` @ `095c406d5dd5e8a007f8c9d397ae66921cf2a5e9`.\n\n## Root cause\n\n`m_formatTemplate` is declared in the base-most class, `PvlContainer` (`isis/src/core/include/PvlContainer.h:306`):\n```cpp\nPvlContainer *m_formatTemplate;\n```\n\n`Pvl::setFormatTemplate(const QString &file)` allocates a full `Pvl` object but stores it through this base-class pointer (`isis/src/core/src/Pvl.cpp`):\n```cpp\nvoid Pvl::setFormatTemplate(const QString &file) {\n  if(m_internalTemplate) delete m_formatTemplate;\n  m_internalTemplate = true;\n  m_formatTemplate = new Isis::Pvl(file);\n}\n```\n\n`Pvl`'s own destructor later deletes it the same way (`isis/src/core/include/Pvl.h:136-138`):\n```cpp\n~Pvl() {\n  if(m_internalTemplate) delete m_formatTemplate;\n};\n```\n\nThe class hierarchy is `Pvl : public PvlObject`, `PvlObject : public PvlContainer` -- and none of the three declares a destructor with the `virtual` keyword (`PvlContainer` and `PvlObject` don't declare one at all; `Pvl`'s own destructor above is non-virtual too). `delete`ing a `Pvl*` through a `PvlContainer*` (or `PvlObject*`) pointer when there is no virtual destructor anywhere in the chain is classic undefined behaviour: the compiler emits a fixed-size deallocation call based on the **static** type of the pointer (`PvlContainer`), not the object's actual (`Pvl`) type.\n\n## Valgrind output\n\n```\n==27989== Mismatched new/delete size value: 128\n==27989==    at 0x4848809: operator delete(void*, unsigned long) (vg_replace_malloc.c:1181)\n==27989==    by 0x9C34CC5: Isis::Pvl::setFormatTemplate(QString const&) (Pvl.cpp:564)\n==27989==    by 0x75E56C2: Isis::Cube::writeLabels() (Cube.cpp:3008)\n==27989==    by 0x75E87CD: Isis::Cube::close(bool) (Cube.cpp:274)\n==27989==    by 0x75F8A96: Isis::Cube::fromLabel(Isis::FileName const&, Isis::Pvl&, QString) (Cube.cpp:85)\n==27989==    by 0x75F8D7D: Isis::Cube::fromIsd(...) (Cube.cpp:100)\n==27989==    by 0xEF671B: Isis::DefaultCube::SetUp() (CameraFixtures.cpp:190)\n==27989==  Address 0x2ed6bee0 is 0 bytes inside a block of size 176 alloc'd\n==27989==    at 0x4844F93: operator new(unsigned long) (vg_replace_malloc.c:487)\n==27989==    by 0x9C34CDF: Isis::Pvl::setFormatTemplate(QString const&) (Pvl.cpp:566)\n==27989==    by 0x75E56C2: Isis::Cube::writeLabels() (Cube.cpp:3008)\n==27989==    by 0x75F45CF: Isis::Cube::create(QString const&) (Cube.cpp:675)\n==27989==    by 0x75F8912: Isis::Cube::fromLabel(Isis::FileName const&, Isis::Pvl&, QString) (Cube.cpp:78)\n==27989==    by 0x75F8D7D: Isis::Cube::fromIsd(...) (Cube.cpp:100)\n==27989==    by 0xEF671B: Isis::DefaultCube::SetUp() (CameraFixtures.cpp:190)\n\n==27989== Mismatched new/delete size value: 128\n==27989==    at 0x4848809: operator delete(void*, unsigned long) (vg_replace_malloc.c:1181)\n==27989==    by 0x75035D0: Isis::Pvl::~Pvl() (Pvl.h:137)\n==27989==    by 0x75AEC9D: Isis::Cube::cleanUp(bool) (Cube.cpp:2448)\n==27989==    by 0x75E8790: Isis::Cube::close(bool) (Cube.cpp:276)\n==27989==    by 0x75F8A96: Isis::Cube::fromLabel(Isis::FileName const&, Isis::Pvl&, QString) (Cube.cpp:85)\n==27989==    by 0x75F8D7D: Isis::Cube::fromIsd(...) (Cube.cpp:100)\n==27989==    by 0xEF671B: Isis::DefaultCube::SetUp() (CameraFixtures.cpp:190)\n==27989==  Address 0x2eda9840 is 0 bytes inside a block of size 176 alloc'd\n==27989==    at 0x4844F93: operator new(unsigned long) (vg_replace_malloc.c:487)\n==27989==    by 0x9C34CDF: Isis::Pvl::setFormatTemplate(QString const&) (Pvl.cpp:566)\n==27989==    by 0x75E56C2: Isis::Cube::writeLabels() (Cube.cpp:3008)\n==27989==    by 0x75E87CD: Isis::Cube::close(bool) (Cube.cpp:274)\n```\n\n`sizeof(PvlContainer)` (128 bytes, what the delete call assumes) versus the actual `sizeof(Pvl)` (176 bytes, what was allocated) accounts exactly for the \"128\" vs the \"block of size 176\" in Valgrind's report -- concrete confirmation this is the base-vs-derived size mismatch described above, not a different bug with a coincidentally similar message.\n\nThis fires every time `Cube::writeLabels()` runs (i.e. on essentially every cube write that involves a format template), so it's a very hot path -- it just doesn't crash in practice because in every case we saw, the \"extra\" `PvlObject`/`Pvl`-specific state being skipped happens to not matter (no leaked resources with observable side effects in the common case). It's still undefined behaviour per the C++ standard, and the exact consequences (leaked derived-class members, ASan/hardened-allocator aborts, etc.) are implementation-defined and version-dependent -- this is exactly the kind of latent bug that can turn into a real crash after e.g. a toolchain/allocator upgrade, unrelated code changes to `Pvl`/`PvlObject`'s member layout, or a hardened allocator build.\n\n## Suggested fix\n\nGive `PvlContainer` (or at minimum `PvlObject`, the class actually intended to be a polymorphic base within this hierarchy) a `virtual` destructor. This is the standard, minimal fix for \"deleting a derived object through a base pointer\" -- it makes the deallocation correctly use the object's dynamic type and lets `Pvl`'s and `PvlObject`'s own destructor logic run properly. Given how widely `PvlContainer`/`PvlObject`/`Pvl` are used throughout ISIS, this should be a low-risk, additive change (adding `virtual` to an existing destructor, or adding one where none exists, doesn't change any existing call site's behavior for non-polymorphic use).\n\n---\n\n*Found via `valgrind --track-origins=yes` (Valgrind 3.24.0) while investigating an unrelated test crash, with the assistance of Claude Code (Anthropic's AI coding agent). The Valgrind output above is real tool output from our own build/run (`dev` @ `095c406d5`), and the `sizeof(PvlContainer)`/`sizeof(Pvl)` explanation was confirmed by reading the actual class declarations, not inferred from the Valgrind message alone.*\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5741201079,
+   "author_login": "ljbade",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-19T10:50:30Z",
+   "updated_utc": "2026-09-19T10:50:30Z",
+   "permalink": "https://github.com/DOI-USGS/ISIS3/issues/6160#issuecomment-5741201079",
+   "body_markdown": "## Checked other obvious polymorphic base classes -- none reproduce this specific defect\n\nAt the reporter's request, I checked whether the same class of bug (a base class with no virtual destructor, used polymorphically via a base-typed pointer that later gets `delete`d) recurs in the other big polymorphic hierarchies used the same way elsewhere in ISIS: `ShapeModel` (via `Target::m_shape`, constructed as `NaifDskShape`/`DemShape`/`EquatorialCylindricalShape`/`EllipsoidShape`/`PlaneShape` etc. through `ShapeModelFactory::create()`), `AtmosModel`, `PhotoModel`, and the five `Camera::Set*Map` base classes (`CameraDistortionMap`, `CameraFocalPlaneMap`, `CameraDetectorMap`, `CameraGroundMap`, `CameraSkyMap` -- see the [comment on #6159](https://github.com/DOI-USGS/ISIS3/issues/6159) for a *different*, unrelated defect found in that family).\n\nAll of these correctly declare a `virtual` destructor:\n\n```\nisis/src/base/objs/ShapeModel/ShapeModel.h:76:            virtual ~ShapeModel()=0;\nisis/src/base/objs/AtmosModel/AtmosModel.h:64:            virtual ~AtmosModel() {};\nisis/src/lro/objs/PhotoModel/PhotoModel.h:44:              virtual ~PhotoModel() {};\nisis/src/base/objs/CameraDistortionMap/CameraDistortionMap.h:47:  virtual ~CameraDistortionMap();\nisis/src/base/objs/CameraGroundMap/CameraGroundMap.h:82:      virtual ~CameraGroundMap() {};\nisis/src/base/objs/CameraSkyMap/CameraSkyMap.h:37:        virtual ~CameraSkyMap() {};\nisis/src/base/objs/CameraDetectorMap/CameraDetectorMap.h:51:    virtual ~CameraDetectorMap();\nisis/src/base/objs/CameraFocalPlaneMap/CameraFocalPlaneMap.h:89:  virtual ~CameraFocalPlaneMap();\n```\n\nSo this specific bug -- deleting a derived object through a non-virtual-destructor base pointer -- appears to be isolated to the `Pvl` / `PvlObject` / `PvlContainer` hierarchy rather than a systemic pattern across ISIS's other polymorphic model hierarchies. I did not do an exhaustive codebase-wide search for every base-pointer-holding-a-derived-object pattern (that would be a much larger undertaking), just checked the other obvious, similarly-structured \"factory constructs one of several subclasses, stores/deletes it via a common base pointer\" cases that are structurally closest to this one.\n\n---\n\n*Checked at the reporter's request, with the assistance of Claude Code (Anthropic's AI coding agent).*\n"
+  }
+ ]
+}

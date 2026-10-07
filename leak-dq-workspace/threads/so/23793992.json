@@ -1,0 +1,51 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 23793992,
+ "url": "https://stackoverflow.com/questions/23793992/do-i-need-to-use-shm-unlink-on-a-shared-memory-object",
+ "title": "Do I need to use shm_unlink on a shared memory object?",
+ "tags": [
+  "c++",
+  "c",
+  "linux",
+  "shared-memory"
+ ],
+ "score": 14,
+ "view_count": 13140,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 23794961,
+ "created_utc": "2014-05-21T21:19:28Z",
+ "last_activity_utc": "2016-04-14T17:14:58Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1588913,
+ "author_display_name": "Jeremy",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/23793992/do-i-need-to-use-shm-unlink-on-a-shared-memory-object",
+ "body_html": "<p>I've written a server (GNU C++ / Linux) which runs continuously, and occasionally executes small stand-alone programs to do work. In order to efficiently get data to the worker programs, the server creates and maps a shared memory object (code abbreviated for clarity): </p>\n\n<pre><code>int fd = shm_open(\"/shm_file\", O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);\nftruncate(...);\ndata = mmap(...);\n// etc...\nlaunchWorker(...);   // Start the worker program\n</code></pre>\n\n<p>The worker program then opens this shared memory in a similar way (except read-only, without the O_CREAT and O_TRUNC, i.e. we assume it already exists). </p>\n\n<p>When the worker finishes, it closes the file descriptor, unmaps with munmap(...) and unlinks with shm_unlink(...). </p>\n\n<p>At this point, there is a file \"/dev/shm/shm_file\" which I guess is the shared memory object. Unlinking in the worker doesn't remove it because the server still has it open.  When the server unlinks it, the file system object disappears. This behavior is consistent with the man page for shm_open / shm_unlink, and works fine for my server/worker case. </p>\n\n<p>However, now I'd like the workers to be able to share certain data between themselves, and possibly (for testing) do this when the server is not running. </p>\n\n<p>If I create a shared memory object in one worker program and DO NOT use munmap(...) and shm_unlink(...) when it exits, I note that the shared memory object remains in /dev/shm, and I can open it again in another worker program. This is handy. </p>\n\n<p>However, is it safe to do this? (i.e. repeatedly run a program which maps shared memory, then doesn't unmap/unlink it)? I'm guessing that the unmap() doesn't matter as the memory mapping will vanish with the process, but what about the shm_unlink? Given that the OS decided when to delete the object based on whether it is still being used, if I fail to call shm_unlink() every time, will this cause a leak of some kind? </p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 23794961,
+   "parent_id": 23793992,
+   "author_user_id": 1660022,
+   "author_display_name": "perh",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/23794961",
+   "score": 12,
+   "created_utc": "2014-05-21T22:32:11Z",
+   "last_edit_utc": "2016-04-14T17:14:58Z",
+   "last_activity_utc": "2016-04-14T17:14:58Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>The only leak is that the file will stay even after the last process that opened it exists.</p>\n\n<p>But since that was the intent in this case it is not really a leak as such.</p>\n\n<p>The files in <code>/dev/shm</code> behave just like regular files (because they are).</p>\n\n<p>This means that the name can be removed (using <code>unlink</code> or <code>shm_unlink</code>) but the file data will remain until the name is gone and the last process using it stops doing so (having the file open or it's content <code>mmap</code>:ed counts as using it).</p>\n\n<p>But there is only the one file, no matter how many times you open and/or mmap it.</p>\n\n<p>And when a process exits all open file descriptors are closed, and all memory mappings are removed.</p>\n"
+  }
+ ]
+}

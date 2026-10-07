@@ -1,0 +1,46 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lfortran/lfortran/issues/13590",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak: wr = [wr, wrap(s)] leaks the character buffer of a nested derived-type component",
+ "author_login": "certik",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:17Z",
+ "final_url": "https://github.com/lfortran/lfortran/issues/13590",
+ "repo": "lfortran/lfortran",
+ "repo_language": "C++",
+ "number": 13590,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-26T23:18:44Z",
+ "updated_at": "2026-09-26T23:20:34Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "arrays",
+  "memory",
+  "strings",
+  "derived types",
+  "medium priority"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "certik",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-26T23:18:44Z",
+   "updated_utc": "2026-09-26T23:20:34Z",
+   "permalink": "https://github.com/lfortran/lfortran/issues/13590",
+   "body_markdown": "Growing an allocatable array with an array constructor leaks the string buffer of a nested component when the new element is a structure constructor. Here the element type contains a derived type with a `character` component. valgrind reports one buffer lost per constructor element.\n\n```fortran\nprogram e\nimplicit none\ntype :: w\n    character(len=2) :: c\nend type\ntype :: wrap\n    type(w) :: inner\nend type\ntype(w) :: s\ntype(wrap), allocatable :: wr(:)\ns%c = 'ab'\nallocate(wr(1))\nwr = [wr, wrap(s)]\nprint *, wr(2)%inner%c\nend program\n```\n\n```\n$ lfortran --no-color --realloc-lhs-arrays e.f90 -o le && valgrind --leak-check=full ./le\nab\n==25160== 2 bytes in 1 blocks are definitely lost in loss record 1 of 1\n==25160==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==25160==    by 0x486F383: default_alloc (lfortran_intrinsics.c:300)\n==25160==    by 0x4881252: _lfortran_malloc_alloc (lfortran_intrinsics.c:5580)\n==25160==    by 0x1093E9: main\n==25160==    definitely lost: 2 bytes in 1 blocks\n```\n\nThe output is correct. Only the buffer is leaked. Variants that do not leak:\n\n- `wr = [wrap(s), wrap(s)]` into a fixed-size `wr(2)`\n- `x = wrap(s)` into a scalar\n- `ws = [ws, s]` with `type(w), allocatable :: ws(:)`\n- `wr = [wr(1), wr(2)]`\n\nReference compiler: GFortran 13.3 compiles and runs the program (`ab`), but its own temporary also leaks (4 bytes definitely lost), so it cannot serve as a leak-free reference. The LFortran leak is separate: an LFortran-allocated string buffer from `_lfortran_malloc_alloc` in `main` is never freed.\n\nReproduces on main (e9affe9b).\n\nFound while working on lfortran/lfortran#13570"
+  }
+ ]
+}

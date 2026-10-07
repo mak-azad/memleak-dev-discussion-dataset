@@ -1,0 +1,37 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/bitmovin/libdash/issues/32",
+ "passes": [
+  "main"
+ ],
+ "title": "Alloc-dealloc mismatch in DOMParser::ProcessNode",
+ "author_login": "anatols",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:56Z",
+ "final_url": "https://github.com/bitmovin/libdash/issues/32",
+ "repo": "bitmovin/libdash",
+ "repo_language": "C",
+ "number": 32,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-01-28T12:02:13Z",
+ "updated_at": "2021-01-28T12:02:13Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "anatols",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-01-28T12:02:13Z",
+   "updated_utc": "2021-01-28T12:02:13Z",
+   "permalink": "https://github.com/bitmovin/libdash/issues/32",
+   "body_markdown": "In DOMParser::ProcessNode a string returned from xmlTextReaderReadString is freed by delete operator. It should be done with xmlFree.\r\n\r\nI'm not going to contribute a fix via a pull request because you require signing a CLA, which I believe is against the spirit of open source. Here's a patch though, you can apply it yourselves if you want:\r\n```\r\n--- source/xml/DOMParser.cpp\r\n+++ source/xml/DOMParser.cpp\r\n@@ -113,14 +113,14 @@ Node*   DOMParser::ProcessNode              ()\r\n         return node;\r\n     } else if (type == Text)\r\n     {\r\n-       const char* text = (const char *) xmlTextReaderReadString(this->reader);\r\n+        xmlChar *text = xmlTextReaderReadString(this->reader);\r\n \r\n        if(text != NULL)\r\n        {\r\n            Node *node = new Node();\r\n            node->SetType(type);\r\n-           node->SetText(text);\r\n-           delete text;\r\n+           node->SetText((const char *)text);\r\n+           xmlFree(text);\r\n            return node;\r\n        }\r\n     }\r\n```"
+  }
+ ]
+}

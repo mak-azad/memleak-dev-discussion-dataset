@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/bgrimstad/splinter/issues/138",
+ "passes": [
+  "main"
+ ],
+ "title": "C++ interface example outputs \"double free or corruption (out)\"",
+ "author_login": "victor-kowalski-m",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:51Z",
+ "final_url": "https://github.com/bgrimstad/splinter/issues/138",
+ "repo": "bgrimstad/splinter",
+ "repo_language": "C++",
+ "number": 138,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-04-17T09:46:44Z",
+ "updated_at": "2024-04-17T11:22:10Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590",
+  "761",
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "victor-kowalski-m",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-04-17T09:46:44Z",
+   "updated_utc": "2024-04-17T11:22:10Z",
+   "permalink": "https://github.com/bgrimstad/splinter/issues/138",
+   "body_markdown": "Hello,\r\n\r\nI tried to execute the provided C++ interface example code and it outputs:\r\n\r\n```\r\ndouble free or corruption (out)\r\nAborted (core dumped)\r\n```\r\n\r\nI recompiled the code with the flag -fsanitize=address and re-executed it, it outputs:\r\n\r\n```\r\n=================================================================\r\n==31743==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x631000014820 in thread T0\r\n    #0 0x7fe5b26dbdb8 in __interceptor_free (/usr/lib64/libasan.so.4+0xdbdb8)\r\n    #1 0x7fe5b3774616 in Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int>, Eigen::COLAMDOrdering<int> >::factorize(Eigen::SparseMatrix<double, 0, int> const&) (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x55616)\r\n    #2 0x7fe5b3778f05 in SPLINTER::SparseLU<Eigen::Matrix<double, -1, 1, 0, -1, 1> >::doSolve(Eigen::SparseMatrix<double, 0, int> const&, Eigen::Matrix<double, -1, 1, 0, -1, 1> const&, Eigen::Matrix<double, -1, 1, 0, -1, 1>&) const (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x59f05)\r\n    #3 0x7fe5b375fd35 in SPLINTER::BSpline::Builder::computeCoefficients(SPLINTER::BSpline const&) const (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x40d35)\r\n    #4 0x7fe5b3760e8c in SPLINTER::BSpline::Builder::build() const (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x41e8c)\r\n    #5 0x40af8c in main /home/kowa_vi/trajectory_optimization/src/tests/test_splinter.cpp:44\r\n    #6 0x7fe5b21d524c in __libc_start_main (/lib64/libc.so.6+0x3524c)\r\n    #7 0x40a5a9 in _start ../sysdeps/x86_64/start.S:120\r\n\r\n0x631000014820 is located 32 bytes inside of 67616-byte region [0x631000014800,0x631000025020)\r\nallocated by thread T0 here:\r\n    #0 0x7fe5b26dc110 in malloc (/usr/lib64/libasan.so.4+0xdc110)\r\n    #1 0x40bcdf in Eigen::internal::handmade_aligned_malloc(unsigned long, unsigned long) /usr/include/eigen3/Eigen/src/Core/util/Memory.h:105\r\n    #2 0x40bdb4 in Eigen::internal::aligned_malloc(unsigned long) /usr/include/eigen3/Eigen/src/Core/util/Memory.h:188\r\n    #3 0x4100eb in void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) /usr/include/eigen3/Eigen/src/Core/util/Memory.h:241\r\n    #4 0x40f94d in double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) /usr/include/eigen3/Eigen/src/Core/util/Memory.h:404\r\n    #5 0x7fe5b3773a3d in Eigen::SparseLU<Eigen::SparseMatrix<double, 0, int>, Eigen::COLAMDOrdering<int> >::factorize(Eigen::SparseMatrix<double, 0, int> const&) (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x54a3d)\r\n    #6 0x7fe5b3778f05 in SPLINTER::SparseLU<Eigen::Matrix<double, -1, 1, 0, -1, 1> >::doSolve(Eigen::SparseMatrix<double, 0, int> const&, Eigen::Matrix<double, -1, 1, 0, -1, 1> const&, Eigen::Matrix<double, -1, 1, 0, -1, 1>&) const (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x59f05)\r\n    #7 0x7fe5b375fd35 in SPLINTER::BSpline::Builder::computeCoefficients(SPLINTER::BSpline const&) const (/home/kowa_vi/Downloads/splinter-3.0/build/libsplinter-3-0.so+0x40d35)\r\n\r\nSUMMARY: AddressSanitizer: bad-free (/usr/lib64/libasan.so.4+0xdbdb8) in __interceptor_free\r\n==31743==ABORTING\r\n```\r\n\r\nThe basic C interface example works, but if I create a variable such as an Eigen::Matrix inside the code, the same error occurs. \r\n\r\nI am running it on an openSUSE 5.14.21 system, using gcc as the compiler.\r\n\r\nIs there some sort of memory issue?"
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/HDFGroup/hdf5/issues/4435",
+ "passes": [
+  "main"
+ ],
+ "title": "allocation-size-too-big error in H5Centry.c",
+ "author_login": "gabe-sherman",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:16Z",
+ "final_url": "https://github.com/HDFGroup/hdf5/issues/4435",
+ "repo": "HDFGroup/hdf5",
+ "repo_language": "C",
+ "number": 4435,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-04-21T16:54:56Z",
+ "updated_at": "2026-09-11T19:17:43Z",
+ "closed_at": null,
+ "labels": [
+  "Component - C Library",
+  "Type - Security",
+  "HDFG-internal"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "gabe-sherman",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-04-21T16:54:56Z",
+   "updated_utc": "2026-09-11T19:17:43Z",
+   "permalink": "https://github.com/HDFGroup/hdf5/issues/4435",
+   "body_markdown": "An allocation-size-too-big error occurs in the h5dump program when provided with a malformed input. This behavior occurs at line 1015 in H5Centry.c.\r\n### How to trigger\r\n\r\n```LD_PRELOAD=path-to/libhdf5.so h5dump poc```\r\n\r\n### POC File\r\nhttps://github.com/FuturesLab/POC/blob/main/hdf5/poc-10\r\n\r\n### Test Environment\r\n\r\nUbuntu 22.04, 64bit\r\n### Version\r\n\r\nLatest: 0394b03f66dc45fe96e2c772b7bce293e4316ad2\r\n\r\n### Address Sanitizer Output\r\n```\r\n=================================================================\r\n==1440597==ERROR: AddressSanitizer: requested allocation size 0x101010101010158 (0x101010101011158 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000000 (thread T0)\r\n    #0 0x5555565cc45e in __interceptor_malloc (/home/gabesherman/harness_test/AutoHarn-Results/hdf5/autoharn-10/harness+0x107845e) (BuildId: 18a7c9ab4a9a69531af3cb99c442f42c242e1103)\r\n    #1 0x55555711b265 in H5C__load_entry /home/gabesherman/harness_test/AutoHarn-Evaluation/hdf5/lib_asan/src/H5Centry.c:1017:37\r\n    #2 0x55555711b265 in H5C_protect /home/gabesherman/harness_test/AutoHarn-Evaluation/hdf5/lib_asan/src/H5Centry.c:3101:30\r\n    #3 0x555556f79dc2 in H5AC_protect /home/gabesherman/harness_test/AutoHarn-Evaluation/hdf5/lib_asan/src/H5AC.c:1276:26\r\n\r\n==1440597==HINT: if you don't care about these errors you may set allocator_may_return_null=1\r\nSUMMARY: AddressSanitizer: allocation-size-too-big (/home/gabesherman/harness_test/AutoHarn-Results/hdf5/autoharn-10/harness+0x107845e) (BuildId: 18a7c9ab4a9a69531af3cb99c442f42c242e1103) in __interceptor_malloc\r\n==1440597==ABORTING\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2073496668,
+   "author_login": "gabe-sherman",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-04-23T21:34:40Z",
+   "updated_utc": "2024-04-23T21:34:40Z",
+   "permalink": "https://github.com/HDFGroup/hdf5/issues/4435#issuecomment-2073496668",
+   "body_markdown": "This is the harness that this crash was discovered with:\r\n```\r\n#include <stdio.h>\r\n#include <stdarg.h>\r\n#include <string.h>\r\n#include <stdlib.h>\r\n#include <hdf5.h>\r\n\r\nint main(int argc, char *argv[])\r\n{\r\n   char *fuzzData = argv[1];\r\n\r\n   char H5Gcreate1var0[256];\r\n\tsprintf(H5Gcreate1var0, \"yhoom\");\r\n   char H5Gcreate2var0[256];\r\n\tsprintf(H5Gcreate2var0, \"7td9h\");\r\n   hid_t H5Fopenval1 = H5Fopen(fuzzData, 1, 0);\r\n\tif(strcmp(argv[1], fuzzData)){\r\n\t\tfprintf(stderr, \"err\");\r\n\t}\r\n\tif(H5Fopenval1 < 0){\r\n\t\tfprintf(stderr, \"err\");\r\n\t}\r\n   hid_t H5Gcreate1val1 = H5Gcreate1(H5Fopenval1, H5Gcreate1var0, 1);\r\n\tif(strcmp(argv[1], fuzzData)){\r\n\t\tfprintf(stderr, \"err\");\r\n\t}\r\n\tif(H5Gcreate1val1 < 0){\r\n\t\tfprintf(stderr, \"err\");\r\n\t}\r\n   hid_t H5Gcreate2val1 = H5Gcreate2(H5Gcreate1val1, H5Gcreate2var0, 0, 0, 0);\r\n\tif(strcmp(argv[1], fuzzData)){\r\n\t\tfprintf(stderr, \"err\");\r\n\t}\r\n\tif(H5Gcreate2val1 < 0){\r\n\t\tfprintf(stderr, \"err\");\r\n\t}\r\n   return 0;\r\n}\r\n\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5008854962,
+   "author_login": "gheber",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-07-18T00:38:22Z",
+   "updated_utc": "2026-07-18T00:38:22Z",
+   "permalink": "https://github.com/HDFGroup/hdf5/issues/4435#issuecomment-5008854962",
+   "body_markdown": "`poc-10` is corrupt:\n```\n ./tools/h5policy --continue-after-rejection ~/h5/poc-10 \n{\n  \"schema_version\": 1,\n  \"decision\": \"reject_corrupt\",\n  \"profile\": \"untrusted_strict\",\n  \"file\": \"/home/bob/h5/poc-10\",\n  \"mapping_mode\": \"strict\",\n  \"phase\": \"0-4\",\n  \"geometry\": {\n    \"physical_bytes\": 2873,\n    \"declared_eoa\": 2848,\n    \"effective_ceiling\": 2848,\n    \"trailing_bytes\": 25\n  },\n  \"analysis\": {\n    \"complete\": true,\n    \"walk_started\": true,\n    \"walk_completed\": true,\n    \"stop_reason\": \"\",\n    \"continue_after_rejection\": true,\n    \"findings_truncated\": false\n  },\n  \"boundary\": {\n    \"libhdf5\": false,\n    \"plugins\": false,\n    \"decompression\": false,\n    \"external_file_opens\": false,\n    \"repair\": false,\n    \"writes\": false,\n    \"application_deserialization\": false\n  },\n  \"features\": {\n    \"external_links\": 0,\n    \"external_storage\": 0,\n    \"vds\": 0,\n    \"dynamic_filters\": [],\n    \"decode_filters\": [],\n    \"unknown_messages\": 0,\n    \"max_rank_seen\": 0,\n    \"max_logical_dataset_bytes_seen\": 0\n  },\n  \"metrics\": {\n    \"metadata_bytes_seen\": 680,\n    \"object_count\": 1,\n    \"attribute_count\": 0,\n    \"object_header_chunk_count\": 0,\n    \"chunk_index_refs\": 0,\n    \"visited_object_headers\": 1,\n    \"visited_continuations\": 0,\n    \"visited_btree_refs\": 2,\n    \"walk_operations\": 115\n  },\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"code\": \"H5_CORRUPT_OFFSET_OUT_OF_FILE\",\n      \"class\": \"corrupt\",\n      \"has_location\": true,\n      \"offset\": 0,\n      \"object\": \"superblock\",\n      \"message\": \"driver-info address is outside the file\"\n    },\n    {\n      \"severity\": \"error\",\n      \"code\": \"H5_CORRUPT_OFFSET_OUT_OF_FILE\",\n      \"class\": \"corrupt\",\n      \"has_location\": true,\n      \"offset\": 120,\n      \"object\": \"/\",\n      \"message\": \"local heap data segment outside file\"\n    },\n    {\n      \"severity\": \"error\",\n      \"code\": \"H5_CORRUPT_BAD_SIGNATURE\",\n      \"class\": \"corrupt\",\n      \"has_location\": true,\n      \"offset\": 1440,\n      \"object\": \"/\",\n      \"message\": \"symbol table node signature mismatch\"\n    }\n  ]\n}\n```"
+  }
+ ]
+}

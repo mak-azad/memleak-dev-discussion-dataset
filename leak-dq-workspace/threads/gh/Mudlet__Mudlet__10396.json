@@ -1,0 +1,52 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Mudlet/Mudlet/issues/10396",
+ "passes": [
+  "main"
+ ],
+ "title": "JSON map import silently drops an area with a blank name and leaks its TArea",
+ "author_login": "vadi2",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:56Z",
+ "final_url": "https://github.com/Mudlet/Mudlet/issues/10396",
+ "repo": "Mudlet/Mudlet",
+ "repo_language": "C++",
+ "number": 10396,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-04T22:07:47Z",
+ "updated_at": "2026-09-04T23:24:51Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "vadi2",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-04T22:07:47Z",
+   "updated_utc": "2026-09-04T23:24:51Z",
+   "permalink": "https://github.com/Mudlet/Mudlet/issues/10396",
+   "body_markdown": "### Brief summary of the issue\n\nWhen a JSON map contains an area with a blank name, `loadJsonMap()` silently discards that area and every room in it, reports success, and leaks the `TArea` object.\n\nTwo faults on one line, in [`TMap::readJsonMapFile()`](https://github.com/Mudlet/Mudlet/blob/development/src/TMap.cpp#L3737):\n\n```cpp\nstd::unique_ptr<TArea> pArea = std::make_unique<TArea>(this, pNewRoomDB.get());\nauto [id, name] = pArea->readJsonArea(...);\n...\npNewRoomDB->addArea(pArea.release(), id, name);\n```\n\n`release()` gives up ownership unconditionally, but [`TRoomDB::addArea(TArea*, int, const QString&)`](https://github.com/Mudlet/Mudlet/blob/development/src/TRoomDB.cpp#L608) opens with:\n\n```cpp\nif (name.isEmpty()) {\n    return false;\n}\n```\n\nIt never stores `pA` and never deletes it. `TArea` is a plain class with no `Q_OBJECT` and no parent, so nothing else cleans it up. The `false` return is also ignored at the call site, which is why the import reports success.\n\n### Steps to reproduce the issue\n\n```lua\nopenMapWidget()\nlocal path = getMudletHomeDir() .. \"/probe.json\"\nlocal areaId = addAreaName(\"ProbeArea\")\nlocal roomId = createRoomID()\naddRoom(roomId); setRoomArea(roomId, areaId)\nsaveJsonMap(path)\n\n-- blank out the area's name in the saved file\nlocal f = io.open(path, \"rb\"); local t = f:read(\"*a\"); f:close()\nf = io.open(path, \"wb\"); f:write((t:gsub('\"ProbeArea\"', '\"\"'))); f:close()\n\nprint(\"loadJsonMap:\", loadJsonMap(path))\nfor name, id in pairs(getAreaTable()) do print(\"area:\", name, id) end\n```\n\n### Error output / provide screenshots of the issue\n\n```\nloadJsonMap:\ttrue\narea:\tDefault Area\t-1\narea:\tUnnamed Area\t1\n```\n\n`ProbeArea` and its room are gone, and the import still returned `true`.\n\nFor the leak I ran the same scenario under gdb with breakpoints on `TRoomDB::addArea(TArea*, int, QString const&)` and `TArea::~TArea`:\n\n```\nLEAKPROBE_ADDAREA pA=0x55555b01ca70 id=-1 name_len=12\nLEAKPROBE_ADDAREA pA=0x55555b023ed0 id=1  name_len=0\n...\nLEAKPROBE_DTOR this=0x55555b01ca70      <- the named area, destroyed\n(no destructor call for 0x55555b023ed0 for the rest of the process)\n```\n\nThe area whose name was empty is never destroyed; its accepted sibling is. The `TArea` also owns whatever `readJsonArea()` populated into it, so the leak is not just the one object.\n\n### Extra information, such as Mudlet version, operating system and ideas for how to solve / implement\n\nConfirmed on `development` at 35dce0e30, Linux, self-built debug.\n\nThree things want fixing:\n\n1. **Do not `release()` before the callee has accepted.** Check the return of `addArea()` and only release on success, or change `addArea` to take the `unique_ptr` so ownership is explicit.\n2. **Do not silently drop the area.** Either give a blank-named imported area a generated name the way `TRoomDB::addArea(int)` does for unnamed areas, or fail the import with a message naming the offending area. Right now a user importing a map from another client can lose whole areas and be told it worked.\n3. `readJsonMapFile()` should not ignore `addArea()`'s `bool` return.\n\nFound while writing map specs.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5547593897,
+   "author_login": "vadi2",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-04T23:24:51Z",
+   "updated_utc": "2026-09-04T23:24:51Z",
+   "permalink": "https://github.com/Mudlet/Mudlet/issues/10396#issuecomment-5547593897",
+   "body_markdown": "Independently confirmed by CI's LeakSanitizer, which is a stronger witness than the gdb session in the description - different machine, different Qt (6.11.1), no debugger involved.\n\nA spec that imported a JSON map with one blank-named area was enough to turn the `ubuntu / gcc / lua tests + leak detection` job red, with the busted run itself reporting `4087 successes / 0 failures / 0 errors`:\n\n```\n==62058==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 256 byte(s) in 1 object(s) allocated from:\n    #1 std::make_unique<TArea, TMap*, TRoomDB*>(TMap*&&, TRoomDB*&&)\n    #2 TMap::readJsonMapFile(QString const&, bool) at src/TMap.cpp:3729\n    #3 TLuaInterpreter::loadJsonMap(lua_State*) at src/TLuaInterpreterMapper.cpp:2715\n\nIndirect leak of 192 byte(s) in 1 object(s) allocated from:\n    #9  QSet<int>::insert(int const&)\n    #10 TArea::readJsonArea(QJsonArray const&, int) at src/TArea.cpp:863\n    #11 TMap::readJsonMapFile(QString const&, bool) at src/TMap.cpp:3730\n\nSUMMARY: AddressSanitizer: 640 byte(s) leaked in 4 allocation(s).\n```\n\nThe `TArea` built at `TMap.cpp:3729` is handed to `TRoomDB::addArea(pArea.release(), id, name)`, which returns early on the empty name without storing or deleting it - so the object and the `QSet<int>` members `readJsonArea()` had already filled on the next line are both stranded. 640 bytes per blank-named area in the file.\n\nPractical consequence for the test suite: any spec that exercises this path fails the leak-detection job even when every assertion passes. The spec that found it is parked as `pending` against this issue in #10398 rather than shipped, so it can be un-parked when this is fixed."
+  }
+ ]
+}

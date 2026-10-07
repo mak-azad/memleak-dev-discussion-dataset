@@ -1,0 +1,55 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/L0932/ForgeSim/issues/17",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Define application lifecycle and graceful shutdown behavior",
+ "author_login": "L0932",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:26Z",
+ "final_url": "https://github.com/L0932/ForgeSim/issues/17",
+ "repo": "L0932/ForgeSim",
+ "repo_language": "C++",
+ "number": 17,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2026-10-02T17:29:16Z",
+ "updated_at": "2026-10-06T14:59:09Z",
+ "closed_at": "2026-10-06T14:59:09Z",
+ "labels": [
+  "Implementation",
+  "Area: Runtime",
+  "Area: Platform"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "L0932",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-02T17:29:16Z",
+   "updated_utc": "2026-10-06T14:59:09Z",
+   "permalink": "https://github.com/L0932/ForgeSim/issues/17",
+   "body_markdown": "## Objective\n\nDefine predictable application initialization and shutdown behavior for the interactive 3D Sandbox, including safe ownership and destruction of graphics resources.\n\n## Current Context\n\nPhase 2 introduces concrete OpenGL resources such as shader programs, vertex buffers, index buffers, and potentially textures.\n\n`main()` currently handles top-level exception handling and exit status. `SandboxApplication` owns the window and coordinates the interactive loop.\n\nThe lifecycle contract should ensure that application and graphics resources are initialized and destroyed in a valid order without introducing a general subsystem-management framework.\n\n## Implementation Notes\n\n- Establish clear initialization, execution, and shutdown phases.\n- Define ownership of window, context, rendering, scene, and application-level resources.\n- Ensure OpenGL resources are destroyed while a valid OpenGL context still exists.\n- Preserve top-level exception handling in `main()`.\n- Handle partial initialization failures without leaking resources.\n- Define behavior when `Run()` is called more than once.\n- Prefer RAII and explicit ownership over global managers.\n- Keep GLFW-specific lifecycle work inside the platform boundary where practical.\n\n## Acceptance Criteria\n\n- [x] Application initialization responsibilities are clearly defined\n- [x] The interactive loop cannot be entered more than once per application instance\n- [x] Normal window closure produces an orderly shutdown\n- [x] Initialization failures return a failure exit status\n- [x] Partially initialized resources are released safely\n- [x] Graphics-resource ownership is explicit\n- [x] OpenGL resources are destroyed before the OpenGL context\n- [x] The window and GLFW state are destroyed in a valid order\n- [x] Resource destruction order is deterministic\n- [x] Normal shutdown, repeated `Run()` rejection, and initialization-failure cleanup are manually verified\n- [x] Existing headless automated tests continue to pass\n- [x] Clean Debug and Release builds succeed\n- [x] Debug and Release tests pass\n- [x] Changes are committed and pushed\n\n## Out of Scope\n\n- A global subsystem manager\n- Dependency-injection infrastructure\n- Multiple windows or contexts\n- Application restart within the same process\n- Graphics-resource hot reloading\n- Multithreaded initialization or shutdown\n- Complete editor lifecycle behavior"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 6019025861,
+   "author_login": "L0932",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-06T14:58:12Z",
+   "updated_utc": "2026-10-06T14:58:12Z",
+   "permalink": "https://github.com/L0932/ForgeSim/issues/17#issuecomment-6019025861",
+   "body_markdown": "## Completion Summary\n\nApplication lifecycle and graceful shutdown behavior have been clarified and hardened.\n\n### Changes\n\n- Replaced the Debug-only `Run()` assertion with a `std::logic_error`, enforcing the single-run contract in Debug and Release.\n- Made `SandboxApplication` explicitly non-copyable and non-movable.\n- Corrected GLFW initialization so `glfwInit()` occurs before window hints are configured.\n- Preserved cleanup for window-creation and OpenGL-loading failures.\n- Documented application ownership, initialization, execution, shutdown, and graphics-resource destruction order.\n- Documented that graphics resources must be destroyed before the window and OpenGL context.\n- Deferred a general subsystem manager and dedicated Runtime lifecycle coordinator until concrete reuse requirements emerge.\n\n### Validation\n\n- Confirmed normal Sandbox startup and window closure.\n- Confirmed repeated `Run()` attempts report an error.\n- Confirmed window-creation failure is caught by `main()` and returns a failure exit status.\n- Confirmed partially initialized GLFW state is released.\n- Confirmed Debug and Release builds run successfully.\n- Confirmed existing automated tests continue to pass.\n\nApplication restart within the same process, multiple windows, and graphics-resource hot reloading remain out of scope.\n```"
+  }
+ ]
+}

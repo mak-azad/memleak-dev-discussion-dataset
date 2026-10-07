@@ -1,0 +1,637 @@
+{
+ "_comment": "Search queries used in the October 2026 run. so_* entries are [query, tag]; gh_* entries are [bucket, GitHub issue-search query].",
+ "so_main": {
+  "sorts": [
+   "relevance",
+   "votes"
+  ],
+  "pagesize": 10,
+  "queries": {
+   "CWE-401": [
+    [
+     "memory leak valgrind definitely lost",
+     "c"
+    ],
+    [
+     "memory leak valgrind definitely lost",
+     "c++"
+    ],
+    [
+     "memory leak function returns malloc caller free",
+     "c"
+    ],
+    [
+     "memory leak error path return without free",
+     "c"
+    ],
+    [
+     "LeakSanitizer detected memory leaks",
+     "c"
+    ],
+    [
+     "LeakSanitizer detected memory leaks",
+     "c++"
+    ],
+    [
+     "memory leak realloc",
+     "c"
+    ],
+    [
+     "memory leak pointer overwritten",
+     "c"
+    ],
+    [
+     "memory leak exception new",
+     "c++"
+    ],
+    [
+     "is this a memory leak",
+     "c"
+    ],
+    [
+     "is this a memory leak",
+     "c++"
+    ],
+    [
+     "still reachable possibly lost",
+     "c"
+    ]
+   ],
+   "CWE-459": [
+    [
+     "free struct members memory leak",
+     "c"
+    ],
+    [
+     "free linked list memory leak",
+     "c"
+    ],
+    [
+     "free 2d array memory leak",
+     "c"
+    ],
+    [
+     "destructor not called memory leak",
+     "c++"
+    ],
+    [
+     "virtual destructor memory leak",
+     "c++"
+    ],
+    [
+     "shared_ptr circular reference memory leak",
+     "c++"
+    ],
+    [
+     "indirect leak valgrind",
+     "c"
+    ],
+    [
+     "rule of three memory leak destructor",
+     "c++"
+    ]
+   ],
+   "CWE-590": [
+    [
+     "free(): invalid pointer stack array",
+     "c"
+    ],
+    [
+     "free local array",
+     "c"
+    ],
+    [
+     "free string literal",
+     "c"
+    ],
+    [
+     "delete stack object",
+     "c++"
+    ],
+    [
+     "free static variable",
+     "c"
+    ],
+    [
+     "not malloc()-ed",
+     "c"
+    ],
+    [
+     "bad-free AddressSanitizer",
+     "c++"
+    ]
+   ],
+   "CWE-761": [
+    [
+     "free pointer incremented",
+     "c"
+    ],
+    [
+     "free after pointer arithmetic",
+     "c"
+    ],
+    [
+     "free invalid pointer after increment",
+     "c"
+    ],
+    [
+     "free pointer middle of array",
+     "c"
+    ],
+    [
+     "strtok free invalid pointer",
+     "c"
+    ]
+   ],
+   "CWE-762": [
+    [
+     "Mismatched free() / delete / delete []",
+     "c++"
+    ],
+    [
+     "alloc-dealloc-mismatch",
+     "c++"
+    ],
+    [
+     "malloc then delete",
+     "c++"
+    ],
+    [
+     "new then free",
+     "c++"
+    ],
+    [
+     "delete instead of delete[]",
+     "c++"
+    ],
+    [
+     "free memory allocated by another dll",
+     "c++"
+    ],
+    [
+     "strdup delete",
+     "c++"
+    ]
+   ],
+   "CWE-763": [
+    [
+     "free(): invalid pointer",
+     "c"
+    ],
+    [
+     "free(): invalid pointer",
+     "c++"
+    ],
+    [
+     "munmap_chunk(): invalid pointer",
+     "c"
+    ],
+    [
+     "free uninitialized pointer",
+     "c"
+    ],
+    [
+     "should I free returned pointer library",
+     "c"
+    ],
+    [
+     "free getenv",
+     "c"
+    ],
+    [
+     "double free or corruption",
+     "c"
+    ],
+    [
+     "pointer being freed was not allocated",
+     "c"
+    ]
+   ],
+   "CWE-789": [
+    [
+     "malloc size from user input check",
+     "c"
+    ],
+    [
+     "allocation-size-too-big",
+     "c"
+    ],
+    [
+     "malloc huge size returns NULL",
+     "c"
+    ],
+    [
+     "malloc negative size_t",
+     "c"
+    ],
+    [
+     "std::bad_alloc huge vector",
+     "c++"
+    ],
+    [
+     "integer overflow malloc size",
+     "c"
+    ],
+    [
+     "memory grows unbounded",
+     "c++"
+    ],
+    [
+     "limit allocation size untrusted",
+     "c"
+    ]
+   ]
+  }
+ },
+ "so_offcwe": {
+  "sorts": [
+   "votes"
+  ],
+  "pagesize": 8,
+  "queries": {
+   "RES-file/fd/socket": [
+    [
+     "file descriptor leak",
+     "c"
+    ],
+    [
+     "fclose memory leak",
+     "c"
+    ],
+    [
+     "socket not closed leak",
+     "c"
+    ],
+    [
+     "handle leak",
+     "c++"
+    ],
+    [
+     "too many open files leak",
+     "c"
+    ]
+   ],
+   "RES-thread": [
+    [
+     "pthread_create memory leak",
+     "c"
+    ],
+    [
+     "thread detach join memory leak",
+     "c"
+    ],
+    [
+     "std::thread memory leak",
+     "c++"
+    ]
+   ],
+   "GROWTH-no-leak": [
+    [
+     "memory usage grows no leak valgrind",
+     "c++"
+    ],
+    [
+     "free does not return memory to os",
+     "c"
+    ],
+    [
+     "memory fragmentation malloc",
+     "c"
+    ],
+    [
+     "RSS increasing but no leak",
+     "c++"
+    ],
+    [
+     "malloc_trim",
+     "c"
+    ]
+   ],
+   "REFCOUNT-bindings": [
+    [
+     "Py_DECREF memory leak",
+     "c"
+    ],
+    [
+     "python c extension memory leak",
+     "c"
+    ],
+    [
+     "JNI memory leak",
+     "c++"
+    ],
+    [
+     "reference count leak",
+     "c"
+    ],
+    [
+     "COM Release memory leak",
+     "c++"
+    ]
+   ],
+   "DOUBLE-FREE/UAF": [
+    [
+     "double free or corruption",
+     "c++"
+    ],
+    [
+     "heap use after free",
+     "c"
+    ],
+    [
+     "heap-use-after-free",
+     "c++"
+    ]
+   ],
+   "HEAP-CORRUPTION": [
+    [
+     "heap corruption detected free",
+     "c++"
+    ],
+    [
+     "malloc(): corrupted top size",
+     "c"
+    ],
+    [
+     "free crash buffer overflow",
+     "c"
+    ]
+   ],
+   "GPU/OS-resource": [
+    [
+     "cuda memory leak",
+     "c++"
+    ],
+    [
+     "opengl texture leak",
+     "c++"
+    ],
+    [
+     "kernel module kmalloc leak",
+     "c"
+    ],
+    [
+     "mmap munmap leak",
+     "c"
+    ]
+   ],
+   "LIB-cleanup": [
+    [
+     "openssl memory leak cleanup",
+     "c"
+    ],
+    [
+     "libxml2 memory leak",
+     "c"
+    ],
+    [
+     "glib memory leak",
+     "c"
+    ],
+    [
+     "valgrind leak dlopen",
+     "c"
+    ]
+   ],
+   "POOL/ARENA": [
+    [
+     "memory pool leak",
+     "c"
+    ],
+    [
+     "custom allocator leak",
+     "c++"
+    ],
+    [
+     "arena allocator free",
+     "c"
+    ]
+   ],
+   "STL-containers": [
+    [
+     "vector of pointers memory leak",
+     "c++"
+    ],
+    [
+     "std::map memory leak",
+     "c++"
+    ],
+    [
+     "string memory leak",
+     "c++"
+    ]
+   ]
+  }
+ },
+ "gh_main": {
+  "per_page": 10,
+  "queries": [
+   [
+    "CWE-401",
+    "\"LeakSanitizer: detected memory leaks\" \"Direct leak\" is:issue language:c"
+   ],
+   [
+    "CWE-401",
+    "\"LeakSanitizer: detected memory leaks\" \"Direct leak\" is:issue language:c++"
+   ],
+   [
+    "CWE-401",
+    "\"memory leak\" \"error path\" is:issue language:c"
+   ],
+   [
+    "CWE-401",
+    "\"definitely lost\" valgrind is:issue language:c"
+   ],
+   [
+    "CWE-401",
+    "\"definitely lost\" valgrind is:issue language:c++"
+   ],
+   [
+    "CWE-401",
+    "\"memory leak\" \"who is responsible\" free is:issue"
+   ],
+   [
+    "CWE-401",
+    "\"memory leak\" \"false positive\" valgrind is:issue language:c"
+   ],
+   [
+    "CWE-401",
+    "\"memory leak\" realloc \"original pointer\" is:issue"
+   ],
+   [
+    "CWE-459",
+    "\"Indirect leak\" \"memory leak\" is:issue language:c"
+   ],
+   [
+    "CWE-459",
+    "\"memory leak\" destructor \"never freed\" is:issue language:c++"
+   ],
+   [
+    "CWE-459",
+    "\"memory leak\" \"not freed\" cleanup \"on exit\" is:issue language:c"
+   ],
+   [
+    "CWE-459",
+    "\"memory leak\" shared_ptr cycle is:issue language:c++"
+   ],
+   [
+    "CWE-590",
+    "\"attempting free on address which was not malloc()-ed\" is:issue language:c"
+   ],
+   [
+    "CWE-590",
+    "\"attempting free on address which was not malloc()-ed\" is:issue language:c++"
+   ],
+   [
+    "CWE-590",
+    "\"bad-free\" stack is:issue"
+   ],
+   [
+    "CWE-590",
+    "\"free\" \"string literal\" crash is:issue language:c"
+   ],
+   [
+    "CWE-761",
+    "\"not malloc()-ed\" \"bytes inside of\" is:issue"
+   ],
+   [
+    "CWE-762",
+    "\"alloc-dealloc-mismatch\" is:issue"
+   ],
+   [
+    "CWE-762",
+    "\"alloc-dealloc-mismatch\" \"malloc vs operator delete\" is:issue"
+   ],
+   [
+    "CWE-762",
+    "\"Mismatched free() / delete / delete []\" is:issue"
+   ],
+   [
+    "CWE-762",
+    "\"mismatched-new-delete\" is:issue"
+   ],
+   [
+    "CWE-762",
+    "\"free\" \"different heap\" dll crash is:issue"
+   ],
+   [
+    "CWE-763",
+    "\"free(): invalid pointer\" is:issue language:c"
+   ],
+   [
+    "CWE-763",
+    "\"free(): invalid pointer\" is:issue language:c++"
+   ],
+   [
+    "CWE-763",
+    "\"munmap_chunk(): invalid pointer\" is:issue language:c"
+   ],
+   [
+    "CWE-763",
+    "\"pointer being freed was not allocated\" is:issue language:c"
+   ],
+   [
+    "CWE-763",
+    "\"must not be freed\" is:issue language:c"
+   ],
+   [
+    "CWE-789",
+    "\"allocation-size-too-big\" is:issue"
+   ],
+   [
+    "CWE-789",
+    "\"requested allocation size\" \"exceeds maximum supported size\" is:issue"
+   ],
+   [
+    "CWE-789",
+    "\"excessive memory allocation\" is:issue language:c"
+   ],
+   [
+    "CWE-789",
+    "\"out-of-memory\" malloc \"crafted\" is:issue language:c"
+   ],
+   [
+    "CWE-789",
+    "\"memory exhaustion\" \"allocation\" is:issue language:c"
+   ]
+  ],
+  "_note": "One malformed OR query from the original run (CWE-761 'pointer was advanced/incremented') returned millions of hits and was discarded; it is omitted here."
+ },
+ "gh_offcwe": {
+  "per_page": 10,
+  "queries": [
+   [
+    "RES-fd",
+    "\"file descriptor leak\" is:issue language:c"
+   ],
+   [
+    "RES-fd",
+    "\"fd leak\" is:issue language:c"
+   ],
+   [
+    "RES-socket",
+    "\"socket leak\" is:issue language:c"
+   ],
+   [
+    "RES-handle",
+    "\"handle leak\" is:issue language:c++"
+   ],
+   [
+    "RES-thread",
+    "\"thread leak\" pthread is:issue language:c"
+   ],
+   [
+    "GROWTH",
+    "\"memory keeps growing\" \"not a leak\" is:issue language:c++"
+   ],
+   [
+    "GROWTH",
+    "malloc_trim fragmentation is:issue"
+   ],
+   [
+    "REFCOUNT",
+    "\"refcount leak\" is:issue language:c"
+   ],
+   [
+    "REFCOUNT",
+    "Py_DECREF \"reference leak\" is:issue language:c"
+   ],
+   [
+    "REFCOUNT",
+    "JNI \"local reference\" leak is:issue"
+   ],
+   [
+    "UAF",
+    "\"heap-use-after-free\" is:issue language:c"
+   ],
+   [
+    "DOUBLEFREE",
+    "\"double free\" is:issue language:c"
+   ],
+   [
+    "HEAPCORRUPT",
+    "\"malloc(): corrupted\" is:issue language:c"
+   ],
+   [
+    "GPU",
+    "\"GPU memory leak\" cuda is:issue language:c++"
+   ],
+   [
+    "GPU",
+    "OpenGL texture leak is:issue language:c++"
+   ],
+   [
+    "KERNEL",
+    "kmemleak \"unreferenced object\" is:issue"
+   ],
+   [
+    "POOL",
+    "\"memory pool\" leak is:issue language:c"
+   ],
+   [
+    "UNINIT",
+    "valgrind \"uninitialised value\" leak is:issue language:c"
+   ]
+  ]
+ }
+}

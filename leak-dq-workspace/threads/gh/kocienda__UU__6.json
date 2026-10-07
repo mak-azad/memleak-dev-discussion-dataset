@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/kocienda/UU/issues/6",
+ "passes": [
+  "main"
+ ],
+ "title": "mismatch malloc/delete",
+ "author_login": "stolk",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:11Z",
+ "final_url": "https://github.com/kocienda/UU/issues/6",
+ "repo": "kocienda/UU",
+ "repo_language": "C++",
+ "number": 6,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-12-30T03:29:52Z",
+ "updated_at": "2022-12-30T03:29:52Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "stolk",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-12-30T03:29:52Z",
+   "updated_utc": "2022-12-30T03:29:52Z",
+   "permalink": "https://github.com/kocienda/UU/issues/6",
+   "body_markdown": "valgrind reports this:\r\n```\r\n==360970== Mismatched free() / delete / delete []\r\n==360970==    at 0x484B8AF: operator delete(void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==360970==    by 0x149FC2: UU::BasicString<char, std::char_traits<char>, 256ul>::~BasicString() (in /home/bram/src/iota/build/search)\r\n==360970==    by 0x13B889: output_refs(Env const&, std::vector<UU::TextRef, std::allocator<UU::TextRef> >&) (in /home/bram/src/iota/build/search)\r\n==360970==    by 0x13A992: main (in /home/bram/src/iota/build/search)\r\n==360970==  Address 0x51d4040 is 0 bytes inside a block of size 2,097,152 alloc'd\r\n==360970==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==360970==    by 0x14923B: UU::BasicString<char, std::char_traits<char>, 256ul>::ensure_capacity(unsigned long) (in /home/bram/src/iota/build/search)\r\n==360970==    by 0x1745D9: UU::BasicString<char, std::char_traits<char>, 256ul>::BasicString(unsigned long) (in /home/bram/src/iota/build/search)\r\n==360970==    by 0x13B3DA: output_refs(Env const&, std::vector<UU::TextRef, std::allocator<UU::TextRef> >&) (in /home/bram/src/iota/build/search)\r\n==360970==    by 0x13A992: main (in /home/bram/src/iota/build/search)\r\n```\r\n\r\nThe code allocated with `malloc()` and frees with `delete`.\r\n"
+  }
+ ]
+}

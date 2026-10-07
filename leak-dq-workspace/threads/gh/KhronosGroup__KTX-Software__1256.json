@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/KhronosGroup/KTX-Software/issues/1256",
+ "passes": [
+  "main"
+ ],
+ "title": "ktxTexture2_transcodeLzEtc1s leaks firstImages when a slice has no alpha data",
+ "author_login": "armatti",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:48Z",
+ "final_url": "https://github.com/KhronosGroup/KTX-Software/issues/1256",
+ "repo": "KhronosGroup/KTX-Software",
+ "repo_language": "C++",
+ "number": 1256,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-29T19:43:18Z",
+ "updated_at": "2026-09-29T19:43:18Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "armatti",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-29T19:43:18Z",
+   "updated_utc": "2026-09-29T19:43:18Z",
+   "permalink": "https://github.com/KhronosGroup/KTX-Software/issues/1256",
+   "body_markdown": "When the target needs alpha and an image descriptor has `alphaSliceByteOffset` or\n`alphaSliceByteLength` 0, `ktxTexture2_transcodeLzEtc1s` returns `KTX_FILE_DATA_ERROR` without\n`delete[] firstImages`. Every other error return after the allocation frees it. The leak is\n4 × (levels + 1) bytes per malformed file.\n\nFound by fuzzing (libFuzzer, LeakSanitizer). Reproduced with libktx alone.\n\nAttached: `n7_etc1s_alpha_slice_missing.ktx2` (352 bytes, sha256\n`05dc8b1d2df9ab6e69584c416e187cbdc528805e89b605f75c5f20ae0b167e56`), run with `repro_n1.c`\n(create with image data, then `ktxTexture2_TranscodeBasis`) built with `-fsanitize=address`:\n\n```\nERROR: LeakSanitizer: detected memory leaks\nDirect leak of 8 byte(s) in 1 object(s) allocated from:\n    #0 in operator new[](unsigned long)\n    #1 in ktxTexture2_transcodeLzEtc1s(...)\nSUMMARY: AddressSanitizer: 8 byte(s) leaked in 1 allocation(s).\n```\n[n7_etc1s_alpha_slice_missing.zip](https://github.com/user-attachments/files/32819714/n7_etc1s_alpha_slice_missing.zip)"
+  }
+ ]
+}

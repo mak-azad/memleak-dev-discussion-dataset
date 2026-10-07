@@ -1,0 +1,171 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/distcc/distcc/issues/476",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "`malloc(): corrupted top size` when doing anything on powerpc gentoo",
+ "author_login": "Un1q32",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:15Z",
+ "final_url": "https://github.com/distcc/distcc/issues/476",
+ "repo": "distcc/distcc",
+ "repo_language": "C",
+ "number": 476,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-11-22T03:37:15Z",
+ "updated_at": "2023-03-05T15:04:39Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 11,
+ "query_buckets": [
+  "HEAPCORRUPT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-22T03:37:15Z",
+   "updated_utc": "2023-03-05T15:04:39Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476",
+   "body_markdown": "On an iMac G4, when i use distcc for anything I get that error.\r\nI can't even compile a hello world."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1323072369,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-22T05:02:50Z",
+   "updated_utc": "2022-11-22T05:02:50Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1323072369",
+   "body_markdown": "to be clear, i mean anything related to compiling, running `distcc echo hello` will print hello to the terminal as expected, but running `distcc gcc` gives the error.  I am currently building clang hopefully that fixes it"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1323794366,
+   "author_login": "sourcefrog",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-11-22T14:48:35Z",
+   "updated_utc": "2022-11-22T14:48:35Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1323794366",
+   "body_markdown": "> iMac G4\r\n\r\nNice :)\r\n\r\nIf updating clang doesn't help can you somehow get a traceback of when this error occurs? Maybe running it under gdb?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1324179000,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-22T20:03:10Z",
+   "updated_utc": "2022-11-22T20:03:10Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1324179000",
+   "body_markdown": "gotta compile gdb AND clang, bruh.\r\n\r\nI haven't been able to compile clang bc I'm still compiling the linux kernel so I can actually boot from the drive instead of USB."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1324179341,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-22T20:03:33Z",
+   "updated_utc": "2022-11-22T20:03:33Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1324179341",
+   "body_markdown": "cross compiling clang isnt working idk why"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1328142892,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-27T00:51:06Z",
+   "updated_utc": "2022-11-27T00:51:06Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1328142892",
+   "body_markdown": "i gave up cross compiling and now im compiling clang on device, its been about 2 days of compiling and im about 2/3rds done."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1329286170,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-28T15:20:57Z",
+   "updated_utc": "2022-11-28T15:20:57Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1329286170",
+   "body_markdown": "it works with clang, still gonna run it in gdb, I've never used gdb before so pls tell me what commands to run"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1329376203,
+   "author_login": "sourcefrog",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-11-28T16:22:50Z",
+   "updated_utc": "2022-11-28T16:29:44Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1329376203",
+   "body_markdown": "Basically\r\n\r\n    $ gdb DISTCC_BINARY\r\n    gdb> r ARGS\r\n    (crashes, presumably)\r\n    gdb> bt"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1329382771,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-28T16:28:12Z",
+   "updated_utc": "2022-11-28T16:28:12Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1329382771",
+   "body_markdown": "oh btw while i was testing i found that emerge could run gcc through distcc without an error, but i still got another error in my distccd log that i dont know how to fix\r\n`distccd[66787] (dcc_execvp) ERROR: failed to exec powerpc-unknown-linux-gnu-gcc: Permission denied`\r\nI have the toolchain in my PATH, and i have a PATH definition setup in /etc/conf.d/distccd, I dont know why its not working"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1329384853,
+   "author_login": "sourcefrog",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-11-28T16:29:35Z",
+   "updated_utc": "2022-11-28T16:29:35Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1329384853",
+   "body_markdown": "Is the file `chmod +x`? Are all its parent directories readable and executable?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1329424503,
+   "author_login": "Un1q32",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-11-28T16:51:32Z",
+   "updated_utc": "2022-11-28T16:52:59Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1329424503",
+   "body_markdown": "> Is the file `chmod +x`? Are all its parent directories readable and executable?\r\n\r\nyes, i tested it by building a bunch of stuff with it including bash and llvm+clang (clang didnt work at first but i had to add a line to my cmake toolchain file)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1455116866,
+   "author_login": "thesamesam",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-03-05T15:04:39Z",
+   "updated_utc": "2023-03-05T15:04:39Z",
+   "permalink": "https://github.com/distcc/distcc/issues/476#issuecomment-1455116866",
+   "body_markdown": "Duplicate of https://github.com/distcc/distcc/issues/472?"
+  }
+ ]
+}

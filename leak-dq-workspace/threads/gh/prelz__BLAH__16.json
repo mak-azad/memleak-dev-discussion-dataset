@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/prelz/BLAH/issues/16",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Possible memory and fd leak in BUpdaterSlurm",
+ "author_login": "drebatto",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:00Z",
+ "final_url": "https://github.com/prelz/BLAH/issues/16",
+ "repo": "prelz/BLAH",
+ "repo_language": "C",
+ "number": 16,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2017-06-15T09:24:06Z",
+ "updated_at": "2017-06-15T09:24:06Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "drebatto",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-06-15T09:24:06Z",
+   "updated_utc": "2017-06-15T09:24:06Z",
+   "permalink": "https://github.com/prelz/BLAH/issues/16",
+   "body_markdown": "When the BNotifierSlurm cannot access the registry (e.g. because of wrong ownership, see [GGUST Ticket #128229](https://ggus.eu/index.php?mode=ticket_info&ticket_id=128229)), it leaks memory and keeps a huge number of open files."
+  }
+ ]
+}

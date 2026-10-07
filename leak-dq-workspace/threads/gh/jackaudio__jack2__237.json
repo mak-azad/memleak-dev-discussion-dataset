@@ -1,0 +1,89 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/jackaudio/jack2/issues/237",
+ "passes": [
+  "main"
+ ],
+ "title": "ASAN: malloc vs delete mismatch",
+ "author_login": "abique",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:58Z",
+ "final_url": "https://github.com/jackaudio/jack2/issues/237",
+ "repo": "jackaudio/jack2",
+ "repo_language": "C++",
+ "number": 237,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2016-11-13T23:25:39Z",
+ "updated_at": "2019-05-27T21:12:54Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 4,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "abique",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-11-13T23:25:39Z",
+   "updated_utc": "2019-05-27T21:12:54Z",
+   "permalink": "https://github.com/jackaudio/jack2/issues/237",
+   "body_markdown": "Hi,\r\n\r\nI got this issue recently\r\n\r\n==27525==ERROR: AddressSanitizer: alloc-dealloc-mismatch (malloc vs operator delete) on 0x60300004f180\r\n    #0 0x7ffff6f00520 in operator delete(void*) /build/gcc-multilib/src/gcc/libsanitizer/asan/asan_new_delete.cc:92\r\n    #1 0x7ffff5ebbd88  (/usr/lib/libjack.so.0+0x12d88)\r\n    #2 0x7ffff5eb68e9 in jack_port_register (/usr/lib/libjack.so.0+0xd8e9)\r\n\r\nGood luck!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 260290847,
+   "author_login": "sletz",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2016-11-14T09:45:43Z",
+   "updated_utc": "2016-11-14T09:45:43Z",
+   "permalink": "https://github.com/jackaudio/jack2/issues/237#issuecomment-260290847",
+   "body_markdown": "Without any more precise log it is just unusable...\n\n> Le 14 nov. 2016 à 00:25, Alexandre Bique notifications@github.com a écrit :\n> \n> Hi,\n> \n> I got this issue recently\n> \n> ==27525==ERROR: AddressSanitizer: alloc-dealloc-mismatch (malloc vs operator delete) on 0x60300004f180\n> #0 0x7ffff6f00520 in operator delete(void*) /build/gcc-multilib/src/gcc/libsanitizer/asan/asan_new_delete.cc:92\n> #1 0x7ffff5ebbd88 (/usr/lib/libjack.so.0+0x12d88)\n> #2 0x7ffff5eb68e9 in jack_port_register (/usr/lib/libjack.so.0+0xd8e9)\n> \n> Good luck!\n> \n> —\n> You are receiving this because you are subscribed to this thread.\n> Reply to this email directly, view it on GitHub, or mute the thread.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 260292223,
+   "author_login": "abique",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-11-14T09:52:09Z",
+   "updated_utc": "2016-11-14T09:52:09Z",
+   "permalink": "https://github.com/jackaudio/jack2/issues/237#issuecomment-260292223",
+   "body_markdown": "I believe you could wrap the delete with std::unique_ptr<>? Then you can easily find the mismatch with what is left?\nOr use some static analysis?\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 260292507,
+   "author_login": "abique",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-11-14T09:53:27Z",
+   "updated_utc": "2016-11-14T09:53:27Z",
+   "permalink": "https://github.com/jackaudio/jack2/issues/237#issuecomment-260292507",
+   "body_markdown": "And also the mismatch happens in jack_port_register so I believe that there are not so many things going on there...\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 272830178,
+   "author_login": "milasudril",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2017-01-16T10:52:39Z",
+   "updated_utc": "2017-01-16T10:52:39Z",
+   "permalink": "https://github.com/jackaudio/jack2/issues/237#issuecomment-272830178",
+   "body_markdown": "Do you use overrides for operator new? If so C++14 adds some more entry points to define. See https://github.com/milasudril/snowflake-toolkit/commit/1f4ce0a7bc16e88606a9d2ae07656f27a9a7199b"
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/limasnursalim/Image-Compression/issues/1",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "malloc() error",
+ "author_login": "Vishvajeet590",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:17Z",
+ "final_url": "https://github.com/limasnursalim/Image-Compression/issues/1",
+ "repo": "limasnursalim/Image-Compression",
+ "repo_language": "C",
+ "number": 1,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-12-02T20:24:25Z",
+ "updated_at": "2021-12-02T20:24:25Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "HEAPCORRUPT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Vishvajeet590",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-12-02T20:24:25Z",
+   "updated_utc": "2021-12-02T20:24:25Z",
+   "permalink": "https://github.com/limasnursalim/Image-Compression/issues/1",
+   "body_markdown": "Compressing jar.bmp...\r\nmalloc(): corrupted top size\r\nzsh: abort (core dumped)  ./a.out c jar.bmp\r\n![image](https://user-images.githubusercontent.com/42716731/144497378-a99f8f14-55cb-40c9-a215-47706ebf6b7e.png)\r\n"
+  }
+ ]
+}

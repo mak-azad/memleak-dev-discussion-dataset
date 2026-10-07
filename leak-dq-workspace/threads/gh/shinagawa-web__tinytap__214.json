@@ -1,0 +1,125 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/shinagawa-web/tinytap/issues/214",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "testing: multi-hour soak run for map, memory, and fd leaks",
+ "author_login": "shinagawa-web",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:55Z",
+ "final_url": "https://github.com/shinagawa-web/tinytap/issues/214",
+ "repo": "shinagawa-web/tinytap",
+ "repo_language": "C",
+ "number": 214,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-01T03:23:32Z",
+ "updated_at": "2026-08-17T07:50:00Z",
+ "closed_at": null,
+ "labels": [
+  "v0.10.0"
+ ],
+ "comments_reported": 7,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-01T03:23:32Z",
+   "updated_utc": "2026-08-17T07:50:00Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214",
+   "body_markdown": "Part of v0.7.0 real-hardware bring-up (#198).\n\n## Scope\n\nEvery test tinytap has today is short: unit tests, `scripts/test-e2e.sh`, the demo in `scripts/demo.sh`, the CI integration runs. Nothing has ever left tinytap attached for hours. A tool people are asked to run alongside their actual work will be left running for hours, and the failure modes that appear on that timescale are structurally different from the ones a smoke test finds.\n\nSpecific things with a plausible long-run failure mode:\n\n- The kernel-side state maps are fixed-size hash maps: `max_entries 10240` at `bpf/tinytap.bpf.c:270` and `:281`, `bpf/tinytap_kprobe.bpf.c:94`, `bpf/tinytap_uprobe.bpf.c:41`. If entries leak — a connection whose `close` is never observed, a tid whose exit tracepoint doesn't fire — the map fills over hours and then quietly stops recording new state. Nothing currently reports map occupancy.\n- Userspace parser state has the same shape: per-connection HTTP parser state that is only released on close.\n- The TUI already bounds its row count and body budget (`internal/output/tui/model.go:17,66-68`), so that path is designed for it — but designed-for isn't measured.\n- `sslWatcher` dynamically attaches uprobes to processes as they appear. Over hours on a busy machine that's a lot of attach/detach churn, and leaked links or fds would accumulate.\n\n## Suggested direction\n\n- Run tinytap for several hours against continuous traffic (a load generator at modest steady rate, plus normal machine activity) and sample over time: RSS, fd count, goroutine count, occupancy of each BPF map, and dropped-event counters if #210 has landed.\n- Include connection churn deliberately — many short-lived connections is the pattern most likely to leak map entries, and it's the opposite of what a long-lived-connection load test produces.\n- Do it on real hardware, alongside the compatibility-matrix work, not only on the dev VM.\n- Decide what tinytap should *do* when a map is full, rather than only measuring that it happens: currently the insert just fails and that state is lost silently.\n- Per the project's existing testing convention, report and stop on failure rather than auto-remediating.\n\n## Done when\n\n- A multi-hour run's memory, fd, goroutine, and BPF-map occupancy curves are documented and flat (or the growth is explained).\n- Any leak found has its own issue.\n\n## Sub-issues\n\n- #320\n- #321\n- #322\n- #323\n\nRelated: #198, #210, #213"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5312834708,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T06:56:22Z",
+   "updated_utc": "2026-08-17T06:56:22Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5312834708",
+   "body_markdown": "## Resources to monitor\n\nFour metrics to sample on a timed interval:\n\n| Metric | What it catches | Source |\n|---|---|---|\n| RSS | userspace state leak (parser , pairer ) |  |\n| fd count | BPF object / uprobe link leak | `ls /proc/PID/fd \\| wc -l` |\n| `incoming_pending_map` entries | BPF-side per-tid state not cleaned up on close | bpftool |\n| `drop_counters` (ringbuf + map_full) | ring buffer overflow; state map insert failures (E2BIG) | bpftool PERCPU_ARRAY, sum across CPUs |\n\nNotes:\n- Goroutine count is not reachable without a pprof endpoint; OS thread count (`Threads:` in /proc status) is not a useful proxy.\n- The sslWatcher `seen`/`probes`/`payloadProbes` maps accumulate per-pid with no per-process cleanup, but this only matters under TLS traffic — out of scope for a plaintext HTTP soak.\n- Drop counts are also reported at shutdown via `reportDrops`, but sampling them periodically during the run shows *when* drops started, not just whether they happened."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5312865500,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T07:00:14Z",
+   "updated_utc": "2026-08-17T07:00:14Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5312865500",
+   "body_markdown": "## Soak scenarios (CI matrix)\n\nRun each as a separate matrix job (~15 min each, all parallel):\n\n| Scenario | Load generator | Primary resource under test |\n|---|---|---|\n| `churn` | N parallel curl loops, `--no-keepalive` | `incoming_pending_map` cleanup on close; RSS (parser.streams) |\n| `keepalive` | Single persistent connection, many requests | parser `pendingMethods` per-request cleanup on a reused fd |\n| `burst` | `ab` / `hey` at high concurrency | `DROP_RINGBUF` — does the ring buffer overflow under load? |\n| `large-payload` | Go sendfile server returning multi-MB files | DROP_RINGBUF under per-event payload pressure; iov[0] 2 KiB budget |\n| `multi-proc` | Repeatedly start/kill short-lived HTTP server processes | pid-indexed state accumulation (`sslWatcher.seen`; fd count) |\n\nAll scenarios sample the same four metrics every 60 s: RSS, fd count, `incoming_pending_map` entries, `drop_counters` (ringbuf + map_full), and upload a TSV artifact at the end."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5312883403,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T07:02:18Z",
+   "updated_utc": "2026-08-17T07:02:18Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5312883403",
+   "body_markdown": "## Processing paths and resources to monitor\n\n### Kernel-side (BPF)\n\n| Path | Intermediate map (created → deleted) | Ring buffer written |\n|---|---|---|\n| `accept4` | — | `events` |\n| `read` / `recvfrom` / `recvmsg` / `readv` enter | `incoming_pending_map` (tid key, created) | — |\n| `read` / `recvfrom` / `recvmsg` / `readv` exit | `incoming_pending_map` (deleted) | `events` |\n| `write` / `sendto` / `sendmsg` / `writev` | — | `events` |\n| `close` | `incoming_pending_map` (deleted) | `events` |\n| `sendfile64` enter | `sendfile_sample_map` (tid key, created) | — |\n| `fentry/tcp_sendmsg_locked` | reads `sendfile_sample_map`, writes payload | — |\n| `sendfile64` exit | `sendfile_sample_map` (deleted) | `events` |\n| `uprobe/ssl_set_fd` | `ssl_fd_map` (pid+ssl key, created) | — |\n| `uprobe/ssl_free` | `ssl_fd_map` (deleted) | — |\n| `uprobe/ssl_write` / `ssl_write_ex` | — | `ssl_events` |\n| `uprobe/ssl_read` enter | `ssl_read_pending_map` (tid key, created) | — |\n| `uretprobe/ssl_read` | `ssl_read_pending_map` (deleted) | `ssl_events` |\n| `uprobe/ssl_read_ex` enter | `ssl_read_ex_pending_map` (tid key, created) | — |\n| `uretprobe/ssl_read_ex` | `ssl_read_ex_pending_map` (deleted) | `ssl_events` |\n\n### Userspace\n\n| State | Lifetime | Cleaned up by |\n|---|---|---|\n| `Parser.streams` (per connKey) | first data → close event | `Parser.Close(pid, fd)` |\n| `Parser.pendingMethods` (per pid+fd) | request line seen → close | `Parser.Close(pid, fd)` |\n| `Pairer.pending` (per pid+fd+ssl) | request → paired response or sweep timeout | `Pairer.Close` / `Pairer.Sweep` |\n| `sslWatcher.seen` (per pid) | first TLS event → **never** | no per-process cleanup |\n| `sslWatcher.probes` (per pid) | uprobe attached → **shutdown only** | `sslWatcher.Close()` |\n| `sslWatcher.payloadProbes` (per pid) | uprobe attached → **shutdown only** | `sslWatcher.Close()` |\n\n### What to sample\n\n| Metric | Paths it covers |\n|---|---|\n| `incoming_pending_map` entry count | read/recvfrom/recvmsg/readv — entry must be 0 after every paired close |\n| `ssl_fd_map` entry count | ssl_set_fd/ssl_free balance |\n| `ssl_read_pending_map` + `ssl_read_ex_pending_map` entry count | ssl_read enter/uretprobe balance |\n| `drop_counters[DROP_RINGBUF]` | `events` and `ssl_events` overflow |\n| `drop_counters[DROP_MAP_FULL]` | any hash map hitting max_entries (10240) |\n| RSS | `Parser.streams` / `Pairer.pending` growth |\n| fd count | `sslWatcher.probes` / `payloadProbes` not released between process exits |\n\nGaps: `sslWatcher.seen` / `probes` / `payloadProbes` accumulate for the lifetime of tinytap with no per-process cleanup — only observable as fd count and RSS growth under TLS traffic with process churn. Goroutine count is not reachable without a pprof endpoint."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5312903717,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T07:04:48Z",
+   "updated_utc": "2026-08-17T07:04:48Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5312903717",
+   "body_markdown": "Addendum to the previous comment: the process-level metrics for tinytap itself are missing from the table.\n\n| Metric | Source | What growth means |\n|---|---|---|\n| RSS | `/proc/PID/status VmRSS` | userspace state accumulation |\n| CPU% | `/proc/PID/stat` (utime+stime delta) | capture loop or parser falling behind |\n| fd count | `ls /proc/PID/fd \\| wc -l` | BPF object / uprobe link leak |\n\nThese are the baseline health check for the tinytap process itself, independent of BPF map occupancy. CPU growing over a flat-traffic run would indicate the capture pipeline is not keeping up with the event rate — a separate problem from map leaks but equally important to catch in a soak."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5312979944,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T07:13:49Z",
+   "updated_utc": "2026-08-17T07:13:49Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5312979944",
+   "body_markdown": "## How to measure whether tinytap is actually working\n\nCPU and RSS tell you something is wrong after the fact; they don't confirm tinytap is capturing correctly. The direct measure is whether output matches input:\n\n| Metric | How to measure |\n|---|---|\n| Requests sent | count on the load generator side |\n| Paired events output | count JSONL lines on tinytap stdout |\n| Drops | `drop_counters[DROP_RINGBUF]` + `drop_counters[DROP_MAP_FULL]` |\n\nIf requests sent ≈ pairs output and drops = 0, tinytap is working. If pairs output drops while requests keep flowing, something in the pipeline has failed — drops, parser stuck, pairer not flushing — regardless of what CPU and RSS show.\n\nCPU% and fd count are diagnostic inputs, not health signals on their own."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5312993337,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T07:15:20Z",
+   "updated_utc": "2026-08-17T07:15:20Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5312993337",
+   "body_markdown": "## Server and client for each scenario\n\n**Server**\n\n| Scenario | Server | Reason |\n|---|---|---|\n| churn / keepalive / burst | `python3 -m http.server` | already used in e2e; no extra CI setup |\n| large-payload | Go `http.ServeFile` (already in e2e) | needed to exercise the sendfile path |\n| multi-proc | `python3 -m http.server`, killed and restarted in a loop | content doesn't matter; process churn is the point |\n\n**Client (load generator)**\n\n| Scenario | Client | Reason |\n|---|---|---|\n| churn | `curl --no-keepalive` in a loop, N workers in parallel | each invocation opens a fresh TCP connection |\n| keepalive | `curl` default (keepalive on) in a loop | many requests over a single persistent connection |\n| burst | `ab` (`apache2-utils`, installable via apt) | higher throughput than a curl loop; no extra download |\n| large-payload | `curl` | sufficient for file fetches |\n| multi-proc | `curl` | sufficient |\n\nPair count on the tinytap side is read from stdout JSONL line count, making it straightforward to compare against the request count from each client."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5313015509,
+   "author_login": "shinagawa-web",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-17T07:17:51Z",
+   "updated_utc": "2026-08-17T07:17:51Z",
+   "permalink": "https://github.com/shinagawa-web/tinytap/issues/214#issuecomment-5313015509",
+   "body_markdown": "## System-level overhead\n\ntinytap fires a BPF program on every relevant syscall in the monitored process. Two things to check that are separate from tinytap's own resource usage:\n\n**OS CPU**\n\nCompare total CPU usage (from `/proc/stat`) with and without tinytap running. tinytap's tracepoints add overhead on every `read`, `write`, `close`, etc. — if the machine is under sustained load this overhead is visible system-wide, not just in tinytap's own CPU%.\n\n**Server response latency**\n\nMeasure the HTTP server's response time with tinytap attached vs without. If the tracepoints are adding measurable latency per syscall, it shows up here first. A simple proxy: record `curl`'s `time_total` for each request from the load generator and track the distribution over the soak run.\n\nBoth should be flat relative to the baseline (tinytap not running). Growth or elevated baseline is a correctness problem for the tool, not just a resource leak."
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/llvm/llvm-project/issues/223314",
+ "passes": [
+  "main"
+ ],
+ "title": "[libcxx][test] qemu: uncaught target signal 4 (Illegal instruction) - core dumped",
+ "author_login": "peppergrayxyz",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:22Z",
+ "final_url": "https://github.com/llvm/llvm-project/issues/223314",
+ "repo": "llvm/llvm-project",
+ "repo_language": "LLVM",
+ "number": 223314,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-14T06:58:05Z",
+ "updated_at": "2026-09-14T14:42:22Z",
+ "closed_at": null,
+ "labels": [
+  "libc++",
+  "test-suite"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "peppergrayxyz",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-14T06:58:05Z",
+   "updated_utc": "2026-09-14T14:42:22Z",
+   "permalink": "https://github.com/llvm/llvm-project/issues/223314",
+   "body_markdown": "Running `libcxx` on qemu-ppc with altivec extensions enabled fails with errors: \n\n\n```\n********************\nFAIL: llvm-libc++-shared.cfg.in :: std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp (3766 of 11321)\n******************** TEST 'llvm-libc++-shared.cfg.in :: std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp' FAILED ********************\nExit Code: 252\n\nCommand Output (stdout):\n--\n# COMPILED WITH\n/usr/lib/llvm/22/bin/powerpc-unknown-linux-musl-clang++-22 /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp -pthread --target=powerpc-unknown-linux-musl -nostdinc++ -I /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/include/c++/v1 -I /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/include/c++/v1 -I /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/libcxx/test/support -std=c++26 -Werror -Wall -Wctad-maybe-unsupported -Wextra -Wshadow -Wundef -Wunused-template -Wno-unused-command-line-argument -Wno-attributes -Wno-pessimizing-move -Wno-noexcept-type -Wno-atomic-alignment -Wno-reserved-module-identifier -Wdeprecated-copy -Wdeprecated-copy-dtor -Wshift-negative-value -Wno-user-defined-literals -Wno-tautological-compare -Wsign-compare -Wunused-variable -Wunused-parameter -Wunreachable-code -Wno-unused-local-typedef -Wno-local-type-template-args -Wno-c++11-extensions -Wno-unknown-pragmas -Wno-pass-failed -Wno-mismatched-new-delete -Wno-redundant-move -Wno-self-move -Wno-nullability-completeness -flax-vector-conversions=none -D_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER -D_LIBCPP_ENABLE_EXPERIMENTAL -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE -Wuser-defined-warnings  -lc++experimental -nostdlib++ -L /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/lib -Wl,-rpath,/var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/lib -lc++ -o /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/Output/replace.pass.cpp.dir/t.tmp.exe\n# executed command: /usr/lib/llvm/22/bin/powerpc-unknown-linux-musl-clang++-22 /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp -pthread --target=powerpc-unknown-linux-musl -nostdinc++ -I /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/include/c++/v1 -I /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/include/c++/v1 -I /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/libcxx/test/support -std=c++26 -Werror -Wall -Wctad-maybe-unsupported -Wextra -Wshadow -Wundef -Wunused-template -Wno-unused-command-line-argument -Wno-attributes -Wno-pessimizing-move -Wno-noexcept-type -Wno-atomic-alignment -Wno-reserved-module-identifier -Wdeprecated-copy -Wdeprecated-copy-dtor -Wshift-negative-value -Wno-user-defined-literals -Wno-tautological-compare -Wsign-compare -Wunused-variable -Wunused-parameter -Wunreachable-code -Wno-unused-local-typedef -Wno-local-type-template-args -Wno-c++11-extensions -Wno-unknown-pragmas -Wno-pass-failed -Wno-mismatched-new-delete -Wno-redundant-move -Wno-self-move -Wno-nullability-completeness -flax-vector-conversions=none -D_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER -D_LIBCPP_ENABLE_EXPERIMENTAL -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE -Wuser-defined-warnings -lc++experimental -nostdlib++ -L /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/lib -Wl,-rpath,/var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test-suite-install/lib -lc++ -o /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/Output/replace.pass.cpp.dir/t.tmp.exe\n# EXECUTED AS\n/usr/bin/python3.14 /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/libcxx/utils/run.py --execdir /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/Output/replace.pass.cpp.dir --  /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/Output/replace.pass.cpp.dir/t.tmp.exe\n# executed command: /usr/bin/python3.14 /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/libcxx/utils/run.py --execdir /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/Output/replace.pass.cpp.dir -- /var/tmp/portage/llvm-runtimes/libcxx-22.1.8/work/runtimes_build-.ppc/libcxx/test/std/containers/container.adaptors/flat.map/flat.map.modifiers/Output/replace.pass.cpp.dir/t.tmp.exe\n# .---command stderr------------\n# | qemu: uncaught target signal 4 (Illegal instruction) - core dumped\n# `-----------------------------\n# error: command failed with exit status: 252\n\n--\n```\n\nThe issue is caused by `libcxx/utils/run.py` which drops all env vars: \n\n- `qemu-static` is controlled through `QEMU_*` vars including `QEMU_CPU`.\n- `QEMU_CPU` needs to be set to a compatible CPU to support altivec extensions, e.g. `QEMU_CPU=7450`\n- When `qemu-static` is called without that information, it uses the default CPU for the target architecture, i.e. with CPU extensions disabled.\n- This issue is not ppc specific, but affects all use cases, where CPU extensions are used that are not supported by the baseline.\n\nThe script should forward  `QEMU_*` vars to ensure that the env is setup properly to run the test in an emulated environment.\n\n"
+  }
+ ]
+}

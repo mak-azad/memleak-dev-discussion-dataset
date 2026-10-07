@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 3802454,
+ "url": "https://stackoverflow.com/questions/3802454/can-c0x-still-explicitly-allocate-with-global-operator-new",
+ "title": "Can C++0x still explicitly allocate with global operator new?",
+ "tags": [
+  "c++",
+  "c++11",
+  "new-operator"
+ ],
+ "score": 18,
+ "view_count": 583,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 3806373,
+ "created_utc": "2010-09-27T09:21:22Z",
+ "last_activity_utc": "2010-10-02T19:33:19Z",
+ "license": "CC BY-SA 2.5",
+ "author_user_id": null,
+ "author_display_name": "Roger Pate",
+ "author_id_missing": true,
+ "permalink": "https://stackoverflow.com/questions/3802454/can-c0x-still-explicitly-allocate-with-global-operator-new",
+ "body_html": "<p><a href=\"http://en.wikipedia.org/wiki/C%2B%2B0x#Explicitly-defaulted_and_deleted_special_member_functions\" rel=\"noreferrer\">Wikipedia</a> states:</p>\n\n<blockquote>\n  <p>A type can be made impossible to allocate with operator new:</p>\n\n<pre><code>struct NonNewable {\n    void *operator new(std::size_t) = delete;\n};\n</code></pre>\n  \n  <p>An object of this type can only ever be allocated as a stack object or as a member of another type. It cannot be directly heap-allocated without non-portable trickery. (Since placement new is the only way to call a constructor on user-allocated memory and this use has been forbidden as above, the object cannot be properly constructed.)</p>\n</blockquote>\n\n<p>Deleting operator new is similar to making it private in current C++, but isn't explicitly using global operator new, which avoids class-specific lookup, still valid C++0x?</p>\n\n<pre><code>NonNewable *p = ::new NonNewable();\n// neither non-portable nor trickery, though perhaps not widely known\n</code></pre>\n\n<p>Have I missed something in the draft?</p>\n\n<hr>\n\n<p>To be clear, this is valid C++03 and <a href=\"http://codepad.org/98y624e3\" rel=\"noreferrer\">works fine</a>:</p>\n\n<pre><code>struct NonNewable {\nprivate:\n  void *operator new(std::size_t);  // not defined\n};\n\nint main() {\n  // ignore the leaks, it's just an example\n\n  void *mem = operator new(sizeof(NonNewable));\n  NonNewable *p = ::new(mem) NonNewable();\n\n  p = ::new NonNewable();\n\n  return 0;\n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 3806373,
+   "parent_id": 3802454,
+   "author_user_id": 459640,
+   "author_display_name": "aschepler",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/3806373",
+   "score": 7,
+   "created_utc": "2010-09-27T17:41:46Z",
+   "last_edit_utc": "2020-06-20T09:12:55Z",
+   "last_activity_utc": "2010-10-02T19:33:19Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>I believe you are right and wikipedia is wrong.  The C++0x draft standard describes &quot;deleted functions&quot; (8.4p10) as functions which may not be used in any way (or else the program is ill-formed).  They play no part in scope or name lookup different from normal functions.  And the relevant paragraphs concerning new expressions have remained the same:</p>\n<blockquote>\n<p>[5.3.4p8]  A new-expression obtains storage for the object by calling an allocation function (3.7.4.1). ...</p>\n<p>[5.3.4p9] If the new-expression begins with a unary :: operator, the allocation function's name is looked up in the global scope.  Otherwise, if the allocated type is a class type T or array thereof, the allocation function's name is looked up in the scope of T.  If this lookup fails to find the name, or if the allocated type is not a class type, the allocation function's name is looked up in the global scope.</p>\n</blockquote>\n<p>So yes, the expression <code>::new NonNewable</code> [or <code>::new(mem) NonNewable</code>] would choose an overload of <code>::operator new</code>, ignoring the function <code>NonNewable::operator new</code>, and would not make the program ill-formed.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4076796,
+   "parent_id": 3802454,
+   "parent_type": "question",
+   "author_user_id": null,
+   "author_display_name": "Roger Pate",
+   "author_id_missing": true,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/3802454/#comment4076796_3802454",
+   "score": 1,
+   "created_utc": "2010-10-01T10:52:58Z",
+   "edited": false,
+   "license": "CC BY-SA 2.5",
+   "body_html": "FYI if you&#39;re checking: the quoted text has been deleted from the Wikipedia article."
+  }
+ ]
+}

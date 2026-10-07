@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/tuxera/ntfs-3g/issues/215",
+ "passes": [
+  "main"
+ ],
+ "title": "Validate index_block_size to Prevent Attacker-Controlled Memory Exhaustion",
+ "author_login": "fredrikliliengren",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:38Z",
+ "final_url": "https://github.com/tuxera/ntfs-3g/issues/215",
+ "repo": "tuxera/ntfs-3g",
+ "repo_language": "C",
+ "number": 215,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-02T06:23:52Z",
+ "updated_at": "2026-09-02T09:50:01Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "fredrikliliengren",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-02T06:23:52Z",
+   "updated_utc": "2026-09-02T09:50:01Z",
+   "permalink": "https://github.com/tuxera/ntfs-3g/issues/215",
+   "body_markdown": "ntfs-3g 2022.10.3\nin patch: https://github.com/tuxera/ntfs-3g/commit/dc1b682e99b6c055b0281ca543a8420b698420d1\nFor: CVE-42616\nntfsprogs/ntfscat.c:359\n\nblock_size comes directly from the on-disk INDEX_ROOT.index_block_size, but this path does not validate or cap it before using it as an allocation size. A crafted index root can therefore request a multi-gigabyte allocation (for example, 0x80000000), replacing the fixed-buffer overflow with an attacker-triggered memory-exhaustion failure. Reject implausible index-record sizes before assigning bufsize."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5506513645,
+   "author_login": "unsound",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-09-02T08:08:48Z",
+   "updated_utc": "2026-09-02T09:50:01Z",
+   "permalink": "https://github.com/tuxera/ntfs-3g/issues/215#issuecomment-5506513645",
+   "body_markdown": "Thanks for the report, it looks like you're right but the impact is limited given that the maximum number of bytes that could be allocated is 2 GiB (anything above that would not be a power of 2 as a 32-bit number) and considering that `malloc` reserves but typically doesn't actually allocate memory pages until the memory is accessed the impact is non-existent on most modern operating systems.\n\nIt may be reasonable though to limit the index block size globally to the index block size specified in the boot sector (`clusters_per_index_record`).\n@rakeshpandit @jpandre do you have any thoughts? Shouldn't the index block size for all of a volume's indices match the global index block size? I haven't checked known volumes to validate that the index block size is always the same for consistent volumes."
+  }
+ ]
+}

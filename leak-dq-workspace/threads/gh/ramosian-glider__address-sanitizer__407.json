@@ -1,0 +1,44 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/ramosian-glider/address-sanitizer/issues/407",
+ "passes": [
+  "main"
+ ],
+ "title": "gcc-asan doesn't work on android/arm32",
+ "author_login": "GoogleCodeExporter",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:52Z",
+ "final_url": "https://github.com/ramosian-glider/address-sanitizer/issues/407",
+ "repo": "ramosian-glider/address-sanitizer",
+ "repo_language": "Python",
+ "number": 407,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2015-08-24T13:08:35Z",
+ "updated_at": "2015-08-24T13:08:35Z",
+ "closed_at": null,
+ "labels": [
+  "Priority-Medium",
+  "Type-Defect",
+  "auto-migrated"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "590",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "GoogleCodeExporter",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-08-24T13:08:35Z",
+   "updated_utc": "2015-08-24T13:08:35Z",
+   "permalink": "https://github.com/ramosian-glider/address-sanitizer/issues/407",
+   "body_markdown": "```\nWhat steps will reproduce the problem?\n1.built the testcase invalid-free.cc with cross-compile toolchain gcc-asan\n\n2.upload libasan.so and binary\nsudo adb root\nsudo adb remount\nsudo adb push libasan.so.2 /system/lib\nsudo adb push invalid-free /data/local\n\n3.running the invalid-free on Android Phone\nsudo adb shell\n/data/local/invalid-free\n\nWhat is the expected output? What do you see instead?\n\nthe expected output should be:\n\nrunning case 1:  ./TestCases/x86_binary/invalid-free \n\n=================================================================\n==14369==ERROR: AddressSanitizer: attempting free on address which was not \nmalloc()-ed: 0x60200000eff5 in thread T0\n    #0 0x43be57 in __interceptor_free /tmp/AOSP-toolchain/build/../gcc/gcc-4.9.2/libsanitizer/asan/asan_malloc_linux.cc:62\n    #1 0x444a00 in main (TestCases/x86_binary/invalid-free+0x4\n44a00)\n    #2 0x7f45f75ce76c in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2176c)\n    #3 0x408c18 (TestCases/x86_binary/invalid-free+0x408c18)\n\n0x60200000eff5 is located 5 bytes inside of 10-byte region \n[0x60200000eff0,0x60200000effa)\nallocated by thread T0 here:\n    #0 0x43c01f in __interceptor_malloc /tmp/AOSP-toolchain/build/../gcc/gcc-4.9.2/libsanitizer/asan/asan_malloc_linux.cc:72\n    #1 0x44491f in main (TestCases/x86_binary/invalid-free+0x4\n4491f)   \n    #2 0x7f45f75ce76c in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2176c)\n\nSUMMARY: AddressSanitizer: bad-free \n/tmp/AOSP-toolchain/build/../gcc/gcc-4.9.2/libsanitizer/asan/asan_malloc_linux.c\nc:62 __intercept\nor_free\n==14369==ABORTING\n\nwhen running the testcase on android, the testcase will SEGV as following:\n\n\n[1m[31m==3909==ERROR: AddressSanitizer: SEGV on unknown address 0x369a00fe (pc \n0xb6f51662 bp 0xbeb58a1c sp 0xbeb589e0 T0)\n[1m[0m    #0 0xb6f51661 in main TestCases/invalid-free.cc:14\n    #1 0xb69c0e09  (/system/lib/libc.so+0x12e09)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV TestCases/invalid-free.cc:14 main\n==3909==ABORTING\n\n\nWhat version of the product are you using? On what operating system?\n\nAndroid 5.0\n\nPlease provide any additional information below.\n\nmade a gcc-based cross-compile toolchain for Android 5.0 with AddressSanitizer \nfeature enabled; then use the customzied toolchain to built the testcase in \nexternal/compiler-rt/test/asan/TestCases, and running the testcase on Android \nphone.\n\nthis bug had been fixed and validated with gcc4.9.2 and gcc5.2.0 in our \ndevelopment environment:\n\n\n1.\nmodify function \n\nstatic unsigned HOST_WIDE_INT arm_asan_shadow_offset(void) \n\nin the gcc-4.9.2/config/arm/arm.c  \n\nfrom \n\nstatic unsigned HOST_WIDE_INT\n arm_asan_shadow_offset (void)\n{\n return (unsigned HOST_WIDE_INT) 1 << 29;\n}\n\nto\n\nstatic unsigned HOST_WIDE_INT\n arm_asan_shadow_offset (void)\n{\n#ifdef TARGET_ANDROID\n return 0;\n#else\n return (unsigned HOST_WIDE_INT) 1 << 29;\n#endif\n}\n\n because the process's memory layout in Android is different in x86. so the shadow offset should be zero in Android when instrument the check code.\n\n2.disable -Os optimization options in Android build system; becase the asan \npass   \nshould be called in the GCC's internal to handle GENERIC/GIMPLY \ntransformation,otherwise the check code wouldn't be instrumented during compile \nstage.\n```\n\nOriginal issue reported on code.google.com by `zhouweig...@gmail.com` on 21 Aug 2015 at 8:41\n\nAttachments:\n- [gcc-asan_ut-on-android-after-fixbug.log](https://storage.googleapis.com/google-code-attachments/address-sanitizer/issue-407/comment-0/gcc-asan_ut-on-android-after-fixbug.log)\n"
+  }
+ ]
+}

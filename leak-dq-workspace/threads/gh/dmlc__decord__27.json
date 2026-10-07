@@ -1,0 +1,209 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/dmlc/decord/issues/27",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "GPU memory leak",
+ "author_login": "ternaus",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:20Z",
+ "final_url": "https://github.com/dmlc/decord/issues/27",
+ "repo": "dmlc/decord",
+ "repo_language": "C++",
+ "number": 27,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-02-28T22:02:19Z",
+ "updated_at": "2021-02-21T18:08:59Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 14,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ternaus",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-02-28T22:02:19Z",
+   "updated_utc": "2021-02-21T18:08:59Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27",
+   "body_markdown": "I am decoding a list of videos with:\r\n\r\n```\r\nvideo = VideoReader(str(video_path), ctx=gpu(0))\r\n\r\nframe_ids = list(range(300))\r\n\r\nframes = video.get_batch(frame_ids).asnumpy()\r\n```\r\n\r\non every iteration, GPU Ram consumption goes up till I get `out of memory` error.\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 592922863,
+   "author_login": "leigh-plt",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-02-29T09:08:45Z",
+   "updated_utc": "2020-02-29T09:08:45Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-592922863",
+   "body_markdown": "Without .asnumpy() memory leak exist too. \r\nI use:\r\n`frames = torch.utils.dlpack.from_dlpack(video.get_batch(frame_ids).to_dlpack())`\r\nframes are located on gpu in this case"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 593023894,
+   "author_login": "zhreshold",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2020-03-01T00:43:47Z",
+   "updated_utc": "2020-03-01T00:43:47Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-593023894",
+   "body_markdown": "Can you guys post your cuda version/ decive type?\r\nI have tried on my local machine with 1070ti and cuda 10.1.243, didn't notice any mem leak.\r\n```python\r\nfrom decord import VideoReader\r\nfrom decord import cpu, gpu\r\n\r\nvideo_path = '/home/joshua/Dev/decord/examples/flipping_a_pancake.mkv'\r\n\r\nvideo = VideoReader(str(video_path), ctx=gpu(0))\r\n\r\nframe_ids = list(range(300))\r\n\r\nfor i in range(100):\r\n  frames = video.get_batch(frame_ids).asnumpy()\r\n  if i % 10 == 0: \r\n    print(frames.shape)\r\n\r\n```\r\n\r\nnvidia-smi record can be viewed here:\r\nhttps://asciinema.org/a/xgI8tFXNlpAoDcVJdxLgag8eW\r\nGPU mem from 627M to 845M and pretty constant."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 595033894,
+   "author_login": "KeremTurgutlu",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-05T05:18:29Z",
+   "updated_utc": "2020-03-05T06:26:43Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-595033894",
+   "body_markdown": "Thanks @leigh-plt, I modified batch loading seems to be ok in notebook environment of Kaggle after `dl_pack` trick:\r\n```\r\ndef get_decord_video_batch(fname, sz, freq=10):\r\n    \"get batch tensor for inference, original for cropping and H,W of video\"\r\n    video = VideoReader(str(fname), ctx=gpu())\r\n#     data = video.get_batch(range(0, len(video), 10))\r\n    data = from_dlpack(to_dlpack(video.get_batch(range(0, len(video), 10))))\r\n    H,W = data.shape[2:]\r\n    del video; gc.collect()\r\n    return (data, None, (H, W))\r\n```\r\n\r\nAlthough I had one successful run there had been unsuccessful runs after that. How can we fix it?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 595855074,
+   "author_login": "akansal1",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-06T16:43:36Z",
+   "updated_utc": "2020-03-06T16:43:36Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-595855074",
+   "body_markdown": "facing memory leak issues of CPU, on GPU working fine"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 598780732,
+   "author_login": "yitang",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-13T15:30:35Z",
+   "updated_utc": "2020-03-13T15:30:35Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-598780732",
+   "body_markdown": "facing the same issues, neither dl_pack nor asnumpy work for me.\r\n\r\n@KeremTurgutlu i'm on the kaggle env as well.  "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 598811477,
+   "author_login": "zhreshold",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2020-03-13T16:38:04Z",
+   "updated_utc": "2020-03-13T16:38:04Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-598811477",
+   "body_markdown": "Can you guys post the kaggle gpu and cuda version?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 598819964,
+   "author_login": "yitang",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-13T16:57:16Z",
+   "updated_utc": "2020-03-13T17:01:16Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-598819964",
+   "body_markdown": "the gpu is  Tesla P100-PCIE-16GB.\r\n\r\ncuda is  10.0.130.\r\n\r\nthis is the traceback:\r\n\r\n[16:44:39] /kaggle/working/reader/src/video/nvcodec/cuda_threaded_decoder.cc:55: Kernel module version 418.67, so using our own stream.\r\n\r\n\r\n  7%|▋         | 27/400 [00:23<03:55,  1.58it/s][16:44:40] /kaggle/working/reader/src/video/nvcodec/cuda_threaded_decoder.cc:35: Using device: Tesla P100-PCIE-16GB\r\n\r\n[16:44:40] /kaggle/working/reader/src/video/nvcodec/cuda_threaded_decoder.cc:55: Kernel module version 418.67, so using our own stream.\r\n\r\n\r\n  7%|▋         | 28/400 [00:24<03:51,  1.61it/s][16:44:41] /kaggle/working/reader/src/video/nvcodec/cuda_threaded_decoder.cc:35: Using device: Tesla P100-PCIE-16GB\r\n\r\n[16:44:41] /kaggle/working/reader/src/video/nvcodec/cuda_threaded_decoder.cc:55: Kernel module version 418.67, so using our own stream.\r\n\r\nterminate called after throwing an instance of 'dmlc::Error'\r\n\r\n  what():  [16:44:41] /kaggle/working/reader/src/video/nvcodec/cuda_threaded_decoder.cc:332: Check failed: arr.defined() \r\n\r\n\r\n\r\nStack trace returned 10 entries:\r\n\r\n[bt] (0) /kaggle/working/reader/build/libdecord.so(dmlc::StackTrace[abi:cxx11](unsigned long)+0x85) [0x7f15712ee059]\r\n\r\n[bt] (1) /kaggle/working/reader/build/libdecord.so(dmlc::LogMessageFatal::~LogMessageFatal()+0x20) [0x7f15712ee334]\r\n\r\n[bt] (2) /kaggle/working/reader/build/libdecord.so(decord::cuda::CUThreadedDecoder::ConvertThread()+0x1a5) [0x7f157135d659]\r\n\r\n[bt] (3) /kaggle/working/reader/build/libdecord.so(void std::__invoke_impl<void, void (decord::cuda::CUThreadedDecoder::* const&)(), decord::cuda::CUThreadedDecoder*>(std::__invoke_memfun_deref, void (decord::cuda::CUThreadedDecoder::* const&)(), decord::cuda::CUThreadedDecoder*&&)+0x66) [0x7f15713669bc]\r\n\r\n[bt] (4) /kaggle/working/reader/build/libdecord.so(std::result_of<void (decord::cuda::CUThreadedDecoder::* const&(decord::cuda::CUThreadedDecoder*&&))()>::type std::__invoke<void (decord::cuda::CUThreadedDecoder::* const&)(), decord::cuda::CUThreadedDecoder*>(void (decord::cuda::CUThreadedDecoder::* const&)(), decord::cuda::CUThreadedDecoder*&&)+0x3f) [0x7f1571366949]\r\n\r\n[bt] (5) /kaggle/working/reader/build/libdecord.so(decltype (__invoke((*this)._M_pmf, (forward<decord::cuda::CUThreadedDecoder*>)({parm#1}))) std::_Mem_fn_base<void (decord::cuda::CUThreadedDecoder::*)(), true>::operator()<decord::cuda::CUThreadedDecoder*>(decord::cuda::CUThreadedDecoder*&&) const+0x2e) [0x7f15713668fa]\r\n\r\n[bt] (6) /kaggle/working/reader/build/libdecord.so(void std::_Bind_simple<std::_Mem_fn<void (decord::cuda::CUThreadedDecoder::*)()> (decord::cuda::CUThreadedDecoder*)>::_M_invoke<0ul>(std::_Index_tuple<0ul>)+0x43) [0x7f15713668c5]\r\n\r\n[bt] (7) /kaggle/working/reader/build/libdecord.so(std::_Bind_simple<std::_Mem_fn<void (decord::cuda::CUThreadedDecoder::*)()> (decord::cuda::CUThreadedDecoder*)>::operator()()+0x1d) [0x7f1571366813]\r\n\r\n[bt] (8) /kaggle/working/reader/build/libdecord.so(std::thread::_State_impl<std::_Bind_simple<std::_Mem_fn<void (decord::cuda::CUThreadedDecoder::*)()> (decord::cuda::CUThreadedDecoder*)> >::_M_run()+0x1c) [0x7f15713667f2]\r\n\r\n[bt] (9) /opt/conda/lib/python3.6/site-packages/matplotlib/../../../libstdc++.so.6(+0xb8408) [0x7f157222e408]\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 598944817,
+   "author_login": "leigh-plt",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-13T22:08:28Z",
+   "updated_utc": "2020-03-17T22:47:33Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-598944817",
+   "body_markdown": "Ubuntu 19.04 last update drivers, cuda 10.2 have leak too. 730 gtx\r\n\r\nKaggle:\r\ncuda_threaded_decoder.cc:35: Using device: Tesla P100-PCIE-16GB\r\ncuda_threaded_decoder.cc:55: Kernel module version 418.67, so using our own stream.\r\nOS debian  stretch"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 599023568,
+   "author_login": "KeremTurgutlu",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-14T07:41:30Z",
+   "updated_utc": "2020-03-14T07:41:30Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-599023568",
+   "body_markdown": "Thanks @leigh-plt this might be helpful for inference in the kernel!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 599135679,
+   "author_login": "yitang",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-03-14T21:14:32Z",
+   "updated_utc": "2020-03-14T21:14:32Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-599135679",
+   "body_markdown": "@leigh-plt are you writing a kernel on how to using video processing framwork too? \r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 628240190,
+   "author_login": "anlarro",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-05-13T20:53:53Z",
+   "updated_utc": "2020-05-13T20:53:53Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-628240190",
+   "body_markdown": "Any updates on this? I am facing memory leak issues on CPU."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 688845902,
+   "author_login": "Black-Hack",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-09-08T12:53:13Z",
+   "updated_utc": "2020-09-08T12:53:13Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-688845902",
+   "body_markdown": "It seems that deleting the frame manually avoids the leak:\r\n```python3\r\nvr = VideoReader(video_path)\r\nfor frame in vr:\r\n    print(frame.shape)\r\n    del frame\r\n```\r\nNote: I tested it for CPU only, but from the source code it seems that this would be the case for GPU as well."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 700678177,
+   "author_login": "huang-ziyuan",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2020-09-29T12:45:30Z",
+   "updated_utc": "2020-09-29T12:45:30Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-700678177",
+   "body_markdown": "> It seems that deleting the frame manually avoids the leak:\r\n> \r\n> ```python\r\n> vr = VideoReader(video_path)\r\n> for frame in vr:\r\n>     print(frame.shape)\r\n>     del frame\r\n> ```\r\n> \r\n> Note: I tested it for CPU only, but from the source code it seems that this would be the case for GPU as well.\r\n\r\nSame issue with the CPU memory leak. If you deleted the frame, how do you further process this if it is to be applied into a deep learning training framework? "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 782899608,
+   "author_login": "Ehsan1997",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-02-21T18:08:59Z",
+   "updated_utc": "2021-02-21T18:08:59Z",
+   "permalink": "https://github.com/dmlc/decord/issues/27#issuecomment-782899608",
+   "body_markdown": "> > It seems that deleting the frame manually avoids the leak:\r\n> > ```python\r\n> > vr = VideoReader(video_path)\r\n> > for frame in vr:\r\n> >     print(frame.shape)\r\n> >     del frame\r\n> > ```\r\n> > \r\n> > \r\n> > Note: I tested it for CPU only, but from the source code it seems that this would be the case for GPU as well.\r\n> \r\n> Same issue with the CPU memory leak. If you deleted the frame, how do you further process this if it is to be applied into a deep learning training framework?\r\n\r\nGet a bunch of frames, train the model, get the next bunch."
+  }
+ ]
+}

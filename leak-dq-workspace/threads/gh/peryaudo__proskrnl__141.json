@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/peryaudo/proskrnl/issues/141",
+ "passes": [
+  "main"
+ ],
+ "title": "cui9 ceiling leg can PANIC (MiEnsureTable: out of physical pages) instead of refusing",
+ "author_login": "peryaudo",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:44Z",
+ "final_url": "https://github.com/peryaudo/proskrnl/issues/141",
+ "repo": "peryaudo/proskrnl",
+ "repo_language": "C",
+ "number": 141,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-09T11:41:14Z",
+ "updated_at": "2026-08-09T11:41:14Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "peryaudo",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-09T11:41:14Z",
+   "updated_utc": "2026-08-09T11:41:14Z",
+   "permalink": "https://github.com/peryaudo/proskrnl/issues/141",
+   "body_markdown": "## What happened\n\nDuring a `make fulltest` fan-out (26 legs, `-j8`) the `cui9` leg failed with:\n\n```\n[KTEST] cmd interactive start\n...\n[PANIC] MiEnsureTable: out of physical pages\nconsole_expect: never saw the cmd verdict\n== cui9: FAIL ==\n```\n\nIt did **not** reproduce: the same tree passed `tools/fulltest.sh cui9` alone\nand passed `cui9` in two subsequent full 26-leg runs\n(`[KTEST] cui9 ceiling procs=319 err=3221225478 capped=0 availmb0=467 availmb=17`,\nfloor 250).\n\n## Why it is structural rather than a one-off\n\n`tests/run/run.sh cui9` drives the guest to memory exhaustion on purpose and\nrequires the machine to **refuse** (`err != 0`). It reaches that point with\n~17 MiB free out of 467 MiB. Whichever allocation happens to find zero pages\ndecides the outcome, and `arch/x86_64/mmu.c:49` `MiEnsureTable` has no refusal\npath at all:\n\n```c\nuint64_t table = MiAllocatePage();\nif (table == 0)\n{\n    KiPanic(\"MiEnsureTable: out of physical pages\");\n}\n```\n\nSo if the loser is a page-table page rather than an allocation that can\npropagate a status, the ceiling test dies instead of measuring. That is a race\nbetween the guest's own allocation orders, which is why it is intermittent.\n\n## Reproduction\n\nNot deterministic. `make fulltest` (full 26-leg fan-out) on a loaded box; the\nleg's own log is `build/fulltest/views/cui9/build/tests/cui9.log`, and the\nsignature is the `[PANIC] MiEnsureTable` line with no `[KTEST] cui9 ceiling`\nline after it.\n\n## Scope\n\nPre-existing; noticed while landing the NLS upcase table\n(`fold-nls-upcase-table`), which cannot be the cause — it adds 2866 bytes of\nkernel `.rodata` and changes no ASCII name comparison, and the cui9 image has\nno non-ASCII names. Filed rather than chased because the fix is a decision\nabout the fault path, not about that branch."
+  }
+ ]
+}

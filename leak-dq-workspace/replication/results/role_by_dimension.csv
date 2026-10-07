@@ -1,0 +1,37 @@
+group,n_diagnostic_occ,dimension,occ,share_pct
+SO askers,608,Report interpretation,195,32
+SO askers,608,Lifetime,109,18
+SO askers,608,Deallocation,108,18
+SO askers,608,Allocation,72,12
+SO askers,608,Control flow,35,6
+SO askers,608,Ownership,31,5
+SO askers,608,Composite cleanup,29,5
+SO askers,608,Escape / aliasing,15,2
+SO askers,608,Cross-module,14,2
+SO responders,299,Report interpretation,79,26
+SO responders,299,Lifetime,64,21
+SO responders,299,Deallocation,48,16
+SO responders,299,Allocation,39,13
+SO responders,299,Control flow,15,5
+SO responders,299,Ownership,16,5
+SO responders,299,Composite cleanup,18,6
+SO responders,299,Escape / aliasing,18,6
+SO responders,299,Cross-module,2,1
+GH reporters (statements),403,Report interpretation,69,17
+GH reporters (statements),403,Lifetime,44,11
+GH reporters (statements),403,Deallocation,86,21
+GH reporters (statements),403,Allocation,43,11
+GH reporters (statements),403,Control flow,61,15
+GH reporters (statements),403,Ownership,42,10
+GH reporters (statements),403,Composite cleanup,21,5
+GH reporters (statements),403,Escape / aliasing,23,6
+GH reporters (statements),403,Cross-module,14,3
+GH responders (statements),93,Report interpretation,26,28
+GH responders (statements),93,Lifetime,12,13
+GH responders (statements),93,Deallocation,9,10
+GH responders (statements),93,Allocation,11,12
+GH responders (statements),93,Control flow,11,12
+GH responders (statements),93,Ownership,13,14
+GH responders (statements),93,Composite cleanup,5,5
+GH responders (statements),93,Escape / aliasing,4,4
+GH responders (statements),93,Cross-module,2,2

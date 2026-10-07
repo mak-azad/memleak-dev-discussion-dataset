@@ -1,0 +1,65 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/the-tcpdump-group/tcpdump/issues/1091",
+ "passes": [
+  "main"
+ ],
+ "title": "Potential memory leak in tcpdump.c",
+ "author_login": "icy17",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:07Z",
+ "final_url": "https://github.com/the-tcpdump-group/tcpdump/issues/1091",
+ "repo": "the-tcpdump-group/tcpdump",
+ "repo_language": "C",
+ "number": 1091,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-10-14T16:02:41Z",
+ "updated_at": "2024-02-27T08:57:23Z",
+ "closed_at": null,
+ "labels": [
+  "improvement"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "icy17",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-10-14T16:02:41Z",
+   "updated_utc": "2024-02-27T08:57:23Z",
+   "permalink": "https://github.com/the-tcpdump-group/tcpdump/issues/1091",
+   "body_markdown": "Calling pcap_compile in tcpdump.c line: 2350 and 2753 without releasing the fcode cause memleak.\r\n\r\nwhen pcap_setfilter fails, there is no pcap_freecode. It's better to fix it.\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1964090117,
+   "author_login": "infrastation",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2024-02-26T12:58:54Z",
+   "updated_utc": "2024-02-26T12:58:54Z",
+   "permalink": "https://github.com/the-tcpdump-group/tcpdump/issues/1091#issuecomment-1964090117",
+   "body_markdown": "The first instance is currently at line 2355. Then there is a cleanup block with call to `pcap_freecode()` conditional on `dflag` and a number of calls to `error()`, none of which makes many enough cleanup moves before the exit. The second instance is currently at line 2759. It calls `pcap_freecode()` between the calls to `pcap_compile()`, but not after the last (or the only) call.\r\n\r\nThis way, there is indeed some amount of resources not explicitly freed before the exit. Given the number of various ways to allocate these, perhaps the best potential way to address this would be to have a separate resource deallocation function that `cleanup()` could explicitly use on a signal exit and all other exit paths could implicitly use via `atexit()`.\r\n\r\nUntil anybody is willing to implement that, the resources will be freed automatically upon the termination of the process. If you are aware of more severe practical effects, please explain in detail."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1966070918,
+   "author_login": "guyharris",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2024-02-27T08:57:22Z",
+   "updated_utc": "2024-02-27T08:57:22Z",
+   "permalink": "https://github.com/the-tcpdump-group/tcpdump/issues/1091#issuecomment-1966070918",
+   "body_markdown": "> This way, there is indeed some amount of resources not explicitly freed before the exit.\r\n\r\nThe `pcap_t` is also not closed.  In some situations closing a `pcap_t` performs some cleanup operations other than freeing memory, such as taking an interface out of monitor mode.  (That's also a problem if the process doing the packet capture terminates abnormally.)"
+  }
+ ]
+}

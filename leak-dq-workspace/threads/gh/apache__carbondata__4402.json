@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/apache/carbondata/issues/4402",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "JNI local reference leak in CarbonWriter (sortBy can overflow local ref table)",
+ "author_login": "QiuYucheng2003",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:56Z",
+ "final_url": "https://github.com/apache/carbondata/issues/4402",
+ "repo": "apache/carbondata",
+ "repo_language": "Scala",
+ "number": 4402,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-09T08:09:15Z",
+ "updated_at": "2026-10-02T02:10:57Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "QiuYucheng2003",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-09T08:09:15Z",
+   "updated_utc": "2026-10-02T02:10:57Z",
+   "permalink": "https://github.com/apache/carbondata/issues/4402",
+   "body_markdown": "## Problem\n\n`sdk/CSDK/src/CarbonWriter.cpp` creates JNI local references (`NewStringUTF`, `FindClass`, `NewObjectArray`, `GetObjectClass`, `CallObjectMethodA`) and almost never calls `DeleteLocalRef`.\n\nThe C++ SDK embeds a JVM and keeps `JNIEnv` for the whole writer lifetime. These references are **not** released when a C++ function returns. They stay in the local reference table until `DeleteLocalRef`, `PopLocalFrame`, thread detach, or JVM destroy.\n\n`close()` only deletes `carbonWriterBuilderObject`, `carbonWriterObject`, and a *local* `jclass` that shadows the member. Temporary refs from builder APIs are never cleaned up.\n\n## Impact\n\n- `sortBy` allocates one `jstring` per column in a loop and never deletes it after `SetObjectArrayElement`. A large `argc` can overflow the JNI local reference table (`JNI local references: ... exceeded`).\n- Other builder methods (`outputPath`, `withHadoopConf`, `withLoadOption`, `withTableProperty`, `writtenBy`, …) leak a few refs per call. They persist until JVM destroy.\n- Member fields store local refs without `NewGlobalRef`, which is invalid JNI for objects that must outlive a single native frame.\n\n## Affected code\n\n[`sdk/CSDK/src/CarbonWriter.cpp`](https://github.com/apache/carbondata/blob/f86ac085ddbbd8381b0a5b65658731fe618eff4a/sdk/CSDK/src/CarbonWriter.cpp)\n\n**`sortBy` — leak grows with column count:**\n\n```cpp\njclass objectArrayClass = jniEnv->FindClass(\"Ljava/lang/String;\");\njobjectArray array = jniEnv->NewObjectArray(argc, objectArrayClass, NULL);\nfor (int i = 0; i < argc; ++i) {\n    jstring value = jniEnv->NewStringUTF(argv[i]);\n    jniEnv->SetObjectArrayElement(array, i, value);\n    // missing: jniEnv->DeleteLocalRef(value);\n}\ncarbonWriterBuilderObject = jniEnv->CallObjectMethodA(carbonWriterBuilderObject, methodID, args);\n// missing: DeleteLocalRef(objectArrayClass / array / previous builder / carbonWriterBuilderClass)\n\n\nSame pattern in outputPath (NewStringUTF + overwrite builder object) and withHadoopConf / withTableProperty / withLoadOption (two NewStringUTF args, never deleted).\n\nclose() does not cover these temps, and the member class is not deleted:\njclass carbonWriter = jniEnv->GetObjectClass(carbonWriterObject); // shadows the member\n// ...\njniEnv->DeleteLocalRef(carbonWriterBuilderObject);\njniEnv->DeleteLocalRef(carbonWriterObject);\njniEnv->DeleteLocalRef(carbonWriter); // deletes the local jclass, not the FindClass member\n\nRelated: FindClass(\"Ljava/lang/String;\") is the wrong name; JNI class names use java/lang/String.\n\nSuggested fix\n1. After each use, DeleteLocalRef on temps (jstring, jclass from GetObjectClass/FindClass, jobjectArray). In sortBy, delete value every iteration; delete array / objectArrayClass after the Java call.\n2. Before overwriting carbonWriterBuilderObject, delete the previous local ref (or keep one global ref and update it).\n3. Promote long-lived members (carbonWriter, carbonWriterBuilderObject, carbonWriterObject) with NewGlobalRef, and DeleteGlobalRef in close().\n4. Prefer PushLocalFrame / PopLocalFrame or a small RAII local-ref wrapper so exception / early-return paths cannot skip cleanup.\n5. Change FindClass(\"Ljava/lang/String;\") to FindClass(\"java/lang/String\").\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5944306563,
+   "author_login": "chenliang613",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-10-02T02:10:57Z",
+   "updated_utc": "2026-10-02T02:10:57Z",
+   "permalink": "https://github.com/apache/carbondata/issues/4402#issuecomment-5944306563",
+   "body_markdown": "great.\ncan you optimize this issue ? "
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/shader-slang/slangpy/issues/115",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Leaking GPU memory",
+ "author_login": "ranftlr",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:28Z",
+ "final_url": "https://github.com/shader-slang/slangpy/issues/115",
+ "repo": "shader-slang/slangpy",
+ "repo_language": "C++",
+ "number": 115,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-03-13T14:36:39Z",
+ "updated_at": "2026-07-26T00:32:12Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ranftlr",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-03-13T14:36:39Z",
+   "updated_utc": "2026-07-26T00:32:12Z",
+   "permalink": "https://github.com/shader-slang/slangpy/issues/115",
+   "body_markdown": "Thanks for this cool project!\n\nI'm seeing a steadily increasing memory footprint when applying a function multiple times. Minimal example adapted from the slangpy examples:  \n\n```slang\n// example.slang\nimport \"slangpy\";\n\n[Differentiable]\nfloat polynomial(float a, float b, float c, float x) {\n    return a * x * x + b * x + c;\n}\n```\n\n```python\nimport slangpy as spy\nimport pathlib\nimport numpy as np\n\ndevice = spy.create_device(include_paths=[\n    pathlib.Path(__file__).parent.absolute(),\n])\n\nmodule = spy.Module.load_from_file(device, \"example.slang\")\n\nwhile True:\n    x = spy.Tensor.numpy(device, np.ones(1000*1000, dtype=np.float32)).with_grads(zero=True) \n    result: spy.Tensor = module.polynomial(a=2, b=8, c=-1, x=x, _result='tensor')\n```\n\n`nvidia-smi` shows increasing memory usage when running this, up until eventually hitting an OOM error.\n\n\nI'm on Ubuntu 22.04, python 3.10, CUDA 12.6 and Nvidia Driver version 560.35.05. Not sure if relevant, but the system has multiple GPUs."
+  }
+ ]
+}

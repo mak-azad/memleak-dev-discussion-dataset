@@ -1,0 +1,50 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 30374811,
+ "url": "https://stackoverflow.com/questions/30374811/cuda-opengl-interoperability-cudaerrormemoryallocation-error-on-cudagraphicsgl",
+ "title": "cuda, OpenGL interoperability: cudaErrorMemoryAllocation error on cudaGraphicsGLRegisterBuffer",
+ "tags": [
+  "c++",
+  "opengl",
+  "cuda"
+ ],
+ "score": 9,
+ "view_count": 2700,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 30377757,
+ "created_utc": "2015-05-21T13:12:53Z",
+ "last_activity_utc": "2015-05-22T13:18:15Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 2713740,
+ "author_display_name": "Luca",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/30374811/cuda-opengl-interoperability-cudaerrormemoryallocation-error-on-cudagraphicsgl",
+ "body_html": "<p>I am having random cuda memory allocation error on use of <code>cudaGraphicsGLRegisterBuffer()</code>. I have a fairly large OpenGL PBO object which is shared with it and CUDA. The PBO object is created as follows:</p>\n\n<pre><code>GLuint          buffer;\nglGenBuffers(1, &amp;buffer);\nglBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);\nglBufferData(target, rows * cols * 4, NULL, GL_DYNAMIC_COPY);\nglUnmapBuffer(_target);\nglBindBuffer(_target, 0);\n</code></pre>\n\n<p>The object is quite large. width and height are 5000. However, it allocates fine on my GPU. Now, I am sharing this between OpenGL and CUDA as follows. I have a simple class to manage the it as follows:</p>\n\n<pre><code>class CudaPBOGraphicsResource\n{\npublic:\n    CudaPBOGraphicsResource(GLuint pbo_id);\n    ~CudaPBOGraphicsResource();\n     inline cudaGraphicsResource_t resource() const { return _cgr; }\nprivate:\n    cudaGraphicsResource_t          _cgr;\n};\n\nCudaPBOGraphicsResource::CudaPBOGraphicsResource(GLuint pbo_id)\n{\n    checkCudaErrors(cudaGraphicsGLRegisterBuffer(&amp;_cgr, pbo_id,\n                    cudaGraphicsRegisterFlagsNone));\n    checkCudaErrors(cudaGraphicsMapResources(1, &amp;_cgr, 0));\n}\n\nCudaPBOGraphicsResource::~CudaPBOGraphicsResource()\n{\n    if (_cgr) {\n        checkCudaErrors(cudaGraphicsUnmapResources(1, &amp;_cgr, 0));\n    }\n}\n</code></pre>\n\n<p>Now I do the OpenGL and CUDA interoperability as follows:</p>\n\n<pre><code>{\n    CudaPBOGraphicsResource input_cpgr(pbo_id);\n    uchar4 * input_ptr = 0;\n    size_t num_bytes;\n    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void \n                    **)&amp;input_ptr, &amp;num_bytes,\n                    input_cpgr.resource()));\n\n    call_my_kernel(input_ptr);\n}\n</code></pre>\n\n<p>This runs for my inputs for a while but after sometime it crashes with:</p>\n\n<pre><code>CUDA error code=2(cudaErrorMemoryAllocation) \n                 \"cudaGraphicsGLRegisterBuffer(&amp;_cgr, pbo_id, \n                  cudaGraphicsRegisterFlagsNone)\" \nSegmentation fault\n</code></pre>\n\n<p>I am not sure why there is memory allocation going on as I thought this was shared. I added <code>cudaDeviceSynchronize()</code> after the kernel call but the error still persists. My <code>call_my_kernel()</code> function is now pretty much doing nothing, so there are no other CUDA calls that can raise this error! </p>\n\n<p>I am using Cuda 7 on linux with a K4000 Quadro card.</p>\n\n<p><strong>EDIT</strong>\nI updated the driver to the latest 346.72 version and the error still happens. It also does not depend on the kernel call. Just calling <code>cudaGraphicsGLRegisterBuffer()</code> seems to leak memory on the GPU. Running nvidia-smi as the program is running shows the memory going up steadily. I am still at a loss as to why there is any copying happening...</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 30377757,
+   "parent_id": 30374811,
+   "author_user_id": 2713740,
+   "author_display_name": "Luca",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/30377757",
+   "score": 8,
+   "created_utc": "2015-05-21T15:13:42Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2015-05-21T15:13:42Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Ok, I found the answer to my conundrum and I hope it will help anyone else using CUDA-OGL together.</p>\n\n<p>The problem was that I was calling:</p>\n\n<pre><code>checkCudaErrors(cudaGraphicsGLRegisterBuffer(&amp;_cgr, pbo_id,\n                cudaGraphicsRegisterFlagsNone));\n</code></pre>\n\n<p>everytime. This actually needs to be called only once and then I just need to call map/unmap on the _cgr object.</p>\n"
+  }
+ ]
+}

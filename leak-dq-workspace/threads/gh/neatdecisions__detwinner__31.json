@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/neatdecisions/detwinner/issues/31",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer",
+ "author_login": "Rovano01",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:44Z",
+ "final_url": "https://github.com/neatdecisions/detwinner/issues/31",
+ "repo": "neatdecisions/detwinner",
+ "repo_language": "C++",
+ "number": 31,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-06-03T06:11:13Z",
+ "updated_at": "2024-06-03T06:11:13Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Rovano01",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-06-03T06:11:13Z",
+   "updated_utc": "2024-06-03T06:11:13Z",
+   "permalink": "https://github.com/neatdecisions/detwinner/issues/31",
+   "body_markdown": "flatpak run --branch=stable --arch=x86_64 --command=detwinner com.neatdecisions.Detwinner\r\nGtk-Message: 14:16:30.998: Failed to load module \"xapp-gtk3-module\"\r\nGtk-Message: 14:16:31.035: Failed to load module \"colorreload-gtk-module\"\r\nGtk-Message: 14:16:31.035: Failed to load module \"window-decorations-gtk-module\"\r\nfree(): invalid pointer\r\nMagick: abort due to signal 6 (SIGABRT) \"Abort\"...\r\n\r\nIts version 0.4.2.\r\n\r\nHow can I help you more with diagnostics?\r\n"
+  }
+ ]
+}

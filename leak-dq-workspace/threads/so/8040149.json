@@ -1,0 +1,51 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 8040149,
+ "url": "https://stackoverflow.com/questions/8040149/is-hello-gl2-example-from-android-ndk-pause-resume-correct",
+ "title": "Is hello-gl2 example from Android NDK pause/resume correct?",
+ "tags": [
+  "android",
+  "c++",
+  "opengl-es-2.0",
+  "android-ndk"
+ ],
+ "score": 3,
+ "view_count": 1445,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 8694631,
+ "created_utc": "2011-11-07T17:26:29Z",
+ "last_activity_utc": "2012-01-01T18:13:11Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 685292,
+ "author_display_name": "Blackhex",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/8040149/is-hello-gl2-example-from-android-ndk-pause-resume-correct",
+ "body_html": "<p>Question:</p>\n\n<p>Considering the hello-gl2 example from Android NDK r6b, is this example correct when user repeatedly invokes pause/resume actions of the GLSurfaceView? I'm asking because each time a GL2JNIView.Renderer.onSurfaceChanged() is called, it creates all OpenGL resources (shaders, textures) but it never destroys them.</p>\n\n<p>Background:</p>\n\n<p>I'm trying to debug some OpenGL ES 2.0 game implemented using C++ and JNI which behaves incorrectly during pause/resume. I was trying to find some reference example for this but I haven't found any except of the mentioned hello2-gl example from NDK, which may IMHO create memory leaks, and <a href=\"http://code.google.com/p/androbuntu/source/browse/trunk/glsl/src/com/android/gl2jni/GL2JNIView.java?r=105\" rel=\"nofollow\">this more complex version of it</a>, which I'm currently using, but where it seems like OpenGL context is destroyed before GLSurfaceView finishes with its onPause() method where I'm destroying all the OpengGL shaders and textures bound to the context. Could you point me to some truly correct example of OpenGL ES 2.0 on Android using NDK concerning the correct way of pause/resume OpenGL resource handling?</p>\n\n<p>Thank you for your help.</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 8694631,
+   "parent_id": 8040149,
+   "author_user_id": 1093288,
+   "author_display_name": "Christopher Van Kirk",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/8694631",
+   "score": 2,
+   "created_utc": "2012-01-01T18:13:11Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2012-01-01T18:13:11Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>That's not quite the right lifecycle, but it's close. Any time a GL surface becomes completely obscured its EGL context will be destroyed, and when that happens any resources that you have allocated through OpenGL calls will be freed. As such, there is no need to manually free those resources unless your application requires active management during runtime (e.g. too many textures to cache in memory, etc).</p>\n\n<p>Note that this only applies to resources and memory allocated by OpenGL via OpenGL calls. Any buffers that you allocate outside of OpenGL do need to be freed, as usual. </p>\n"
+  }
+ ]
+}

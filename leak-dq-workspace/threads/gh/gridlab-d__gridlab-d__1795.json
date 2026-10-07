@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/gridlab-d/gridlab-d/issues/1795",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "JNI local references leak in Java module callbacks (FindClass never deleted)",
+ "author_login": "QiuYucheng2003",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:58Z",
+ "final_url": "https://github.com/gridlab-d/gridlab-d/issues/1795",
+ "repo": "gridlab-d/gridlab-d",
+ "repo_language": "C++",
+ "number": 1795,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-09T05:25:33Z",
+ "updated_at": "2026-09-09T05:25:33Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "QiuYucheng2003",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-09T05:25:33Z",
+   "updated_utc": "2026-09-09T05:25:33Z",
+   "permalink": "https://github.com/gridlab-d/gridlab-d/issues/1795",
+   "body_markdown": "### Summary\n\nC-to-Java callbacks in the Java module create a new local `jclass` with `FindClass` on every call and never release it. These functions are not JNI native entries: they attach the simulation thread and call into Java, so the references are not freed when the C function returns.\n\nAffected code:\n\n- https://github.com/gridlab-d/gridlab-d/blob/e1841e1eebced819e45209f4a899763ce337b177/java/gridlabd_java.cpp#L33-L58\n- https://github.com/gridlab-d/gridlab-d/blob/e1841e1eebced819e45209f4a899763ce337b177/java/gridlabd_java.h#L64-L147\n\n### Details\n\n`get_env()` calls `AttachCurrentThread` and never detaches:\n\n```cpp\nCDECL JNIEnv *get_env(){\n    JNIEnv *env;\n    if(jvm == nullptr)\n        init_jvm();\n    jvm->AttachCurrentThread((void **)&env, nullptr);\n    return env;\n}\n```\n\n`set_obj` then leaks `cls` on both the success path and the `GetMethodID` failure path:\n\n```cpp\njclass cls = jnienv->FindClass(\"GObject\");\nif(cls == nullptr)\n    return nullptr;\n\njmethodID mid = jnienv->GetMethodID(cls, \"SetObject\", \"(JJI)V\");\nif(mid == nullptr)\n    return nullptr;   // cls is still live\n\njnienv->CallVoidMethod(obj, mid, ...);\nreturn nullptr;       // cls is still live\n```\n\nThe same pattern is in `EXPORT_JAVA_CREATE`, `EXPORT_JAVA_INIT`, `EXPORT_JAVA_SYNC`, and `EXPORT_JAVA_PLC`: `FindClass` → `GetStaticMethodID` → `CallStatic*Method` → `return`, with no `DeleteLocalRef`. `FindClass` returning `NULL` is not itself a leak; the leak is the live `cls` after a successful lookup.\n\n`sync_*` / `plc_*` are intended to run per object, per timestep, so one new local reference is added on every call.\n\nJNI native methods that return `NewStringUTF` to Java (for example `Java_gridlabd_GObject__1GetName`) are not part of this issue.\n\n### Impact\n\nLocal references remain until the thread detaches or the JVM is destroyed. Repeated `sync`/`plc` calls can fill the JNI local reference table (`JNI local reference table overflow`) and abort the JVM.\n\n### Suggested fix\n\nAfter `GetMethodID` / `GetStaticMethodID`, call `jnienv->DeleteLocalRef(cls)` on every path, including early returns.\n\nBetter: look up each class once, promote it with `NewGlobalRef`, cache the `jclass` and `jmethodID`, and stop calling `FindClass` in the hot path. Pair that with `PushLocalFrame`/`PopLocalFrame` (or detach when the thread is done) so remaining locals cannot accumulate across timesteps."
+  }
+ ]
+}

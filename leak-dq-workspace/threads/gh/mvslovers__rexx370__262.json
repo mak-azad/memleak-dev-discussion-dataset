@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/mvslovers/rexx370/issues/262",
+ "passes": [
+  "main"
+ ],
+ "title": "EXIT or a runtime error inside a called routine crashes: bad free in IRXBEXEC cleanup",
+ "author_login": "mgrossmann",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:23Z",
+ "final_url": "https://github.com/mvslovers/rexx370/issues/262",
+ "repo": "mvslovers/rexx370",
+ "repo_language": "C",
+ "number": 262,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2026-09-30T07:14:46Z",
+ "updated_at": "2026-09-30T11:15:16Z",
+ "closed_at": "2026-09-30T11:15:16Z",
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mgrossmann",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-30T07:14:46Z",
+   "updated_utc": "2026-09-30T11:15:16Z",
+   "permalink": "https://github.com/mvslovers/rexx370/issues/262",
+   "body_markdown": "A plain `EXIT` inside a routine reached by `CALL` or a function call aborts the process on the host. So does any runtime error raised inside such a routine.\n\n```rexx\ncall f\nsay 'back'\nexit\nf:\nexit 0\n```\n\nHost: SIGABRT (exit 134). AddressSanitizer:\n\n```\nattempting free on address which was not malloc()-ed\n  #1 irxstor irx#stor.c:109\n  #4 IRXBEXEC irx#bvm.c:3780\nallocated by: IRXBEXEC irx#bvm.c:960 (call frame array)\n```\n\nSuspected mechanism: the VM cleanup frees `proxy_parser->call_args` as a separate allocation. With an active call frame, that pointer points into the call-frame block allocated at `irx#bvm.c:960`.\n\nSecond repro, a runtime error in a function: `v = f(1)` / `exit` / `f: return arg(1,'Exists')`. `'Exists'` is rejected (#280), and the error inside `f` takes the same path.\n\nMVS behaviour is not measured. A wrong FREEMAIN is the likely outcome; that is inferred.\n\nSuite: `ARGOPT` is listed but not run (`norun`) until this is fixed, because it takes the whole driver down.\n\nFound by the SC28-1883-0 conformance suite (#261): expected values and page references in `docs/spec-tests/`, execs in `test/spec/`. Repros run on the host build (bytecode VM unless noted).\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5910045487,
+   "author_login": "mgrossmann",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-30T11:15:15Z",
+   "updated_utc": "2026-09-30T11:15:15Z",
+   "permalink": "https://github.com/mvslovers/rexx370/issues/262#issuecomment-5910045487",
+   "body_markdown": "Resolved in PR #287. Also fixes the exec losing its own ARG() after the first CALL/RETURN (same cause). Verified on MVS batch + TSO (JOB01417)."
+  }
+ ]
+}

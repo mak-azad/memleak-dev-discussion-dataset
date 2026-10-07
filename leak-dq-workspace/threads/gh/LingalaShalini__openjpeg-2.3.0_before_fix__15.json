@@ -1,0 +1,89 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15",
+ "passes": [
+  "main"
+ ],
+ "title": "CVE-2019-6988 (Medium) detected in openjpegv2.3.0",
+ "author_login": "mend-bolt-for-github[bot]",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:27Z",
+ "final_url": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15",
+ "repo": "LingalaShalini/openjpeg-2.3.0_before_fix",
+ "repo_language": "C",
+ "number": 15,
+ "state": "open",
+ "state_reason": "reopened",
+ "created_at": "2021-08-02T06:51:41Z",
+ "updated_at": "2026-07-07T06:01:46Z",
+ "closed_at": null,
+ "labels": [
+  "Mend: dependency security vulnerability"
+ ],
+ "comments_reported": 4,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-08-02T06:51:41Z",
+   "updated_utc": "2026-07-07T06:01:46Z",
+   "permalink": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15",
+   "body_markdown": "## CVE-2019-6988 - Medium Severity Vulnerability\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Library - <b>openjpegv2.3.0</b></summary>\n<p>\n\n<p>Official repository of the OpenJPEG project</p>\n<p>Library home page: <a href=https://github.com/uclouvain/openjpeg.git>https://github.com/uclouvain/openjpeg.git</a></p>\n<p>Found in HEAD commit: <a href=\"https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/commit/3501163dd1d68645efcce586f29683574a46c95f\">3501163dd1d68645efcce586f29683574a46c95f</a></p>\n\n<p>Found in base branch: <b>master</b></p></p>\n</details>\n</p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Source Files (1)</summary>\n<p></p>\n<p>\n\n  <img src='https://s3.amazonaws.com/wss-public/bitbucketImages/xRedImage.png' width=19 height=20> <b>/src/bin/jp2/convertbmp.c</b>\n</p>\n</details>\n<p></p>\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/medium_vul.png?' width=19 height=20> Vulnerability Details</summary>\n<p>  \n  \nAn issue was discovered in OpenJPEG 2.3.0. It allows remote attackers to cause a denial of service (attempted excessive memory allocation) in opj_calloc in openjp2/opj_malloc.c, when called from opj_tcd_init_tile in openjp2/tcd.c, as demonstrated by the 64-bit opj_decompress.\n\n<p>Publish Date: 2019-01-28\n<p>URL: <a href=https://www.mend.io/vulnerability-database/CVE-2019-6988>CVE-2019-6988</a></p>\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/cvss3.png' width=19 height=20> CVSS 3 Score Details (<b>6.5</b>)</summary>\n<p>\n\nBase Score Metrics:\n- Exploitability Metrics:\n  - Attack Vector: Network\n  - Attack Complexity: Low\n  - Privileges Required: None\n  - User Interaction: Required\n  - Scope: Unchanged\n- Impact Metrics:\n  - Confidentiality Impact: None\n  - Integrity Impact: None\n  - Availability Impact: High\n</p>\nFor more information on CVSS3 Scores, click <a href=\"https://www.first.org/cvss/calculator/3.0\">here</a>.\n</p>\n</details>\n<p></p>\n\n***\nStep up your Open Source Security Game with Mend [here](https://www.whitesourcesoftware.com/full_solution_bolt_github)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1218828665,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-08-18T01:04:58Z",
+   "updated_utc": "2022-08-18T01:04:58Z",
+   "permalink": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15#issuecomment-1218828665",
+   "body_markdown": ":heavy_check_mark: This issue was automatically closed by Mend because the vulnerable library in the specific branch(es) was either marked as ignored or it is no longer part of the Mend inventory."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1288264989,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-10-24T01:02:22Z",
+   "updated_utc": "2022-10-24T01:02:22Z",
+   "permalink": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15#issuecomment-1288264989",
+   "body_markdown": ":information_source: This issue was automatically re-opened by Mend because the vulnerable library in the specific branch(es) has been detected in the Mend inventory."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4062333666,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-15T06:04:25Z",
+   "updated_utc": "2026-03-15T06:04:25Z",
+   "permalink": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15#issuecomment-4062333666",
+   "body_markdown": ":heavy_check_mark: This issue was automatically closed by Mend because the vulnerable library in the specific branch(es) was either marked as ignored or it is no longer part of the Mend inventory."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4900654720,
+   "author_login": "mend-bolt-for-github[bot]",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-07T06:01:46Z",
+   "updated_utc": "2026-07-07T06:01:46Z",
+   "permalink": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15#issuecomment-4900654720",
+   "body_markdown": ":information_source: This issue was automatically re-opened by Mend because the vulnerable library in the specific branch(es) has been detected in the Mend inventory."
+  }
+ ]
+}

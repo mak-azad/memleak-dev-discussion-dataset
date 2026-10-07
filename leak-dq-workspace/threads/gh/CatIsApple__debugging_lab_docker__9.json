@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/CatIsApple/debugging_lab_docker/issues/9",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[WEEK5] 구현 - 04_double_free",
+ "author_login": "CatIsApple",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:07Z",
+ "final_url": "https://github.com/CatIsApple/debugging_lab_docker/issues/9",
+ "repo": "CatIsApple/debugging_lab_docker",
+ "repo_language": "C",
+ "number": 9,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-28T19:03:29Z",
+ "updated_at": "2026-09-28T19:03:29Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "DOUBLEFREE"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "CatIsApple",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-28T19:03:29Z",
+   "updated_utc": "2026-09-28T19:03:29Z",
+   "permalink": "https://github.com/CatIsApple/debugging_lab_docker/issues/9",
+   "body_markdown": ""
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/yugabyte/yugabyte-db/issues/31066",
+ "passes": [
+  "main"
+ ],
+ "title": "[YSQL] Add memory context cleanup to prevent memory leak",
+ "author_login": "GauravSingh-yb",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:08Z",
+ "final_url": "https://github.com/yugabyte/yugabyte-db/issues/31066",
+ "repo": "yugabyte/yugabyte-db",
+ "repo_language": "C",
+ "number": 31066,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-04-13T16:31:08Z",
+ "updated_at": "2026-04-13T16:31:19Z",
+ "closed_at": null,
+ "labels": [
+  "kind/bug",
+  "area/ysql",
+  "priority/medium",
+  "status/awaiting-triage"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "GauravSingh-yb",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-04-13T16:31:08Z",
+   "updated_utc": "2026-04-13T16:31:19Z",
+   "permalink": "https://github.com/yugabyte/yugabyte-db/issues/31066",
+   "body_markdown": "Jira Link: [DB-20951](https://yugabyte.atlassian.net/browse/DB-20951)\r\n### Description\n\n### Summary\n\n`getYsqlStatementStats` in `pg_stat_statements.c` implements the YSQL /statements HTTP export by loading query text with `qtext_load_file()` and iterating pgss_hash while holding `pgss->lock`. Transient allocations (qbuffer, StringInfo in `yb_add_hist_json`, and any future work in this path) are tied to `CurrentMemoryContext`. We should bound that work in a dedicated short-lived memory context and tear it down on all exit paths (including ERROR), to avoid leaks and to match PostgreSQL conventions for this kind of helper.\n\n### Problem\n\n- **Context ambiguity**: Allocations use whatever `CurrentMemoryContext` is when the web handler runs. If that context is long-lived, any allocation that is not explicitly freed can persist much longer than the request.\n- **Error / longjmp:** A future ereport(ERROR)-style exit from this path could skip explicit cleanup unless guarded (e.g. `PG_TRY` / `PG_FINALLY`) and would also risk leaving `pgss->lock` held and hash-seq state inconsistent unless handled carefully.\n\n\n### Issue Type\n\nkind/bug\n\n### Warning: Please confirm that this issue does not contain any sensitive information\n\n- [x] I confirm this issue does not contain any sensitive information.\n\n[DB-20951]: https://yugabyte.atlassian.net/browse/DB-20951?atlOrigin=eyJpIjoiNWRkNTljNzYxNjVmNDY3MDlhMDU5Y2ZhYzA5YTRkZjUiLCJwIjoiZ2l0aHViLWNvbS1KU1cifQ"
+  }
+ ]
+}

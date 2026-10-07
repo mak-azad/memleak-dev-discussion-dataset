@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/souzjfe/TrucoInC/issues/1",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "malloc(): corrupted top size error",
+ "author_login": "danielg-favero",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:12Z",
+ "final_url": "https://github.com/souzjfe/TrucoInC/issues/1",
+ "repo": "souzjfe/TrucoInC",
+ "repo_language": "C",
+ "number": 1,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-05-09T04:17:18Z",
+ "updated_at": "2020-05-09T04:17:18Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "HEAPCORRUPT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "danielg-favero",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-05-09T04:17:18Z",
+   "updated_utc": "2020-05-09T04:17:18Z",
+   "permalink": "https://github.com/souzjfe/TrucoInC/issues/1",
+   "body_markdown": "Boa noite, ao copilar na última versão do ubuntu, está me occorendo esse erro, o que deve estar acontecendo (emoji pensando). Fico no aguardo"
+  }
+ ]
+}

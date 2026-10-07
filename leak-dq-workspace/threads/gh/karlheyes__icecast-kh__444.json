@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/karlheyes/icecast-kh/issues/444",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "socket leak with local nginx proxy used by listener_add",
+ "author_login": "joulaud",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:07Z",
+ "final_url": "https://github.com/karlheyes/icecast-kh/issues/444",
+ "repo": "karlheyes/icecast-kh",
+ "repo_language": "C",
+ "number": 444,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-01-25T09:44:26Z",
+ "updated_at": "2024-01-25T10:04:53Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-socket"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "joulaud",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-01-25T09:44:26Z",
+   "updated_utc": "2024-01-25T10:04:53Z",
+   "permalink": "https://github.com/karlheyes/icecast-kh/issues/444",
+   "body_markdown": "With icecast-kh22 we observed that the metrics global.clients goes up and does not come back to initial value when listeners are disconnecting. This happens only when the activity is high (hundreds of new connections per second). At some point all new connections are (correctly) refused with a 403 (`connection/_handle_get_request server client limit reached`).\r\n\r\nThinking it was perhaps a problem with the counter global.clients tried to workaround by increasing the limit \"clients\" to an arbitrary insanely high value but this caused some system saturation of fd and caused more problems.\r\n\r\nWe observed in this case a big discrepancy between the count of TCP alloc (which climbs insanely high) and of TCP inuse (which stays near what we could expect), reinforcing the idea that some leak in socket management occurs in icecast-kh.\r\n\r\nConfiguration includes something like\r\n```\r\n  <mount>\r\n    <mount-name>/*.mpeg3</mount-name>\r\n    <authentication type=\"url\">\r\n      <option name=\"listener_add\" value=\"http://localhost/proxyurl\"/>\r\n      <option name=\"timeout\" value=\"99\"/>\r\n      <option name=\"presume_innocent\" value=\"yes\"/>\r\n    </authentication>\r\n  </mount>\r\n  ```\r\n\r\nWe did not reproduce the problem without this configuration.\r\n\r\nThe same configuration with icecast-kh15 does not seem to have the same problem."
+  }
+ ]
+}

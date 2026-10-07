@@ -1,0 +1,1942 @@
+{
+"main": [
+{
+"issue_url": "https://github.com/semitrivial/csv_parser/issues/7",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/owenthewizard/i3lock-next/issues/19",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/neurobin/shc/issues/155",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/Univers42/life/issues/2",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/spdk/spdk/issues/2947",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/pnggroup/libpng/issues/220",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/cloudwu/cstring/issues/6",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/HDFGroup/hdf5/issues/6386",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/google/sanitizers/issues/325",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/jordansissel/xdotool/issues/189",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/KhronosGroup/KTX-Software/issues/1256",
+"cwe_signatures": "762,401"
+},
+{
+"issue_url": "https://github.com/FairRootGroup/FairMQ/issues/463",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/HugorTorquato/MBA-TCC/issues/13",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/scylladb/seastar/issues/228",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/eclipse-paho/paho.mqtt.cpp/issues/576",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/scylladb/seastar/issues/3002",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/ZuleykhaPavlichenkova-TomTom/duckdb/issues/252",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/apache/trafficserver/issues/13662",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/ZuleykhaPavlichenkova-TomTom/duckdb/issues/245",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/Mudlet/Mudlet/issues/10396",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/go-llsqlite/crawshaw/issues/19",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/cyrusimap/cyrus-sasl/issues/900",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/jkuhlmann/cgltf/issues/303",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/nginx/njs/issues/1099",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/THEMANNICHOLAS/nico-lightroom/issues/89",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/Canotas/rsyslog/issues/68",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/microsoft/ebpf-for-windows/issues/4063",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/lloyd/yajl/issues/261",
+"cwe_signatures": "789,459,401"
+},
+{
+"issue_url": "https://github.com/jcfaracco/gds-nouveau-fs/issues/2",
+"cwe_signatures": "789,401"
+},
+{
+"issue_url": "https://github.com/asg017/sqlite-vec/issues/265",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/madolson/valkey-agents/issues/33",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/ImageMagick/ImageMagick/issues/8994",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/bytedance/volclava/issues/118",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/brendanddev/struccs/issues/10",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/ankurs/Hash-Table/issues/6",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/valkey-io/valkey-glide-php/issues/328",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/rgendry/Corewar/issues/6",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/ldrahnik/ial_project_2017_2018/issues/3",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/naver/rye/issues/7",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/BChan-0/valkey/issues/224",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/lfortran/lfortran/issues/13969",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/spoturno/bmsystem/issues/2",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/lfortran/lfortran/issues/13590",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/vprover/vampire/issues/989",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/vprover/vampire/issues/981",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/vprover/vampire/issues/990",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/cablexd/COS214-Prac4/issues/5",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/adrian-thurston/colm-suite/issues/326",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/lfortran/lfortran/issues/13621",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/vprover/vampire/issues/987",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/jaspinegz/babble/issues/3",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/johnatorres226/foundations-of-programming-c/issues/55",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/tsurai/mecab-rs/issues/11",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/eclipse-sumo/sumo/issues/6825",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/haskell-gi/haskell-gi/issues/23",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/wineasio/wineasio/issues/23",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/godotengine/godot-proposals/issues/10537",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/golang/go/issues/51317",
+"cwe_signatures": "590,401"
+},
+{
+"issue_url": "https://github.com/rust-lang/unsafe-code-guidelines/issues/316",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/rust-lang/rust/issues/126600",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/damus-io/nostrdb/issues/24",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/jamulussoftware/jamulus/issues/1083",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/HateBreed/test_framework_visma/issues/2",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/DynamoRIO/drmemory/issues/108",
+"cwe_signatures": "763,401"
+},
+{
+"issue_url": "https://github.com/P-H-C/phc-winner-argon2/issues/257",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/DynamoRIO/drmemory/issues/2403",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/RafaelVVolkmer/libmemalloc/issues/2",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/DynamoRIO/drmemory/issues/103",
+"cwe_signatures": "763,401"
+},
+{
+"issue_url": "https://github.com/TauLabs/TauLabs/issues/174",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/vinszent/gnome-twitch/issues/272",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/ddnet/ddnet/issues/12154",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/sonic-net/sonic-buildimage/issues/28696",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/clibs/buffer/issues/20",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/lutherhistory/bread-taste/issues/1",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/AeneasVerif/eurydice/issues/393",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/jcaldwell-labs/boxes-live/issues/88",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/Canotas/rsyslog/issues/65",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/knolleary/pubsubclient/issues/755",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/OpenPrinting/cups-filters/issues/636",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/389ds/389-ds-base/issues/7746",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/pousoupou/parCer/issues/2",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/Afsan-z47/CHIP-8/issues/13",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/SialkLang/Sialk/issues/4",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/eggheads/eggdrop/issues/1933",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/berkeley-abc/abc/issues/124",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/libui-ng/libui-ng/issues/156",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/uTox/uTox/issues/1554",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/libsndfile/libsndfile/issues/922",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/htacg/tidy-html5/issues/1152",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/duckdb/duckdb-excel/issues/96",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/freebsd/atf/issues/77",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/trilinos/Trilinos/issues/15751",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/chivurazvangabriel/LiminalBlocks/issues/2",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/eclipse-4diac/4diac-forte/issues/1054",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/LoneGazebo/Community-Patch-DLL/issues/13363",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/godotengine/godot/issues/116815",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/musescore/MuseScore/issues/32722",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/IAS-Astrophysics/athenak/issues/716",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/nntrainer/nntrainer/issues/4335",
+"cwe_signatures": "762,761,763,459,401"
+},
+{
+"issue_url": "https://github.com/cclaude42/minishell/issues/11",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/mappu/miqt/issues/154",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/gramineproject/graphene/issues/1030",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/the-tcpdump-group/tcpdump/issues/1091",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/yugabyte/yugabyte-db/issues/31066",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/microsoft/mimalloc/issues/509",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/michaelrsweet/mxml/issues/356",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/openssl/openssl/issues/25294",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/libsdl-org/sdl2-compat/issues/255",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/DarkFlippers/unleashed-firmware/issues/1029",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/OpenVPN/openvpn/issues/1059",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/BRCode4Fun/Python-Interpreter/issues/2",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/edwardwawrzynek/ovid/issues/24",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/ANSHAM1/LSTMiniNet/issues/1",
+"cwe_signatures": "789,401"
+},
+{
+"issue_url": "https://github.com/cameron314/concurrentqueue/issues/364",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/projectM-visualizer/projectm/issues/1000",
+"cwe_signatures": "762,459,401"
+},
+{
+"issue_url": "https://github.com/machinezone/IXWebSocket/issues/490",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/owasp-modsecurity/ModSecurity/issues/2848",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/PointCloudLibrary/pcl/issues/2225",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/jerryscript-project/jerryscript/issues/5078",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/google/sanitizers/issues/1368",
+"cwe_signatures": "590,761"
+},
+{
+"issue_url": "https://github.com/rehlds/ReHLDS/issues/377",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/swiftlang/swift-corelibs-foundation/issues/5533",
+"cwe_signatures": "590,763"
+},
+{
+"issue_url": "https://github.com/mvslovers/rexx370/issues/262",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/google/sanitizers/issues/1849",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/lo3-lang/lo3-core/issues/119",
+"cwe_signatures": "590,789"
+},
+{
+"issue_url": "https://github.com/mrragava/onefuzz-notification/issues/1",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/microsoft/mimalloc/issues/795",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/openssl/openssl/issues/27736",
+"cwe_signatures": "590,763"
+},
+{
+"issue_url": "https://github.com/php/php-src/issues/23453",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/miguelmartin75/anax/issues/66",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/moveit/moveit/issues/2069",
+"cwe_signatures": "590,761"
+},
+{
+"issue_url": "https://github.com/cms-sw/cmssw/issues/45670",
+"cwe_signatures": "762,590"
+},
+{
+"issue_url": "https://github.com/ngscopeclient/scopehal-apps/issues/1028",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/axiomatic-systems/Bento4/issues/385",
+"cwe_signatures": "762,590,761"
+},
+{
+"issue_url": "https://github.com/ClickHouse/ClickHouse/issues/120573",
+"cwe_signatures": "590,761,459"
+},
+{
+"issue_url": "https://github.com/libcpr/cpr/issues/1241",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/swiftlang/swift/issues/61669",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/alibaba/yalantinglibs/issues/1210",
+"cwe_signatures": "590,761,763"
+},
+{
+"issue_url": "https://github.com/hanthor/utah/issues/5",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/axiomatic-systems/Bento4/issues/765",
+"cwe_signatures": "762,590,761"
+},
+{
+"issue_url": "https://github.com/diku-compSys/compSys-e2023-pub/issues/2",
+"cwe_signatures": "590,459,401"
+},
+{
+"issue_url": "https://github.com/tuna-os/tunaos-packages/issues/540",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/NeoDOS-Project/NeoDOS/issues/476",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/NeoDOS-Project/NeoDOS/issues/477",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/ryanbreen/breenix/issues/638",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/n00b-lang/n00b/issues/228",
+"cwe_signatures": "590,763"
+},
+{
+"issue_url": "https://github.com/jphein/esp32c6-watch/issues/66",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/Canotas/rsyslog/issues/12",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/projectbluefin/utah-packages/issues/308",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/lep/pjass/issues/12",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/briar-systems/mach/issues/3865",
+"cwe_signatures": "590,401"
+},
+{
+"issue_url": "https://github.com/ofiwg/libfabric/issues/12928",
+"cwe_signatures": "590,763"
+},
+{
+"issue_url": "https://github.com/netblue30/firejail/issues/3662",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/kofun-lang/kofun/issues/1679",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/zowe/zowe-common-c/issues/718",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/Mitotow/c-http-server/issues/1",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/pocketpy/pocketpy/issues/541",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/swftools/swftools/issues/239",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/juce-framework/JUCE/issues/1565",
+"cwe_signatures": "590,761"
+},
+{
+"issue_url": "https://github.com/Perl/perl5/issues/15769",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/bgrimstad/splinter/issues/138",
+"cwe_signatures": "590,761,763"
+},
+{
+"issue_url": "https://github.com/lsalamon/address-sanitizer/issues/407",
+"cwe_signatures": "590,761"
+},
+{
+"issue_url": "https://github.com/ramosian-glider/address-sanitizer/issues/407",
+"cwe_signatures": "590,761"
+},
+{
+"issue_url": "https://github.com/scylladb/seastar/issues/111",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/thunlp/THULAC/issues/37",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/cmu462/DrawSVG/issues/12",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/justdan96/tsMuxer/issues/778",
+"cwe_signatures": "762,761,459"
+},
+{
+"issue_url": "https://github.com/dsidavis/pdftohtml/issues/6",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/bitmovin/libdash/issues/32",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/flexpaper/pdf2json/issues/20",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/flexpaper/pdf2json/issues/19",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/nmslib/hnswlib/issues/645",
+"cwe_signatures": "762,761,401"
+},
+{
+"issue_url": "https://github.com/jackaudio/jack2/issues/237",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/dilawar/sound/issues/4",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/MythTV/mythtv/issues/1485",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/llvm/llvm-project/issues/32304",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/nogdb/libnogdb/issues/24",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/NanoMichael/MicroTeX/issues/193",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/thorvg/thorvg/issues/4874",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/electronicarts/EASTL/issues/550",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/chriskohlhoff/asio/issues/1139",
+"cwe_signatures": "762,761"
+},
+{
+"issue_url": "https://github.com/BoiseState-AdaptLab/adapt-lidar-tools/issues/242",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/dart-lang/sdk/issues/47346",
+"cwe_signatures": "762,459,401"
+},
+{
+"issue_url": "https://github.com/yandex/faster-rnnlm/issues/49",
+"cwe_signatures": "762,401"
+},
+{
+"issue_url": "https://github.com/crazy-goat/php-zvec/issues/228",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/kriszyp/lmdb-js/issues/300",
+"cwe_signatures": "762,459,401"
+},
+{
+"issue_url": "https://github.com/kocienda/UU/issues/6",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/OpenGene/fastp/issues/625",
+"cwe_signatures": "762,459,401"
+},
+{
+"issue_url": "https://github.com/sillysloft/fluxbox/issues/342",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/DOI-USGS/ISIS3/issues/6160",
+"cwe_signatures": "459,401"
+},
+{
+"issue_url": "https://github.com/microsoft/mimalloc/issues/251",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/brianly/hobocopy/issues/6",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/geoneric/fern/issues/93",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/chriskohlhoff/asio/issues/1391",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/VaultaFoundation/evm-node/issues/2",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/llvm/llvm-project/issues/52997",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/boostorg/cobalt/issues/7",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/rust-lang/rust/issues/133071",
+"cwe_signatures": "762,459,401"
+},
+{
+"issue_url": "https://github.com/narzoul/DDrawCompat/issues/625",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/pytorch/pytorch/issues/144328",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/llvm/llvm-project/issues/223314",
+"cwe_signatures": "762"
+},
+{
+"issue_url": "https://github.com/flutter/flutter/issues/188635",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/pnggroup/libpng/issues/429",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/glyn/ipc-channel-mux/issues/33",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/ValveSoftware/Proton/issues/8206",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/kcat/openal-soft/issues/1243",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/anthropics/claude-code/issues/21875",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/rgleason/weather_routing_pi/issues/659",
+"cwe_signatures": "459"
+},
+{
+"issue_url": "https://github.com/ValveSoftware/Proton/issues/9789",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/BennyQBD/3DEngineCpp/issues/45",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/asdf-format/libasdf/issues/250",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/GenericMappingTools/gmt/issues/7522",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/EionRobb/purple-discord/issues/402",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/intel/lmbench/issues/30",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/Atterratio/obs-gphoto/issues/23",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/ArtemKasianov/ICML3/issues/1",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/dstogov/php-ffi/issues/44",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/akhellad/Minishell/issues/6",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/Wikinaut/agrep/issues/33",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/htacg/tidy-html5/issues/1086",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/ecmwf/eckit/issues/354",
+"cwe_signatures": "763,401"
+},
+{
+"issue_url": "https://github.com/lfortran/lfortran/issues/13594",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/NixOS/nix/issues/3973",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/alliedmodders/sourcemod/issues/2571",
+"cwe_signatures": "762,763,459"
+},
+{
+"issue_url": "https://github.com/neatdecisions/detwinner/issues/31",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/therealnv6/vx-gfx/issues/10",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/RRZE-HPC/WINIC/issues/4",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/YirongMao/TensorRT-Custom-Plugin/issues/3",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/ywmuazz/redbase/issues/1",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/blackhole89/notekit/issues/133",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/OpenGene/repaq/issues/21",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/Electrostatics/apbs/issues/247",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/hisptoot/BambuSource2Raw/issues/6",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/darktable-org/darktable/issues/22436",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/rpi-ws281x/rpi-ws281x-python/issues/103",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/thegenemyers/FASTGA/issues/32",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/gphoto/gphoto2/issues/481",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/Megagenomics/FastProNGS/issues/2",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/dprahut/openjpeg/issues/358",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/kingofthebongo2008/openjpeg/issues/358",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/sahib/rmlint/issues/633",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/dputhier/libgtftk/issues/97",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/microsoft/mimalloc/issues/435",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/haywire/haywire/issues/130",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/iains/darwin-xtools/issues/13",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/ggreer/the_silver_searcher/issues/1473",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/lastpass/lastpass-cli/issues/727",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/ncxcy/A14-A16-iBoot-DFU-PoC/issues/1",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/iains/darwin-xtools/issues/11",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/gphoto/libgphoto2/issues/865",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/libevent/libevent/issues/1693",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/luanldcarvalho/42/issues/40",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/nz-nz/Libft/issues/54",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/window-maker/dockapps/issues/60",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/Tarsnap/kivaloo/issues/324",
+"cwe_signatures": "761,763,401"
+},
+{
+"issue_url": "https://github.com/spdk/spdk/issues/3006",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/smackers/smack/issues/177",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/neogentrics/ReconOS/issues/436",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/STMicroelectronics/stm32-mw-usbx/issues/6",
+"cwe_signatures": "763"
+},
+{
+"issue_url": "https://github.com/mentos-team/MentOS/issues/204",
+"cwe_signatures": "590"
+},
+{
+"issue_url": "https://github.com/tbeu/matio/issues/347",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/NetworkConfiguration/dhcpcd/issues/732",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/assimp/assimp/issues/6356",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/HDFGroup/hdf5/issues/5831",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/HDFGroup/hdf5/issues/4435",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/libming/libming/issues/276",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/axiomatic-systems/Bento4/issues/748",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/libming/libming/issues/295",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/libming/libming/issues/297",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/jerryscript-project/jerryscript/issues/5072",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/libming/libming/issues/296",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/indygreg/python-zstandard/issues/332",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/say10co/web-serv/issues/4",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/SophistSolutions/Stroika/issues/1128",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/ispc/ispc/issues/2040",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/nhi-nguyen/necko/issues/244",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/axiomatic-systems/Bento4/issues/703",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/uclouvain/openjpeg/issues/1111",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/burakyueksel/physics/issues/17",
+"cwe_signatures": "789,401"
+},
+{
+"issue_url": "https://github.com/indygreg/python-zstandard/issues/176",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/project-ocre/ocre-runtime/issues/117",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/LingalaShalini/openjpeg-2.3.0_before_fix/issues/15",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/yugabyte/yugabyte-db/issues/11692",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/squeaky-pl/japronto/issues/197",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/LevyForchh/yugabyte-db/issues/30",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/openwall/john/issues/5798",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/universal-ctags/ctags/issues/4409",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/redis/hiredis/issues/1357",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/php/php-src/issues/22556",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/swftools/swftools/issues/202",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/vallentin/LoadBMP/issues/10",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/Matthias-Wandel/jhead/issues/105",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/lieff/minimp4/issues/50",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/Tarsnap/tarsnap/issues/715",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/samtools/htslib/issues/2090",
+"cwe_signatures": "789,401"
+},
+{
+"issue_url": "https://github.com/svanderburg/libilbm/issues/8",
+"cwe_signatures": ""
+},
+{
+"issue_url": "https://github.com/tuxera/ntfs-3g/issues/215",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/linux-nfs/nfsd/issues/81",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/awdemos/zeitlos/issues/5",
+"cwe_signatures": "789,401"
+},
+{
+"issue_url": "https://github.com/buster14a/buster/issues/2413",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/pusewicz/bielik2d-c/issues/65",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/lucocozz/Argus/issues/59",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/HDFGroup/hdf5/issues/6677",
+"cwe_signatures": "401"
+},
+{
+"issue_url": "https://github.com/peryaudo/proskrnl/issues/141",
+"cwe_signatures": "789"
+},
+{
+"issue_url": "https://github.com/OpenVisualCloud/SVT-HEVC/issues/632",
+"cwe_signatures": "789"
+}
+],
+"offcwe": [
+{
+"issue_url": "https://github.com/lacatoire/php-src/issues/2659",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/nasa/cFS/issues/1104",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/Keriew/augustus/issues/1207",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/rigel314/folderTail/issues/1",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/aliyun/iotkit-embedded/issues/174",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/eclipse-mosquitto/mosquitto/issues/3678",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/containers/fuse-overlayfs/issues/378",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/scratchfoundation/Scratch_1.4/issues/6",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/att/ast/issues/422",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/wesgarland/gpsee/issues/90",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/ZahiMATA/42_Cube3d/issues/16",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/shinagawa-web/tinytap/issues/214",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/seg-fault0/minishell/issues/14",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/airbus-cyber/aum/issues/14",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/nyacoubi00/Minishell/issues/7",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/sonertari/SSLproxy/issues/43",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/elastic/ebpf/issues/224",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/optiqor/kerno/issues/150",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/prelz/BLAH/issues/16",
+"search_theme": "RES-fd"
+},
+{
+"issue_url": "https://github.com/sassanp/pynetinfo/issues/1",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/westes/flex/issues/705",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/eclipse-paho/paho.mqtt.c/issues/1705",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/sustrik/libmill/issues/181",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/tedjp/ish/issues/1",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/i3/i3/issues/3278",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/h2o/h2o/issues/1525",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/signalwire/freeswitch/issues/1392",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/davitkalantaryan/xdr_rpc/issues/4",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/karlheyes/icecast-kh/issues/444",
+"search_theme": "RES-socket"
+},
+{
+"issue_url": "https://github.com/bvisness/flowshell/issues/3",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/bvisness/flowshell/issues/2",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/hardcoreerik/esp-rtl-sdr/issues/35",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/godsonhand/spserver/issues/40",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/tianairtian/spserver/issues/40",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/vijayyande/spserver/issues/40",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/DOCGroup/bugzilla/issues/1430",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/spsoft/spserver/issues/40",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/lubing521/spserver/issues/40",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/sniperdong/spserver/issues/40",
+"search_theme": "RES-handle"
+},
+{
+"issue_url": "https://github.com/FreeRTOS/FreeRTOS-Kernel/issues/1447",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/bdwgc/bdwgc/issues/978",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/zephyrproject-rtos/zephyr/issues/119905",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/eclipse-threadx/threadx/issues/757",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/icl-utk-edu/papi/issues/651",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/parrot/parrot/issues/915",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/Dormant1337/overseer-c/issues/8",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/PhantomGamesDevelopment/Galactic-2D/issues/17",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/eclipse-threadx/threadx/issues/752",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/ElliottSobek/Password-List-Generator/issues/21",
+"search_theme": "RES-thread"
+},
+{
+"issue_url": "https://github.com/cloudflare/workerd/issues/5665",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/sddm/sddm/issues/1158",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/mapcrafter/mapcrafter/issues/257",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/cms-sw/cmssw/issues/51449",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/amule-project/amule/issues/314",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/ggml-org/llama.cpp/issues/23635",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/microsoft/onnxruntime/issues/28231",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/qbittorrent/qBittorrent/issues/16442",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/kvcache-ai/Mooncake/issues/834",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/facebook/rocksdb/issues/4112",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/slaclab/virtual-accelerator-digital-twin/issues/8",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/sonic-net/sonic-buildimage/issues/28245",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/Qbit-Org/qbit-mining-bootstrap/issues/600",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/lgse/strata/issues/841",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/VoxLogicA-Project/VoxLogicA-2/issues/56",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/librosa/librosa/issues/2076",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/eduaguilera/whep/issues/777",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/lance-format/lance/issues/7242",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/unicitynetwork/ipfs-storage/issues/17",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/nfs-ganesha/nfs-ganesha/issues/630",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/NousResearch/hermes-agent/issues/62743",
+"search_theme": "GROWTH"
+},
+{
+"issue_url": "https://github.com/LINBIT/drbd/issues/134",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/RenukaSelvar/kernel_smp/issues/544",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/RenukaSelvar/kernel_smp/issues/408",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/RenukaSelvar/kernel_smp/issues/449",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/RenukaSelvar/kernel_smp/issues/407",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/AbrarKhan/Linux-4.19.72_CVE-2020-24490/issues/528",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/AbrarKhan/Linux-4.19.72_CVE-2020-24490/issues/428",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/AbrarKhan/Linux-4.19.72_CVE-2020-24490/issues/387",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/Electrostatics/apbs/issues/310",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/AbrarKhan/Linux-4.19.72_CVE-2020-24490/issues/386",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/tree-sitter/py-tree-sitter/issues/490",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/lericson/pylibmc/issues/312",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/lericson/pylibmc/issues/310",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/lericson/pylibmc/issues/308",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/lericson/pylibmc/issues/311",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/tree-sitter/py-tree-sitter/issues/492",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/sayamindu/pyhunspell/issues/4",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/jbzdak/pyhunspell/issues/4",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/ravynsoft/ravynos/issues/556",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/Vera-Firefly/Pojav-Glow-Worm/issues/435",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/wseemann/ServeStream/issues/17",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/Multy-io/Multy-Android/issues/95",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/openblack/openblack/issues/869",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/mozilla/mozjpeg/issues/460",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/s-u/rJava/issues/353",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/apache/carbondata/issues/4402",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/sleuthkit/sleuthkit/issues/3552",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/gridlab-d/gridlab-d/issues/1795",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/GaijinEntertainment/DagorEngine/issues/210",
+"search_theme": "REFCOUNT"
+},
+{
+"issue_url": "https://github.com/nothings/stb/issues/2002",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/libarchive/libarchive/issues/3623",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/gpac/gpac/issues/3867",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/saghul/txiki.js/issues/1078",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/gpac/gpac/issues/3874",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/saghul/txiki.js/issues/1095",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/pgmoneta/pgmoneta/issues/1299",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/michaelrsweet/mxml/issues/358",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/bellard/quickjs/issues/527",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/molru-1/Week5/issues/2",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/CGNS/CGNS/issues/978",
+"search_theme": "UAF"
+},
+{
+"issue_url": "https://github.com/molru-1/Week5/issues/19",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/CatIsApple/debugging_lab_docker/issues/9",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/YoonJinhoon/debugging_lab_docker/issues/9",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/Hyeonju-u/5-_debugging_lab_docker-Internal/issues/17",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/Pancheble/SW-AI-W05/issues/23",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/CatIsApple/debugging_lab_docker/issues/23",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/YoonJinhoon/data_structures_docker/issues/44",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/sikhesung/jungle-week4/issues/9",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/lvntky/nexus.c/issues/2",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/minjun0307/KRAFTON-JUNGLE-2/issues/9",
+"search_theme": "DOUBLEFREE"
+},
+{
+"issue_url": "https://github.com/souzjfe/TrucoInC/issues/1",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/opensensor/lightNVR/issues/587",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/open-watcom/open-watcom-v2/issues/1557",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/distcc/distcc/issues/476",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/distcc/distcc/issues/472",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/flang-compiler/flang/issues/1437",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/COVESA/dlt-daemon/issues/900",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/limasnursalim/Image-Compression/issues/1",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/spitzeqc/dragon-compiler/issues/2",
+"search_theme": "HEAPCORRUPT"
+},
+{
+"issue_url": "https://github.com/leochien1110/rs-voxelmap-glvisualizer/issues/3",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/microsoft/CNTK/issues/3778",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/dmlc/decord/issues/27",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/triton-inference-server/onnxruntime_backend/issues/268",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/apache/mxnet/issues/20315",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/mitsuba-renderer/mitsuba2/issues/294",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/openxla/xla/issues/36487",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/apache/mxnet/issues/20959",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/triton-inference-server/onnxruntime_backend/issues/198",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/CanReader/SleakEngine/issues/157",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/L0932/ForgeSim/issues/17",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/shader-slang/slangpy/issues/115",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/Nemirtingas/ingame_overlay/issues/77",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/android/ndk-samples/issues/1172",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/gazebosim/gz-sim/issues/2873",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/ofpisnotdead-com/CWR-CE/issues/167",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/cemu-project/Cemu/issues/1176",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/Almamu/linux-wallpaperengine/issues/423",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/pmartz/jag-3d/issues/3",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/zen-browser/desktop/issues/8932",
+"search_theme": "GPU"
+},
+{
+"issue_url": "https://github.com/Bumblebee-Project/Bumblebee/issues/1078",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/openbmc/linux/issues/188",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/openwrt/mt76/issues/932",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/o11s/open80211s/issues/38",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/RVCK-Project/rvck/issues/209",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/openbmc/linux/issues/189",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/multipath-tcp/mptcp_net-next/issues/583",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/abrt/abrt/issues/578",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/RVCK-Project/rvck/issues/208",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/teemtee/tmt/issues/3245",
+"search_theme": "KERNEL"
+},
+{
+"issue_url": "https://github.com/eclipse-threadx/threadx/issues/764",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/freeunitorg/freeunit/issues/343",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/nginx/njs/issues/1099",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/krakjoe/pthreads/issues/875",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/zfogg/ascii-chat/issues/35",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/signalwire/freeswitch/issues/2533",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/signalwire/freeswitch/issues/3132",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/DLTcollab/dcurl/issues/20",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/universal-ctags/ctags/issues/90",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/GUI/nginx-upstream-dynamic-servers/issues/39",
+"search_theme": "POOL"
+},
+{
+"issue_url": "https://github.com/libsndfile/libsndfile/issues/1169",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/madolson/valkey-agents/issues/29",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/lilyyapinglang/cub3d/issues/19",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/documentdb/documentdb/issues/369",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/OpenVisualCloud/SVT-VP9/issues/122",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/jnz/q3vm/issues/33",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/Kray-G/kinx/issues/159",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/rizinorg/rizin/issues/5509",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/awmc000/readability/issues/1",
+"search_theme": "UNINIT"
+},
+{
+"issue_url": "https://github.com/snoweye/MixSim/issues/1",
+"search_theme": "UNINIT"
+}
+]
+}

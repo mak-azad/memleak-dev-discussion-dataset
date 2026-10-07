@@ -1,0 +1,49 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 73972782,
+ "url": "https://stackoverflow.com/questions/73972782/returning-a-struct-containing-a-pointer-to-the-first-element-of-an-array",
+ "title": "Returning a struct containing a pointer to the first element of an array",
+ "tags": [
+  "c",
+  "struct"
+ ],
+ "score": 1,
+ "view_count": 73,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 73973037,
+ "created_utc": "2022-10-06T11:08:00Z",
+ "last_activity_utc": "2022-10-06T11:45:39Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 7526042,
+ "author_display_name": "henriman",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/73972782/returning-a-struct-containing-a-pointer-to-the-first-element-of-an-array",
+ "body_html": "<p>Running this code</p>\n<pre><code>#include &lt;stdlib.h&gt;\n#include &lt;stdio.h&gt;\n\nchar* f() {\n    char s[] = &quot;Hello, world!&quot;;\n    return s;\n}\n\nint main() {\n    printf(&quot;%s&quot;, f());\n    return 0;\n}\n</code></pre>\n<p>prints <code>(null)</code>. This makes sense to me: The <code>char</code> array is valid only in the scope of <code>f</code>, so the pointer returned is not valid. However, if I create a struct containing the pointer to the array</p>\n<pre><code>#include &lt;stdlib.h&gt;\n#include &lt;stdio.h&gt;\n\ntypedef struct word {\n    char* str;\n} word;\n\nword f() {\n    char str[] = &quot;Hello, world!&quot;;\n    return (word) { str };\n}\n\nint main() {\n    printf(&quot;%s&quot;, f().str);\n    return 0;\n}\n</code></pre>\n<p>this will now &quot;work&quot;, i. e. it will print <code>Hello, world!</code>.</p>\n<p>Now I am wondering why it does; shouldn't the pointer here be invalid too, because the array it points to was created in <code>f</code> and is thus not valid anymore? Or is this just undefined behavior and I got &quot;lucky&quot; that nothing else was pushed onto the stack at that location? Or is there a mistake in my reasoning (I am rather new to C).</p>\n<p>I haven't been able to find information on this specific behavior, only for structs containing arrays of constant size. I have tested this using <code>gcc</code> version <code>9.4.0</code> (which uses <code>gnu11</code> &quot;standard&quot; as default). I would appreciate if anyone could point me to the explanation of this behavior.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 73973037,
+   "parent_id": 73972782,
+   "author_user_id": 12149471,
+   "author_display_name": "Andreas Wenzel",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/73973037",
+   "score": 1,
+   "created_utc": "2022-10-06T11:28:40Z",
+   "last_edit_utc": "2022-10-06T11:45:39Z",
+   "last_activity_utc": "2022-10-06T11:45:39Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<blockquote>\n<p>Or is this just undefined behavior and I got &quot;lucky&quot; that nothing else was pushed onto the stack at that location?</p>\n</blockquote>\n<p>That is correct. The line</p>\n<pre><code>printf(&quot;%s&quot;, f().str);\n</code></pre>\n<p>will invoke undefined behavior by dereferencing a <a href=\"https://en.wikipedia.org/wiki/Dangling_pointer\" rel=\"nofollow noreferrer\">dangling pointer</a>. This means that anything may happen; your program may crash or it may appear to work as intended.</p>\n<p>The compiler clang is actually able to detect this error at run-time, if you compile with <code>-fsanitize=address</code>. <a href=\"https://godbolt.org/z/PPna7MG8M\" rel=\"nofollow noreferrer\">Here</a> is an online demonstration.</p>\n<p>For further explanation, you may want to read <a href=\"https://stackoverflow.com/a/6445794/12149471\">this answer to a similar C++ question</a>, which contains an interesting analogy. Most of the information in the answer also applies to C.</p>\n"
+  }
+ ]
+}

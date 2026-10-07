@@ -1,0 +1,85 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/pnggroup/libpng/issues/429",
+ "passes": [
+  "main"
+ ],
+ "title": "Exceptions when linking release libpng (1.6.38) against debug application build in MSVC 2019",
+ "author_login": "mystery-keeper",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:23Z",
+ "final_url": "https://github.com/pnggroup/libpng/issues/429",
+ "repo": "pnggroup/libpng",
+ "repo_language": "C",
+ "number": 429,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-08-26T11:40:39Z",
+ "updated_at": "2024-09-28T22:13:32Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 4,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mystery-keeper",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-08-26T11:40:39Z",
+   "updated_utc": "2024-09-28T22:13:32Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/429",
+   "body_markdown": "When I link the release version of libpng to debug build of my application and try to write a file - I get runtime heap-related asserts and exceptions.\r\n\r\nIt only happens after the png_write_info() call. If if comment it - I get a malformed file, but no runtime errors.\r\nWhen I fclose() - I get \"Debug assertion failed: _CrtIsValidHeapPointer(block)\"\r\nAnd if I comment fclose() - I get an exception when application calls fcloseall() on completion.\r\n\r\nLinking debug against debug or release against release works fine."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1233440666,
+   "author_login": "SamB",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-08-31T21:29:52Z",
+   "updated_utc": "2022-08-31T21:29:52Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/429#issuecomment-1233440666",
+   "body_markdown": "I think you should read [Allocating and freeing memory across module boundaries](https://devblogs.microsoft.com/oldnewthing/20060915-04/?p=29723), and note that even if both modules are using the same CRT DLL, [debug builds will end up calling different heap functions](https://docs.microsoft.com/en-us/visualstudio/debugger/debug-versions-of-heap-allocation-functions?view=vs-2022).\r\n\r\n<https://docs.microsoft.com/en-us/cpp/c-runtime-library/potential-errors-passing-crt-objects-across-dll-boundaries> may also be relevant, especially since you also mention `fclose()`.\r\n\r\n<s>However, I'm a bit puzzled as the libz/libpng APIs were designed with this kind of issue in mind</s> ... oh wait, are you using the `png_image_write_to_stdio()` function? That'll totally cause such issues.\r\n\r\nP.S. Looking at the README in <https://github.com/glennrp/libpng/tree/libpng16/projects/vstudio>, it seems that debug builds aren't particularly well-supported.\r\n\r\nTL;DR: don't try to mix-and-match Release and Debug builds unless you know what you're doing."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1233448503,
+   "author_login": "mystery-keeper",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-08-31T21:41:15Z",
+   "updated_utc": "2022-08-31T21:41:41Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/429#issuecomment-1233448503",
+   "body_markdown": "> oh wait, are you using the `png_image_write_to_stdio()` function? That'll totally cause such issues.\r\n\r\nNot explicitly. But I do use `png_init_io(pPngStruct, a_pFile);`\r\nSo, it's using FILE * across runtimes that's causing the problem?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1329153824,
+   "author_login": "jbowler",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-11-28T13:58:40Z",
+   "updated_utc": "2022-11-28T13:58:40Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/429#issuecomment-1329153824",
+   "body_markdown": "> Not explicitly. But I do use `png_init_io(pPngStruct, a_pFile);`\r\n> So, it's using FILE * across runtimes that's causing the problem?\r\n\r\nIRC that's a crasher; msvcrt.dll and msvcrtd.dll (or whatever they are called) have very different FILE structures.  You need to implement your own memory and IO callbacks so that the same runtime DLL is used to create, destroy and, in the case of files reads/write the memory and file.\r\n\r\nYou also need to implement your own longjmp callback, or an error handler to avoid longjmp.\r\n\r\nOr you could just build everything for release; that's what I always did, I don't see the point of special debug builds."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2381008566,
+   "author_login": "jbowler",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-09-28T22:13:31Z",
+   "updated_utc": "2024-09-28T22:13:31Z",
+   "permalink": "https://github.com/pnggroup/libpng/issues/429#issuecomment-2381008566",
+   "body_markdown": "@ctruta: one of the [libpng18] FILE* issues (i.e. one of several issues that report the same problem.)\r\n\r\nFix is easy with an ABI change, as discussed in another issue... somewhere."
+  }
+ ]
+}

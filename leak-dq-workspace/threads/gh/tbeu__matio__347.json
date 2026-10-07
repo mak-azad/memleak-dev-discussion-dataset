@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/tbeu/matio/issues/347",
+ "passes": [
+  "main"
+ ],
+ "title": "allocation-size-too-big in InflateRankDims via ReadNextStructField",
+ "author_login": "kingkingkingson",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:13Z",
+ "final_url": "https://github.com/tbeu/matio/issues/347",
+ "repo": "tbeu/matio",
+ "repo_language": "C",
+ "number": 347,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-13T05:55:41Z",
+ "updated_at": "2026-09-13T05:55:41Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "kingkingkingson",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-13T05:55:41Z",
+   "updated_utc": "2026-09-13T05:55:41Z",
+   "permalink": "https://github.com/tbeu/matio/issues/347",
+   "body_markdown": "## Summary\n\n`matdump -d` on a crafted compressed MAT5 struct asks `InflateRankDims` to `calloc` a file-controlled rank (`0x1ffffffc0` bytes). AddressSanitizer aborts with `allocation-size-too-big`. The rank comes from the zlib-compressed struct field header in `ReadNextStructField` and is not capped before the allocation.\n\n## Affected version\n\n- Repository: https://github.com/tbeu/matio\n- Version: **1.6.0** (cloned `master` HEAD)\n- Branch: `master`\n- Commit: `b1355a2b4532766d04eafa00299168c76fcf452f`\n- CWE: CWE-770 / CWE-400\n- Error class: **allocation-size-too-big**\n- Site: `InflateRankDims / src/inflate.c:220 ← ReadNextStructField / src/mat5.c:1736`\n\n## Build\n\nNeed HDF5 + zlib so `matdump` can read compressed MAT5. AddressSanitizer with `allocator_may_return_null=0` (default abort) makes the oversized `calloc` visible. The hitting input is stored as `input.sav` but is fed to `matdump` as a MAT file.\n\n```bash\nsudo apt-get install -y cmake gcc libhdf5-dev zlib1g-dev\ngit clone https://github.com/tbeu/matio.git && cd matio\ngit checkout b1355a2b4532766d04eafa00299168c76fcf452f\n\ncmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo \\\n  -DCMAKE_INSTALL_PREFIX=\"$PWD/install\" \\\n  -DCMAKE_C_FLAGS=\"-fsanitize=address,undefined -fno-omit-frame-pointer -g\" \\\n  -DCMAKE_EXE_LINKER_FLAGS=\"-fsanitize=address,undefined\" \\\n  -DCMAKE_SHARED_LINKER_FLAGS=\"-fsanitize=address,undefined\"\ncmake --build build --parallel\ncmake --install build\n```\n\n## Reproduce\n\n```bash\nexport PREFIX=\"$PWD/install\"\nexport ASAN_OPTIONS=\"allocator_may_return_null=0:max_allocation_size_mb=256:detect_leaks=0\"\n\n\"$PREFIX/bin/matdump\" -d input.sav\n```\n\nExpected: `SUMMARY: AddressSanitizer: allocation-size-too-big` in `__interceptor_calloc`, stack through `InflateRankDims` ← `ReadNextStructField`.\n\n## Sanitizer evidence\n\n```\n==953==ERROR: AddressSanitizer: requested allocation size 0x1ffffffc0 (0x200000fc0 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000 (thread T0)\n    #0 0x7f156b244a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x7f156ab77b13 in InflateRankDims /src/matio/src/inflate.c:220\n    #2 0x7f156ac4ee7f in ReadNextStructField /src/matio/src/mat5.c:1736\n    #3 0x7f156ac6d8c2 in Mat_VarReadNextInfo5 /src/matio/src/mat5.c:6628\n    #4 0x7f156ab70893 in Mat_VarReadNextPredicate /src/matio/src/mat.c:3063\n    #5 0x55a9fd5e1db5 in main /src/matio/tools/matdump.c:1883\n\n==953==HINT: if you don't care about these errors you may set allocator_may_return_null=1\nSUMMARY: AddressSanitizer: allocation-size-too-big ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154 in __interceptor_calloc\n```\n\n## Suggested fix\n\nIn `InflateRankDims` / `ReadNextStructField`, reject file-controlled `rank` values that cannot produce a reasonable `dims` allocation (the function already has a `rank > 13` check on some paths; apply a similar bound before `calloc`).\n\n[input.sav.zip](https://github.com/user-attachments/files/32155545/input.sav.zip)"
+  }
+ ]
+}

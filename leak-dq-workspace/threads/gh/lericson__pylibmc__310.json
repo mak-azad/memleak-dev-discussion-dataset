@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lericson/pylibmc/issues/310",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "`val` dict leak in `_PylibMC_AddServerCallback()` when stat keys fetch fails",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:48Z",
+ "final_url": "https://github.com/lericson/pylibmc/issues/310",
+ "repo": "lericson/pylibmc",
+ "repo_language": "C",
+ "number": 310,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-02T13:00:52Z",
+ "updated_at": "2026-08-02T13:00:52Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-02T13:00:52Z",
+   "updated_utc": "2026-08-02T13:00:52Z",
+   "permalink": "https://github.com/lericson/pylibmc/issues/310",
+   "body_markdown": "There is reference leak in `_PylibMC_AddServerCallback()`. The `val` dict is created before `memcached_stat_get_keys()`, and the failure path returns without releasing it.\n\nFile: `src/_pylibmcmodule.c`\n\nFunction: `_PylibMC_AddServerCallback`\n\nRelevant code:\n\n```c\nif ((val = PyDict_New()) == NULL)\n    return MEMCACHED_FAILURE;\n\nstat_keys = memcached_stat_get_keys(mc, stat, &rc);\nif (rc != MEMCACHED_SUCCESS)\n    return rc;                  // leaks val\n```\n\n`PyDict_New()` returns a new reference. If `memcached_stat_get_keys()` reports a failure, the function returns `rc` directly without `Py_DECREF(val)`, leaking the dict. Unlike allocation-failure paths, this is reachable on an ordinary runtime memcached error (e.g. a server stat request failing), so it can recur.\n\nSuggested fix:\n\n```c\nstat_keys = memcached_stat_get_keys(mc, stat, &rc);\nif (rc != MEMCACHED_SUCCESS) {\n    Py_DECREF(val);\n    return rc;\n}\n```\n"
+  }
+ ]
+}

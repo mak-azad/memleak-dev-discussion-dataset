@@ -1,0 +1,33 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 48861544,
+ "url": "https://stackoverflow.com/questions/48861544/is-there-any-way-to-name-mempools-in-valgrind-memcheck",
+ "title": "Is there any way to name mempools in valgrind memcheck?",
+ "tags": [
+  "c",
+  "postgresql",
+  "valgrind",
+  "memcheck"
+ ],
+ "score": 5,
+ "view_count": 176,
+ "answer_count": 0,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2018-02-19T07:46:32Z",
+ "last_activity_utc": "2018-02-19T08:33:14Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 398670,
+ "author_display_name": "Craig Ringer",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/48861544/is-there-any-way-to-name-mempools-in-valgrind-memcheck",
+ "body_html": "<p>PostgreSQL makes heavy use of memory pools and, when Valgrind is enabled, supplies information about them to Valgrind using <code>VALGRIND_CREATE_MEMPOOL</code> etc.</p>\n\n<p>Combined with incremental leak checking using client-requests like <code>VALGRIND_DO_LEAK_CHECK</code> and <code>VALGRIND_DO_ADDED_LEAK_CHECK</code> this is really useful for keeping track of memory use in a large, complex and long-lived program.</p>\n\n<p>But: PostgreSQL has lots of caches whose lifetimes tend to span typical boundaries like transactions. It's generally fine for memory in such caches to appear to leak (for various reasons), but not always easy to identify if such memory is allocated in a cache context using only the stack.</p>\n\n<p>So I'm looking for a way to show memory pool <em>names</em> in leak reports and filter on them in suppressions. Ideally something like</p>\n\n<pre><code># Do not copy, this DOES NOT WORK\n{\n   my_suppression_name\n   Memcheck:Leak\n   match-leak-kinds: reachable\n   pool:CacheMemoryContext           # &lt;---- something like this\n   fun:malloc\n   fun:AllocSetAlloc\n   fun:palloc\n   fun:initStringInfo\n   fun:apply_work\n   ...\n}\n</code></pre>\n\n<p>or in leak reports, like this:</p>\n\n<pre><code>... 6 (+6) bytes in 1 (+1) blocks are possibly lost in loss record 180 of 942\n...    in mempool \"CacheMemoryContext\"                   &lt;---- Like this\n...    at 0x815FFC: MemoryContextAlloc (mcxt.c:771)\n...    by 0x817680: MemoryContextStrdup (mcxt.c:1157)\n</code></pre>\n\n<p>I suspect the answer is \"no\" since the interface for registering Valgrind mempools doesn't seem to make any reference to names. PostgreSQL's mempools have names embedded in their header blocks so it'd just be a matter of teaching Valgrind what byte-range was the pool name.</p>\n\n<p>Am I missing something or is this just not possible right now?</p>\n\n<p>A viable alternative might be program-callbacks to filter leak check reports or add annotation info to them. But again I don't see anything in Valgrind that suggests this is possible.</p>\n\n<p>It seems like something others would've wanted, so maybe I'm just not seeing the way to do it.</p>\n\n<p>Context: I suspect that somewhere an allocation should be in a cache, but it's being allocated in PostgreSQL's <code>TopMemoryContext</code> instead. So it's outliving the cache it should be destroyed as part of.</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": []
+}

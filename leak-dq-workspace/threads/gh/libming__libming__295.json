@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/libming/libming/issues/295",
+ "passes": [
+  "main"
+ ],
+ "title": " Allocation-size-too-big in parseSWF_DEFINESOUND",
+ "author_login": "pip-izony",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:17Z",
+ "final_url": "https://github.com/libming/libming/issues/295",
+ "repo": "libming/libming",
+ "repo_language": "C",
+ "number": 295,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-12-11T07:28:35Z",
+ "updated_at": "2023-12-11T07:30:50Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "pip-izony",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-12-11T07:28:35Z",
+   "updated_utc": "2023-12-11T07:30:50Z",
+   "permalink": "https://github.com/libming/libming/issues/295",
+   "body_markdown": "## Environment\r\nUbuntu 22.04.3 LTS\r\n## Compiler\r\nclang version 11.0.0\r\nTarget: x86_64-unknown-linux-gnu\r\nThread model: posix\r\n## Step to reproduce\r\n```cd libming \r\n./autogen.sh\r\n./configure --disable-shared --disable-freetype\r\ncd util\r\n./swftophp <PoC file>\r\n```\r\n## Contents of PoC file\r\n```\r\nUnzip the file below.\r\n```\r\n[PoC.zip](https://github.com/libming/libming/files/13632176/PoC.zip)\r\n## Expected behavior \r\nPrint error or warning messages handled within swftophp.\r\n## Current behavior\r\n```\r\nheader indicates a filesize of 5226 but filesize is 3456\r\n<?php\r\n$m = new SWFMovie(10);\r\n\r\nming_setscale(1.0);\r\n$m->setRate(170.679688);\r\n$m->setDimension(7451, 20678);\r\n\r\n/* Note: xMin and/or yMin are not 0! */\r\n\r\n$m->setFrames(43582);\r\n/*Unknown block type 577*/\r\n/*Unknown block type 501*/\r\n/*Unknown block type 172*/\r\n/*Unknown block type 488*/\r\n/*Unknown block type 853*/\r\n/*Unknown block type 396*/\r\n/*Unknown block type 378*/\r\n/*Unknown block type 309*/\r\n/*Unknown block type 491*/\r\n/*Unknown block type 243*/\r\n/*Unknown block type 364*/\r\n/*Unknown block type 882*/\r\n/*Unknown block type 453*/\r\n/*Unknown block type 833*/\r\n/*Unknown block type 251*/\r\n/*Unknown block type 293*/\r\n/*Unknown block type 244*/\r\n/*Unknown block type 211*/\r\n/*Unknown block type 813*/\r\n/*Unknown block type 861*/\r\n/*Unknown block type 124*/\r\n/*Unknown block type 919*/\r\n/*Unknown block type 175*/\r\n/*Unknown block type 130*/\r\n/*Unknown block type 543*/\r\n/*Unknown block type 954*/\r\n/*Unknown block type 563*/\r\n/*Unknown block type 273*/\r\n/*Unknown block type 742*/\r\n/*Unknown block type 948*/\r\n/*Unknown block type 161*/\r\n/*Unknown block type 459*/\r\n/*Unknown block type 718*/\r\n/*Unknown block type 217*/\r\n/*Unknown block type 461*/\r\n/*Unknown block type 287*/\r\n/*Unknown block type 488*/\r\n/*Unknown block type 96*/\r\n/*Unknown block type 457*/\r\n Stream out of sync after parse of blocktype 33 (SWF_DEFINETEXT2). 1724 but expecting 1477.\r\n\r\n/* SWF_DEFINETEXT2 */\r\n$character4721 = new SWFText(2);\r\n$character4721->moveTo(0, -22963);\r\noutputSWF_TEXT_RECORD: can't process text record: fonts information list is NULL\r\n$character4721->addString(\"X\");\r\n=================================================================\r\n==1320393==ERROR: AddressSanitizer: requested allocation size 0xfffffffffffffffb (0x800 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000000 (thread T0)\r\n    #0 0x7fe4d24b4887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\r\n    #1 0x55bf19bbff17 in readBytes (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x57f17)\r\n    #2 0x55bf19bb8f74 in parseSWF_DEFINESOUND (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x50f74)\r\n    #3 0x55bf19b8aee4 in blockParse (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x22ee4)\r\n    #4 0x55bf19b8a3ca in readMovie (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x223ca)\r\n    #5 0x55bf19b8ac3d in main (/home/smb8508/Desktop/work_space/debuging/libming/util/swftophp+0x22c3d)\r\n    #6 0x7fe4d2029d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58\r\n\r\n==1320393==HINT: if you don't care about these errors you may set allocator_may_return_null=1\r\nSUMMARY: AddressSanitizer: allocation-size-too-big ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145 in __interceptor_malloc\r\n==1320393==ABORTING\r\n```"
+  }
+ ]
+}

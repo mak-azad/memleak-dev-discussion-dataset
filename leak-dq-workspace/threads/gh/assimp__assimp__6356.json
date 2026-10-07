@@ -1,0 +1,69 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/assimp/assimp/issues/6356",
+ "passes": [
+  "main"
+ ],
+ "title": "Bug: Allocation-Size-Too-Big Error in Q3DImporter::InternReadFile",
+ "author_login": "ahuo1",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:14Z",
+ "final_url": "https://github.com/assimp/assimp/issues/6356",
+ "repo": "assimp/assimp",
+ "repo_language": "C++",
+ "number": 6356,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-09-18T13:39:01Z",
+ "updated_at": "2026-06-23T04:34:36Z",
+ "closed_at": null,
+ "labels": [
+  "Bug",
+  "Fuzzer",
+  "Security Risk",
+  "Sanitizer",
+  "Q3D"
+ ],
+ "comments_reported": 2,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "ahuo1",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-09-18T13:39:01Z",
+   "updated_utc": "2026-06-23T04:34:36Z",
+   "permalink": "https://github.com/assimp/assimp/issues/6356",
+   "body_markdown": "## Environment\n- OS: Ubuntu 22.04\n- Compiler: clang 13.0.1\n- C++ Standard: C++17\n- Sanitizers: AddressSanitizer (ASan) + UndefinedBehaviorSanitizer (UBSan)\n- Assimp Version: 6.0.2 / master commit [0581ed5](https://github.com/assimp/assimp/commit/0581ed5f114ebea8654d3ce16cd5b64f59b8c7b3)\n\n## Build Instructions\n```\nexport CC=clang-13\nexport CXX=clang++-13\nexport CFLAGS=\"${CFLAGS} -fsanitize=address -O1 -g\"\nexport CXXFLAGS=\"${CXXFLAGS} -fsanitize=address -O1 -g\"\nexport LDFLAGS=\"${LDFLAGS} -fsanitize=address\"\n\nexport LIB_FUZZING_ENGINE=\"-fsanitize=fuzzer\"\n\ncmake CMakeLists.txt -G \"Ninja\" -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON \\\n                                -DASSIMP_BUILD_TESTS=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \\\n                                -DASSIMP_BUILD_SAMPLES=OFF\ncmake --build .\n\n$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I./include \\\n        fuzz/assimp_fuzzer.cc -o ./assimp_fuzzer  \\\n        ./lib/libassimp.a ./contrib/zlib/libzlibstatic.a\n```\n\n## Reproduction\nRun the fuzzer with a crafted input file:\n```\n./assimp_fuzzer poc\n```\n\n## Observed Behavior\nProgram crashes with ASan/UBSan report:\n\n```\n==1959368==ERROR: AddressSanitizer: requested allocation size 0x1c1b04999f0 (0x1c1b049a9f0 after adjustments for alignment, red zones etc.) exceeds maximum supported size of 0x10000000000 (thread T0)\n    #0 0x519efd in operator new(unsigned long) (/assimp_fuzzer+0x519efd)\n    #1 0x1489ccc in __gnu_cxx::new_allocator<Assimp::Q3DImporter::Material>::allocate(unsigned long, void const*) /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/new_allocator.h:127:27\n    #2 0x1489ccc in std::allocator_traits<std::allocator<Assimp::Q3DImporter::Material> >::allocate(std::allocator<Assimp::Q3DImporter::Material>&, unsigned long) /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/alloc_traits.h:464:20\n    #3 0x1489ccc in std::_Vector_base<Assimp::Q3DImporter::Material, std::allocator<Assimp::Q3DImporter::Material> >::_M_allocate(unsigned long) /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/stl_vector.h:346:20\n    #4 0x1489ccc in Assimp::Q3DImporter::Material* std::vector<Assimp::Q3DImporter::Material, std::allocator<Assimp::Q3DImporter::Material> >::_M_allocate_and_copy<Assimp::Q3DImporter::Material const*>(unsigned long, Assimp::Q3DImporter::Material const*, Assimp::Q3DImporter::Material const*) /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/stl_vector.h:1511:29\n    #5 0x957941 in Assimp::BaseImporter::ReadFile(Assimp::Importer*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Assimp::IOSystem*) /root/assimp/code/Common/BaseImporter.cpp:131:9\n    #6 0x522c01 in Assimp::Importer::ReadFile(char const*, unsigned int) /root/assimp/code/Common/Importer.cpp:709:30\n    #7 0x52082b in Assimp::Importer::ReadFileFromMemory(void const*, unsigned long, unsigned int, char const*) /root/assimp/code/Common/Importer.cpp:507:9\n    #8 0x51c8ba in LLVMFuzzerTestOneInput /root/assimp/fuzz/assimp_fuzzer.cc:57:34\n    ...\n```\n\n## Root Cause Analysis\nhttps://github.com/assimp/assimp/blob/0581ed5f114ebea8654d3ce16cd5b64f59b8c7b3/code/AssetLib/Q3D/Q3DLoader.cpp#L122-L133\nThe crash occurs in the Q3DImporter::InternReadFile function, where the importer reads the number of materials (numMats) directly from the input file without validation. This value is then used in a call to materials.reserve(numMats) and later in a loop with materials.emplace_back(). Since numMats is attacker-controlled, a malicious file can specify an extremely large value, leading the program to request an allocation far exceeding addressable memory. This results in an allocation-size-too-big error under ASan and causes the process to terminate.\n\n\nThe attached file contains a proof-of-concept.\n[poc.zip](https://github.com/user-attachments/files/22407575/poc.zip)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3369234100,
+   "author_login": "carnil",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-10-05T18:20:58Z",
+   "updated_utc": "2025-10-05T18:20:58Z",
+   "permalink": "https://github.com/assimp/assimp/issues/6356#issuecomment-3369234100",
+   "body_markdown": "CVE-2025-11274 seems to have been assigned for this issue."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3675353198,
+   "author_login": "BrannonKing",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-12-19T14:50:15Z",
+   "updated_utc": "2025-12-19T14:50:15Z",
+   "permalink": "https://github.com/assimp/assimp/issues/6356#issuecomment-3675353198",
+   "body_markdown": "What if they put in a negative number? The casting there will turn that into a very large number."
+  }
+ ]
+}

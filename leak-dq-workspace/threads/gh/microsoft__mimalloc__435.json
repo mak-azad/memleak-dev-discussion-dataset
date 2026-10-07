@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/microsoft/mimalloc/issues/435",
+ "passes": [
+  "main"
+ ],
+ "title": "IOS crash --- \"pointer being freed was not allocated\"",
+ "author_login": "gaxlin",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:58Z",
+ "final_url": "https://github.com/microsoft/mimalloc/issues/435",
+ "repo": "microsoft/mimalloc",
+ "repo_language": "C",
+ "number": 435,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-07-05T09:11:35Z",
+ "updated_at": "2021-07-05T09:17:37Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "gaxlin",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-07-05T09:11:35Z",
+   "updated_utc": "2021-07-05T09:17:37Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/435",
+   "body_markdown": "\r\n![image](https://user-images.githubusercontent.com/1112308/124447160-b0cc5e00-ddb3-11eb-87b4-325853d13ecf.png)\r\n\r\nmalloc: *** error for object 0x106890000: pointer being freed was not allocated\r\n(3874,0x103cfb880) malloc: *** set a breakpoint in malloc_error_break to debug\r\n\r\nbut it would be ok if I do not link the mimalloc "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 873949255,
+   "author_login": "gaxlin",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-07-05T09:15:03Z",
+   "updated_utc": "2021-07-05T09:15:03Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/435#issuecomment-873949255",
+   "body_markdown": "what i use here is just some stl string operation, return a string"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 873951535,
+   "author_login": "gaxlin",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-07-05T09:17:37Z",
+   "updated_utc": "2021-07-05T09:17:37Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/435#issuecomment-873951535",
+   "body_markdown": "\r\nstd::string get_file_path()\r\n{\r\n\treturn str_format(get_dir(true) + \"/data.conf\");\r\n}"
+  }
+ ]
+}

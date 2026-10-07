@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Vera-Firefly/Pojav-Glow-Worm/issues/435",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[BUG] JNI local reference leak in nativeMoveWindow",
+ "author_login": "QiuYucheng2003",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:52Z",
+ "final_url": "https://github.com/Vera-Firefly/Pojav-Glow-Worm/issues/435",
+ "repo": "Vera-Firefly/Pojav-Glow-Worm",
+ "repo_language": "C",
+ "number": 435,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-21T04:13:28Z",
+ "updated_at": "2026-09-21T04:13:28Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "QiuYucheng2003",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-21T04:13:28Z",
+   "updated_utc": "2026-09-21T04:13:28Z",
+   "permalink": "https://github.com/Vera-Firefly/Pojav-Glow-Worm/issues/435",
+   "body_markdown": "### Describe the bug\n\nAWTInputBridge.nativeMoveWindow leaks one JNI local reference per AWT Frame on every window move.\n\nIn app/src/main/jni/pojav/awt_bridge.c, the loop calls Component.getBounds(Rectangle) via CallObjectMethod and discards the return value. That call still creates a new local reference, even when Java returns the same rectangle object. frame is deleted; the getBounds return is not.\n\nThese JNI calls use the cached runtimeJNIEnvPtr_INPUT (JRE VM), which is attached once and never detached. Returning to Android Java only frees local refs on the Android JNIEnv, not on this cached env. Repeated window moves therefore accumulate local refs on the JRE thread and can hit local reference table overflow (max=512).\n\nCode:\napp/src/main/jni/pojav/awt_bridge.c\n\njobject frame = (*runtimeJNIEnvPtr_INPUT)->GetObjectArrayElement(..., frames, i);\n(*runtimeJNIEnvPtr_INPUT)->CallObjectMethod(..., frame, method_GetBounds, rectangle); // return value leaked\n...\n(*runtimeJNIEnvPtr_INPUT)->DeleteLocalRef(..., frame); // only frame is deleted\n\n\n### The log file and images/videos\n\nN/A. \n\nThis is a source-level JNI defect; it does not require a latestlog.txt from a specific crash. The leak is visible in nativeMoveWindow as written.\n\n\n\n### Steps To Reproduce\n\n```markdown\n1. Launch a Java GUI / AWT session that uses `AWTInputBridge`.\n2. Move the AWT window (this calls `nativeMoveWindow`).\n3. Repeat. Each call leaks 1 local ref per Frame on `runtimeJNIEnvPtr_INPUT`.\n```\n\n### Expected Behavior\n\nEvery local reference created in the loop should be deleted before the next iteration. After getBounds, the returned jobject must be DeleteLocalRef'd. The cached JRE JNIEnv must not grow local refs across window-move calls.\n\n\n\n### Platform\n\n```markdown\n- Device model: N/A (source-level, not device-specific)\n- CPU architecture: N/A\n- Android version: N/A\n- PojavLauncher version: present in 617c16bb (`app/src/main/jni/pojav/awt_bridge.c`)\n```\n\n### Anything else?\n\nSuggested fix:\n\njobject bounds = (*runtimeJNIEnvPtr_INPUT)->CallObjectMethod(\n    runtimeJNIEnvPtr_INPUT, frame, method_GetBounds, rectangle);\n(*runtimeJNIEnvPtr_INPUT)->SetIntField(...);\n(*runtimeJNIEnvPtr_INPUT)->SetIntField(...);\n(*runtimeJNIEnvPtr_INPUT)->CallVoidMethod(..., frame, method_SetBounds, rectangle);\nif (bounds)\n    (*runtimeJNIEnvPtr_INPUT)->DeleteLocalRef(runtimeJNIEnvPtr_INPUT, bounds);\n(*runtimeJNIEnvPtr_INPUT)->DeleteLocalRef(runtimeJNIEnvPtr_INPUT, frame);\n\nbounds and rectangle may be the same Java object, but they are two local-ref slots. Deleting bounds does not invalidate rectangle."
+  }
+ ]
+}

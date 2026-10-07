@@ -1,0 +1,54 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/sonic-net/sonic-buildimage/issues/28696",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak on realloc failure in iccp_cmd_show.c - 8 identical instances",
+ "author_login": "dhruthan",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:42Z",
+ "final_url": "https://github.com/sonic-net/sonic-buildimage/issues/28696",
+ "repo": "sonic-net/sonic-buildimage",
+ "repo_language": "C",
+ "number": 28696,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-30T01:04:19Z",
+ "updated_at": "2026-08-12T15:35:36Z",
+ "closed_at": null,
+ "labels": [
+  "Bug :bug:",
+  "Security :shield:"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "dhruthan",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-30T01:04:19Z",
+   "updated_utc": "2026-08-12T15:35:36Z",
+   "permalink": "https://github.com/sonic-net/sonic-buildimage/issues/28696",
+   "body_markdown": "### Is it platform specific\n\ngeneric\n\n### Importance or Severity\n\nMedium\n\n### Description of the bug\n\nEight dump functions in `src/iccpd/src/iccp_cmd_show.c` use the classic unsafe realloc\npattern where the return value of realloc is assigned directly to the same pointer.\nIf realloc fails and returns NULL, the original pointer is overwritten and the previously\nallocated memory is permanently leaked.\n\nVulnerable pattern (line 138, repeated at 203, 268, 335, 487, 596, 680, 804):\n```c\nstate_buf = (char*)realloc(state_buf, state_buf_size);\nif (!state_buf)\n    return EXEC_TYPE_FAILED;  // original memory is leaked - no pointer to free it\n```\n\nAffected functions:\n1. `iccp_mclag_config_dump` (line 138)\n2. `iccp_arp_dump` (line 203)\n3. `iccp_ndisc_dump` (line 268)\n4. `iccp_mac_dump` (line 335)\n5. `iccp_local_if_dump` (line 487)\n6. `iccp_local_if_dump` unique_ip section (line 596)\n7. `iccp_peer_if_dump` (line 680)\n8. `iccp_unique_ip_if_dump` (line 804)\n\nFix for all 8 locations:\n```c\nchar *new_buf = (char*)realloc(state_buf, state_buf_size);\nif (!new_buf) {\n    free(state_buf);\n    return EXEC_TYPE_FAILED;\n}\nstate_buf = new_buf;\n```\n\n### Steps to Reproduce\n\n1. Review src/iccpd/src/iccp_cmd_show.c lines 138, 203, 268, 335, 487, 596, 680, 804\n2. Each location uses: buf = realloc(buf, new_size) - original pointer lost on failure\n3. Run cppcheck: `cppcheck --enable=all -I src/iccpd/include src/iccpd/src/iccp_cmd_show.c`\n4. cppcheck reports: \"Common realloc mistake: 'state_buf' nulled but not freed upon failure\"\n\n### Actual Behavior and Expected Behavior\n\nActual: If realloc fails under memory pressure (large MCLAG deployments with many\nMAC entries), the original buffer pointer is lost and memory is permanently leaked.\nRepeated failures cause unbounded memory growth in the iccpd daemon.\n\nExpected: Original buffer should be freed before returning on realloc failure.\n\n### Relevant log output\n\n```shell\n\n```\n\n### Output of `show version`, `show techsupport`\n\n```shell\n\n```\n\n### Attach files (if any)\n\n_No response_"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5268972167,
+   "author_login": "gechiang",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-08-12T15:35:36Z",
+   "updated_utc": "2026-08-12T15:35:36Z",
+   "permalink": "https://github.com/sonic-net/sonic-buildimage/issues/28696#issuecomment-5268972167",
+   "body_markdown": "To be reviewed by the new security working group."
+  }
+ ]
+}

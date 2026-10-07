@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/llvm/llvm-project/issues/32304",
+ "passes": [
+  "main"
+ ],
+ "title": "Mismatched free vs. operator delete",
+ "author_login": "llvmbot",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:01Z",
+ "final_url": "https://github.com/llvm/llvm-project/issues/32304",
+ "repo": "llvm/llvm-project",
+ "repo_language": "LLVM",
+ "number": 32304,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2017-05-07T16:14:03Z",
+ "updated_at": "2021-12-10T05:45:19Z",
+ "closed_at": null,
+ "labels": [
+  "clang",
+  "bugzilla"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "llvmbot",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-05-07T16:14:03Z",
+   "updated_utc": "2021-12-10T05:45:19Z",
+   "permalink": "https://github.com/llvm/llvm-project/issues/32304",
+   "body_markdown": "|  |  |\n| --- | --- |\n| Bugzilla Link | [32957](https://llvm.org/bz32957) |\n| Version | 3.9 |\n| OS | Linux |\n| Reporter | LLVM Bugzilla Contributor |\n\n## Extended Description \nWhen using LD_PRELOAD=/usr/lib64/libasan.so.4.0.0 (to find bugs in my application), Clang gives\n\n> ==6733==ERROR: AddressSanitizer: alloc-dealloc-mismatch (malloc vs operator delete) on 0x603000002500\n>     #&#8203;0 0x7f606d12dfd0 in operator delete(void*) (/usr/lib64/libasan.so.4.0.0+0xe0fd0)\n>     #&#8203;1 0x55ee0b851833 in main (/usr/bin/clang-3.9+0xa833)\n>     #&#8203;2 0x7f6067be55fd in __libc_start_main (/lib64/libc.so.6+0x205fd)\n>     #&#8203;3 0x55ee0b853db9 in _start (/usr/bin/clang-3.9+0xcdb9)\n> \n> 0x603000002500 is located 0 bytes inside of 31-byte region [0x603000002500,0x60300000251f)\n> allocated by thread T0 here:\n>     #&#8203;0 0x7f606d12b850 in malloc (/usr/lib64/libasan.so.4.0.0+0xde850)\n>     #&#8203;1 0x7f606c059ae7 in operator new(unsigned long) (/lib64/libLLVM-3.9.so+0x1b90ae7)\n\nLikely cause is that Clang overrides operator new but not operator delete."
+  }
+ ]
+}

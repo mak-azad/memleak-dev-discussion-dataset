@@ -1,0 +1,149 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/NixOS/nix/issues/3973",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer",
+ "author_login": "nmattia",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:42Z",
+ "final_url": "https://github.com/NixOS/nix/issues/3973",
+ "repo": "NixOS/nix",
+ "repo_language": "C++",
+ "number": 3973,
+ "state": "open",
+ "state_reason": "reopened",
+ "created_at": "2020-08-31T12:54:31Z",
+ "updated_at": "2026-01-05T16:09:04Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 9,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "nmattia",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-08-31T12:54:31Z",
+   "updated_utc": "2026-01-05T16:09:04Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973",
+   "body_markdown": "**Describe the bug**\r\n\r\nI'm getting a core dump when running `nix-instantiate`:\r\n\r\n``` shell\r\n$ nix-instantiate foo.nix -A some.attribute\r\nfree(): invalid pointer\r\nAborted (core dumped)\r\n```\r\n\r\nUnfortunately I can't share the code, but it seems to be happening when running a derivation that's then imported (IFD) but I'm not sure if that actually matters. `-vv` doesn't show anything suspicious. `nix-store --realize`ing the `.drv` works fine so I guess the problem is not in the drv's build.\r\n\r\nAfter tweaking the Nix code a bit, I get a few more errors:\r\n\r\n``` shell\r\n$ nix-instantiate foo.nix -A some-attribute\r\nmunmap_chunk(): invalid pointer\r\nAborted (core dumped)\r\n```\r\n\r\nand sometimes\r\n\r\n``` shell\r\nSegmentation fault (core dumped)\r\n```\r\n\r\n(got that one in the repl)\r\n\r\nHappy to share as much info as I can, I'll try to boil it down to a snippet I can share.\r\n\r\n``` shell\r\n$ nix --version\r\nnix (Nix) 2.4pre20200721_ff314f1\r\n```\r\n\r\nI'll try to reproduce."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 791500555,
+   "author_login": "stale[bot]",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-03-05T15:43:22Z",
+   "updated_utc": "2021-03-05T15:43:22Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-791500555",
+   "body_markdown": "I marked this as stale due to inactivity. &rarr; [More info](https://github.com/NixOS/nix/blob/master/.github/STALE-BOT.md)\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1104706494,
+   "author_login": "stale[bot]",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2022-04-21T04:52:35Z",
+   "updated_utc": "2022-04-21T04:52:35Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-1104706494",
+   "body_markdown": "I closed this issue due to inactivity. &rarr; [More info](https://github.com/NixOS/nix/blob/master/.github/STALE-BOT.md)\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2125629902,
+   "author_login": "I-Al-Istannen",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-05-22T19:49:26Z",
+   "updated_utc": "2024-05-22T19:49:26Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-2125629902",
+   "body_markdown": "I have the same error when running `nix build`. GDB gives me the following backtrace\r\n\r\n<details>\r\n<summary>Backtrace</summary>\r\n\r\n\r\n```\r\n#0  __pthread_kill_implementation (threadid=<optimized out>, signo=signo@entry=6, no_tid=no_tid@entry=0) at pthread_kill.c:44\r\n#1  0x00007ffff72a8eb3 in __pthread_kill_internal (threadid=<optimized out>, signo=6) at pthread_kill.c:78\r\n#2  0x00007ffff7250a30 in __GI_raise (sig=sig@entry=6) at ../sysdeps/posix/raise.c:26\r\n#3  0x00007ffff72384c3 in __GI_abort () at abort.c:79\r\n#4  0x00007ffff7239354 in __libc_message_impl (fmt=fmt@entry=0x7ffff73c22ea \"%s\\n\") at ../sysdeps/posix/libc_fatal.c:132\r\n#5  0x00007ffff72b3085 in malloc_printerr (str=str@entry=0x7ffff73c006b \"free(): invalid pointer\") at malloc.c:5772\r\n#6  0x00007ffff72b549c in _int_free (av=<optimized out>, p=p@entry=0x55555c964a60, have_lock=have_lock@entry=0) at malloc.c:4507\r\n#7  0x00007ffff72b7dae in __GI___libc_free (mem=0x55555c964a70) at malloc.c:3398\r\n#8  0x00007ffff74ac78a in operator delete (ptr=<optimized out>) at /usr/src/debug/gcc/gcc/libstdc++-v3/libsupc++/del_op.cc:49\r\n#9  0x00007ffff74ac79a in operator delete (ptr=<optimized out>) at /usr/src/debug/gcc/gcc/libstdc++-v3/libsupc++/del_ops.cc:33\r\n#10 0x00007ffff77945f0 in std::__new_allocator<char>::deallocate (this=0x55555c983c80, __p=<optimized out>, __n=<optimized out>) at /usr/include/c++/14.1.1/bits/new_allocator.h:172\r\n#11 std::allocator<char>::deallocate (this=0x55555c983c80, __p=<optimized out>, __n=<optimized out>) at /usr/include/c++/14.1.1/bits/allocator.h:208\r\n#12 std::allocator_traits<std::allocator<char> >::deallocate (__a=..., __p=<optimized out>, __n=<optimized out>) at /usr/include/c++/14.1.1/bits/alloc_traits.h:513\r\n#13 std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_destroy (this=0x55555c983c80, __size=<optimized out>)\r\n    at /usr/include/c++/14.1.1/bits/basic_string.h:294\r\n#14 std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose (this=0x55555c983c80) at /usr/include/c++/14.1.1/bits/basic_string.h:288\r\n#15 std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string (this=<optimized out>, this=<optimized out>)\r\n    at /usr/include/c++/14.1.1/bits/basic_string.h:809\r\n#16 nix::PosixSourceAccessor::cachedLstat (this=this@entry=0x555555816850, path=...) at src/libutil/posix-source-accessor.cc:111\r\n#17 0x00007ffff7794d63 in nix::PosixSourceAccessor::maybeLstat (this=0x555555816850, path=...) at src/libutil/posix-source-accessor.cc:116\r\n#18 0x00007ffff7f05e08 in nix::FilteringInputAccessor::maybeLstat (this=0x5555558168f0, path=...) at src/libfetchers/filtering-input-accessor.cc:19\r\n#19 0x00007ffff779995b in nix::SourceAccessor::lstat (this=0x5555558169b0, path=...) at src/libutil/source-accessor.cc:53\r\n#20 0x00007ffff7799c49 in nix::SourcePath::lstat (this=<optimized out>) at /usr/include/c++/14.1.1/bits/shared_ptr_base.h:1350\r\n#21 0x00007ffff7d08f1c in nix::EvalState::callPathFilter (this=0x555555810c10, filterFun=0x55555c952ef0, path=...,\r\n    pathArg=\"/nix/store/57rsy3z79kvxah2l4j13bjwpsgxkbhby-source/pkgs/development/tools/yarn2nix-moretea/yarn2nix/lib/fixPkgAddMissingSha1.js\", pos=...)\r\n    at src/libexpr/primops.cc:2244\r\n#22 0x00007ffff7d24cf9 in operator() (p=..., __closure=0x55555c9569b0) at /usr/include/c++/14.1.1/bits/char_traits.h:350\r\n#23 std::__invoke_impl<bool, nix::addPath(EvalState&, PosIdx, std::string_view, SourcePath, Value*, FileIngestionMethod, std::optional<Hash>, Value&, const NixStringContext&)::<lambda(const nix::Path&)>&, const std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&> (__f=...) at /usr/include/c++/14.1.1/bits/invoke.h:61\r\n#24 std::__invoke_r<bool, nix::addPath(EvalState&, PosIdx, std::string_view, SourcePath, Value*, FileIngestionMethod, std::optional<Hash>, Value&, const NixStringContext&)::<lambda(const nix::Path&)>&, const std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&> (__fn=...) at /usr/include/c++/14.1.1/bits/invoke.h:114\r\n#25 std::_Function_handler<bool(const std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&), nix::addPath(EvalState&, PosIdx, std::string_view, SourcePath, Value*, FileIngestionMethod, std::optional<Hash>, Value&, const NixStringContext&)::<lambda(const nix::Path&)> >::_M_invoke(const std::_Any_data &, const std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > &) (__functor=..., __args#0=...) at /usr/include/c++/14.1.1/bits/std_function.h:290\r\n#26 0x00007ffff7736587 in std::function<bool (std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)>::operator()(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const (this=0x7ffffffed560,\r\n    __args#0=\"/nix/store/57rsy3z79kvxah2l4j13bjwpsgxkbhby-source/pkgs/development/tools/yarn2nix-moretea/yarn2nix/lib/fixPkgAddMissingSha1.js\")\r\n    at /usr/include/c++/14.1.1/bits/std_function.h:591\r\n#27 operator() (__closure=<optimized out>, path=...) at src/libutil/archive.cc:91\r\n#28 0x00007ffff773668f in std::function<void (nix::CanonPath const&)>::operator()(nix::CanonPath const&) const (this=0x55555c984860, __args#0=...)\r\n    at /usr/include/c++/14.1.1/bits/std_function.h:591\r\n#29 operator() (__closure=<optimized out>, path=...) at src/libutil/archive.cc:93\r\n#30 0x00007ffff7735764 in std::function<void (nix::CanonPath const&)>::operator()(nix::CanonPath const&) const (this=0x55555c984860, __args#0=...)\r\n    at /usr/include/c++/14.1.1/bits/std_function.h:591\r\n#31 nix::SourceAccessor::dumpPath(nix::CanonPath const&, nix::Sink&, std::function<bool (std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)>&) (\r\n    this=<optimized out>, path=..., sink=..., filter=...) at src/libutil/archive.cc:107\r\n#32 0x00007ffff778fe2b in std::function<void (nix::CanonPath const&)>::operator()(nix::CanonPath const&) const (this=0x55555c94b558, __args#0=...)\r\n    at /usr/include/c++/14.1.1/bits/std_function.h:591\r\n#33 operator() (__closure=<synthetic pointer>, yield=...) at src/libutil/serialise.cc:315\r\n#34 operator() (__closure=<optimized out>, c=...) at /usr/include/boost/coroutine2/detail/pull_control_block_cc.ipp:88\r\n#35 std::__invoke_impl<boost::context::fiber, boost::coroutines2::detail::pull_coroutine<std::__cxx11::basic_string<char> >::control_block::control_block<nix::VirtualStackAllocator, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)> >(boost::context::preallocated, nix::VirtualStackAllocator&&, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)>&&)::<lambda(boost::context::fiber&&)>&, boost::context::fiber> (__f=...)\r\n    at /usr/include/c++/14.1.1/bits/invoke.h:61\r\n#36 std::__invoke<boost::coroutines2::detail::pull_coroutine<std::__cxx11::basic_string<char> >::control_block::control_block<nix::VirtualStackAllocator, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)> >(boost::context::preallocated, nix::VirtualStackAllocator&&, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)>&&)::<lambda(boost::context::fiber&&)>&, boost::context::fiber> (__fn=...) at /usr/include/c++/14.1.1/bits/invoke.h:97\r\n#37 std::invoke<boost::coroutines2::detail::pull_coroutine<std::__cxx11::basic_string<char> >::control_block::control_block<nix::VirtualStackAllocator, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)> >(boost::context::preallocated, nix::VirtualStackAllocator&&, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)>&&)::<lambda(boost::context::fiber&&)>&, boost::context::fiber> (__fn=...) at /usr/include/c++/14.1.1/functional:121\r\n#38 boost::context::detail::fiber_record<boost::context::fiber, nix::VirtualStackAllocator, boost::coroutines2::detail::pull_coroutine<std::__cxx11::basic_string<char> >::control_block::control_block<nix::VirtualStackAllocator, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)> >(boost::context::preallocated, nix::VirtualStackAllocator&&, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)>&&)::<lambda(boost::context::fiber&&)> >::run (\r\n    this=<optimized out>, fctx=<optimized out>) at /usr/include/boost/context/fiber_fcontext.hpp:157\r\n#39 boost::context::detail::fiber_entry<boost::context::detail::fiber_record<boost::context::fiber, nix::VirtualStackAllocator, boost::coroutines2::detail::pull_coroutine<std::__cxx11::basic_string<char> >::control_block::control_block<nix::VirtualStackAllocator, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)> >(boost::context::preallocated, nix::VirtualStackAllocator&&, nix::sinkToSource(std::function<void(Sink&)>, std::function<void()>)::SinkToSource::read(char*, size_t)::<lambda(boost::coroutines2::coroutine<std::__cxx11::basic_string<char> >::push_type&)>&&)::<lambda(boost::context::fiber&&)> > >(boost::context::detail::transfer_t) (t=...) at /usr/include/boost/context/fiber_fcontext.hpp:97\r\n#40 0x00007ffff7e1f157 in make_fcontext () from /usr/lib/libboost_context.so.1.83.0\r\n#41 0x0000000000000000 in ?? ()\r\n```\r\n\r\n\r\n</details>\r\n\r\nMy setup is the following:\r\n\r\n```nix\r\n// flake.nix\r\n{\r\n  inputs = {\r\n    nixpkgs.url = \"github:NixOS/nixpkgs/nixos-unstable\";\r\n  };\r\n\r\n  outputs = { self, nixpkgs }:\r\n    let\r\n      forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;\r\n    in\r\n    rec {\r\n      packages = forAllSystems (system:\r\n        let\r\n          pkgs = import nixpkgs { inherit system; };\r\n        in\r\n        rec {\r\n          default = frontend;\r\n          frontend = pkgs.mkYarnPackage rec {\r\n            pname = \"screeny\";\r\n            version = \"0.0.1\";\r\n\r\n            src = ./hey;\r\n\r\n            buildPhase = ''\r\n              export HOME=$(mktemp -d)\r\n              yarn --offline build\r\n              mkdir \"$out\"\r\n              cp -r dist/* \"$out/\"\r\n            '';\r\n            outputHash = \"\";\r\n            outputHashMode = \"recursive\";\r\n            outputHashAlgo = \"sha256\";\r\n          };\r\n        }\r\n      );\r\n    };\r\n}\r\n```\r\n\r\nAnd then a folder `hey` with the following two files.\r\n`hey/yarn.lock`\r\n```\r\n# yarn.lock\r\n# THIS IS AN AUTOGENERATED FILE. DO NOT EDIT THIS FILE DIRECTLY.\r\n# yarn lockfile v1\r\n\r\n\r\n```\r\nand the `hey/package.json`\r\n```\r\n{\r\n  \"name\": \"frontend\",\r\n  \"private\": true,\r\n  \"version\": \"0.0.0\",\r\n  \"type\": \"module\",\r\n  \"scripts\": {\r\n    \"dev\": \"vite\",\r\n    \"build\": \"tsc && vite build\",\r\n    \"preview\": \"vite preview\"\r\n  },\r\n  \"devDependencies\": {\r\n  }\r\n}\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2126010025,
+   "author_login": "cole-h",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2024-05-23T01:03:20Z",
+   "updated_utc": "2024-05-23T01:03:20Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-2126010025",
+   "body_markdown": "Could you also paste the `flake.lock`, the version of Nix you're using, and what kind of machine you're on?\r\n\r\nUsing `nix (Nix) 2.22.0pre20240320_7d2ead5` I can't reproduce; I just see a build failure:\r\n\r\n```\r\n$ wl-paste | tail -n +2 > flake.nix\r\n$ mkdir hey\r\n$ wl-paste > hey/yarn.lock\r\n$ wl-paste > hey/package.json\r\n$ nix build\r\nwarning: creating lock file '/tmp/tmp.Tsw24SqnJa/flake.lock':\r\n• Added input 'nixpkgs':\r\n    'github:NixOS/nixpkgs/5710852ba686cc1fd0d3b8e22b3117d43ba374c2?narHash=sha256-8BO3B7e3BiyIDsaKA0tY8O88rClYRTjvAp66y%2BVBUeU%3D' (2024-05-21)\r\nwarning: found empty hash, assuming 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='\r\nerror: builder for '/nix/store/r22ka31mwsph8pinf24bfy09x437j711-frontend-0.0.1.drv' failed with exit code 127;\r\n       last 12 log lines:\r\n       > Running phase: unpackPhase\r\n       > unpacking source archive /nix/store/nzl6cwllxwgzkfipdpjym4ipfjv8ybp8-hey\r\n       > source root is hey\r\n       > Running phase: patchPhase\r\n       > Running phase: updateAutotoolsGnuConfigScriptsPhase\r\n       > Running phase: configurePhase\r\n       > Running phase: buildPhase\r\nyarn run v1.22.22\r\n$ tsc && vite build\r\n       > /bin/sh: tsc: not found\r\nerror Command failed with exit code 127.\r\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.\r\n       For full logs, run 'nix log /nix/store/r22ka31mwsph8pinf24bfy09x437j711-frontend-0.0.1.drv'.\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2126698452,
+   "author_login": "I-Al-Istannen",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-05-23T09:54:01Z",
+   "updated_utc": "2024-05-23T09:55:25Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-2126698452",
+   "body_markdown": "Sure :)\r\n\r\n```\r\n❯ nix --version\r\nnix (Nix) 2.22.1\r\n❯ cat /etc/os-release\r\nNAME=\"Arch Linux\"\r\nPRETTY_NAME=\"Arch Linux\"\r\nID=arch\r\nBUILD_ID=rolling\r\nANSI_COLOR=\"38;2;23;147;209\"\r\nHOME_URL=\"https://archlinux.org/\"\r\nDOCUMENTATION_URL=\"https://wiki.archlinux.org/\"\r\nSUPPORT_URL=\"https://bbs.archlinux.org/\"\r\nBUG_REPORT_URL=\"https://gitlab.archlinux.org/groups/archlinux/-/issues\"\r\nPRIVACY_POLICY_URL=\"https://terms.archlinux.org/docs/privacy-policy/\"\r\nLOGO=archlinux-logo\r\n❯ uname -a\r\nLinux nidhogg 6.8.9-arch1-2 #1 SMP PREEMPT_DYNAMIC Tue, 07 May 2024 21:35:54 +0000 x86_64 GNU/Linux\r\n```\r\n\r\n```json\r\n{\r\n  \"nodes\": {\r\n    \"nixpkgs\": {\r\n      \"locked\": {\r\n        \"lastModified\": 1716330097,\r\n        \"narHash\": \"sha256-8BO3B7e3BiyIDsaKA0tY8O88rClYRTjvAp66y+VBUeU=\",\r\n        \"owner\": \"NixOS\",\r\n        \"repo\": \"nixpkgs\",\r\n        \"rev\": \"5710852ba686cc1fd0d3b8e22b3117d43ba374c2\",\r\n        \"type\": \"github\"\r\n      },\r\n      \"original\": {\r\n        \"owner\": \"NixOS\",\r\n        \"ref\": \"nixos-unstable\",\r\n        \"repo\": \"nixpkgs\",\r\n        \"type\": \"github\"\r\n      }\r\n    },\r\n    \"root\": {\r\n      \"inputs\": {\r\n        \"nixpkgs\": \"nixpkgs\"\r\n      }\r\n    }\r\n  },\r\n  \"root\": \"root\",\r\n  \"version\": 7\r\n}\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2323013437,
+   "author_login": "voidus",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2024-08-31T18:50:41Z",
+   "updated_utc": "2024-08-31T18:50:41Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-2323013437",
+   "body_markdown": "I have similar issues on arch linux in a reproducible way, I don't want to add too much noise here but if needed I'd be happy to participate in debugging. In the meantime, `nix shell nixpkgs#nix` is a good workaround.\r\n\r\nNotably, I am also using `mkYarnPackage`.\r\n\r\nI am getting different errors re-running the build:\r\n\r\n- IOT instruction (core dumped)\r\n- segmentation fault (core dumped)\r\n- corrupted size vs. prev_size\r\n- free(): invalid pointer\r\n\r\nBuilding multiple derivations in a single command seems to report a random one, a single derivation always seems to be resulting in `segmentation fault`\r\n\r\n<details><summary>Backtrace running <code>gdb --args nix build .#foo .#bar .#baz</code></summary>\r\n\r\n```gdb\r\nThread 1 \"nix\" received signal SIGSEGV, Segmentation fault.\r\n0x00007ffff7c9d1b7 in nix::EvalState::eqValues(nix::Value&, nix::Value&, nix::PosIdx, std::basic_string_view<char, std::char_traits<char> >) () from /usr/lib/libnixexpr.so\r\n(gdb) bt\r\n#0  0x00007ffff7c9d1b7 in nix::EvalState::eqValues(nix::Value&, nix::Value&, nix::PosIdx, std::basic_string_view<char, std::char_traits<char> >) () from /usr/lib/libnixexpr.so\r\n#1  0x00007ffff7d18018 in ?? () from /usr/lib/libnixexpr.so\r\n#2  0x00007ffff7c99517 in nix::EvalState::callFunction(nix::Value&, unsigned long, nix::Value**, nix::Value&, nix::PosIdx) () from /usr/lib/libnixexpr.so\r\n#3  0x00007ffff7c9ba76 in nix::ExprCall::eval(nix::EvalState&, nix::Env&, nix::Value&) () from /usr/lib/libnixexpr.so\r\n#4  0x00007ffff7c97221 in ?? () from /usr/lib/libnixexpr.so\r\n#5  0x00007ffff7c97fd2 in nix::ExprOpAnd::eval(nix::EvalState&, nix::Env&, nix::Value&) () from /usr/lib/libnixexpr.so\r\n#6  0x00007ffff7c97221 in ?? () from /usr/lib/libnixexpr.so\r\n#7  0x00007ffff7c9806a in nix::ExprOpOr::eval(nix::EvalState&, nix::Env&, nix::Value&) () from /usr/lib/libnixexpr.so\r\n#8  0x00007ffff7c95e70 in nix::ExprLet::eval(nix::EvalState&, nix::Env&, nix::Value&) () from /usr/lib/libnixexpr.so\r\n#9  0x00007ffff7c993fe in nix::EvalState::callFunction(nix::Value&, unsigned long, nix::Value**, nix::Value&, nix::PosIdx) () from /usr/lib/libnixexpr.so\r\n#10 0x00007ffff7d116b5 in nix::EvalState::callPathFilter(nix::Value*, nix::SourcePath const&, std::basic_string_view<char, std::char_traits<char> >, nix::PosIdx) () from /usr/lib/libnixexpr.so\r\n#11 0x00007ffff7d244a9 in ?? () from /usr/lib/libnixexpr.so\r\n#12 0x00007ffff7731e57 in ?? () from /usr/lib/libnixutil.so\r\n#13 0x00007ffff77310b4 in nix::SourceAccessor::dumpPath(nix::CanonPath const&, nix::Sink&, std::function<bool (std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)>&) () from /usr/lib/libnixutil.so\r\n#14 0x00007ffff778beeb in ?? () from /usr/lib/libnixutil.so\r\n#15 0x00007ffff7e23157 in make_fcontext () from /usr/lib/libboost_context.so.1.83.0\r\n#16 0x38782b7436416f41 in ?? ()\r\n#17 0x70714157724c4d39 in ?? ()\r\n#18 0x3d3d516938454466 in ?? ()\r\n#19 0x6e6570656420200a in ?? ()\r\n#20 0x3a736569636e6564 in ?? ()\r\n#21 0x636361202020200a in ?? ()\r\n#22 0x317e222073747065 in ?? ()\r\n#23 0x20200a22352e332e in ?? ()\r\n#24 0x0000000000020000 in ?? ()\r\n#25 0x0000555571267a30 in ?? ()\r\n#26 0x00007ffff77fecc0 in ?? () from /usr/lib/libnixutil.so\r\n#27 0x00005555712679c0 in ?? ()\r\n#28 0x0000555570fecab0 in ?? ()\r\n#29 0x64202020200a2236 in ?? ()\r\n#30 0x2e32222067756265 in ?? ()\r\n#31 0x2020200a22392e36 in ?? ()\r\n#32 0x646165682d6e6f20 in ?? ()\r\n#33 0x2e317e2220737265 in ?? ()\r\n#34 0x2020200a22322e30 in ?? ()\r\n#35 0x75622d6566617320 in ?? ()\r\n#36 0x2e35222072656666 in ?? ()\r\n#37 0x2020200a22322e31 in ?? ()\r\n#38 0x7e22207972617620 in ?? ()\r\n#39 0x0a0a22322e312e31 in ?? ()\r\n#40 0x64657475706d6f63 in ?? ()\r\n#41 0x312e302e305e4073 in ?? ()\r\n#42 0x7372657620200a3a in ?? ()\r\n#43 0x302e3022206e6f69 in ?? ()\r\n#44 0x657220200a22312e in ?? ()\r\n#45 0x22206465766c6f73 in ?? ()\r\n#46 0x2f2f3a7370747468 in ?? ()\r\n#47 0x7972747369676572 in ?? ()\r\n#48 0x0000000000000000 in ?? ()\r\n(gdb) q\r\n```\r\n</details>\r\n\r\n```\r\n> nix --version \r\nnix (Nix) 2.23.3\r\n> pacman -Qi nix\r\nName            : nix\r\nVersion         : 2.23.3-1\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3710166328,
+   "author_login": "domenkozar",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-01-05T12:07:08Z",
+   "updated_utc": "2026-01-05T12:07:08Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-3710166328",
+   "body_markdown": "I've started to see more of these since Nix switched to parallel GC."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3711061498,
+   "author_login": "domenkozar",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-01-05T16:04:30Z",
+   "updated_utc": "2026-01-05T16:04:53Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-3711061498",
+   "body_markdown": "● Key observations from GC stats:\n\n  1. Parallel GC - 16 processors, 15 mark helper threads\n  2. Heap explosion: 256 KiB → 393,472 KiB (~384 MB) between collection 1 and 2\n  3. 0 bytes freed in both collections, 0% in-use - suspicious\n  4. Crash timing: Right after collection 2 finished, during \"Adding block map\" operations\n\n  The sequence before crash:\n  Finished marking for mark phase number 0\n  GC #2 freed 0 bytes, heap 393472 KiB\n  Complete collection took 0 ms 275239 ns\n  Adding block map for size of 2 granules (32 bytes)\n  Adding block map for size of 84 granules (1344 bytes)\n  Adding block map for size of 0 granules (0 bytes)  <-- weird, 0 granules?\n  Adding block map for size of 1 granules (16 bytes)\n  Adding block map for size of 4 granules (64 bytes)\n  Adding block map for size of 128 granules (2048 bytes)\n  Adding block map for size of 3 granules (48 bytes)\n  SIGSEGV\n\n  Suspicious: \"Adding block map for size of 0 granules (0 bytes)\" - that looks like corruption or invalid state.\n\n  Crash happens in block map allocation after parallel marking finishes. Could be a race between mark helpers and the main allocator thread."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3711089773,
+   "author_login": "xokdvium",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-05T16:09:03Z",
+   "updated_utc": "2026-01-05T16:09:03Z",
+   "permalink": "https://github.com/NixOS/nix/issues/3973#issuecomment-3711089773",
+   "body_markdown": "Any chance it could be a Boehm issue? Doesn't seem like currently stackful coroutines should be affecting it since we don't allocate anything on the Boehm heap now in coroutines?"
+  }
+ ]
+}

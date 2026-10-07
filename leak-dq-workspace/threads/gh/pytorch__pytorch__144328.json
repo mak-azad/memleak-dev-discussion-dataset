@@ -1,0 +1,54 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/pytorch/pytorch/issues/144328",
+ "passes": [
+  "main"
+ ],
+ "title": "Debug build fails to compile on x86 with WERROR=1",
+ "author_login": "robert-hardwick",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:21Z",
+ "final_url": "https://github.com/pytorch/pytorch/issues/144328",
+ "repo": "pytorch/pytorch",
+ "repo_language": "Python",
+ "number": 144328,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-01-07T15:06:48Z",
+ "updated_at": "2025-01-07T15:26:31Z",
+ "closed_at": null,
+ "labels": [
+  "module: build",
+  "triaged"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "robert-hardwick",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-01-07T15:06:48Z",
+   "updated_utc": "2025-01-07T15:26:31Z",
+   "permalink": "https://github.com/pytorch/pytorch/issues/144328",
+   "body_markdown": "### 🐛 Describe the bug\r\n\r\nAttempted to build a debug whl on x86 machine in ubuntu docker image 'pytorch-linux-jammy-py3.9-gcc11'\r\n\r\nBuild passes when DEBUG=0 OR with DEBUG=1 and WERROR=0\r\n\r\n`In file included from /var/lib/jenkins/workspace/torch/csrc/jit/tensorexpr/llvm_codegen.cpp:24:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h: In member function ‘llvm::LoadInst* llvm::IRBuilder<T, Inserter>::CreateLoad(llvm::Type*, llvm::Value*, const llvm::Twine&) [with T = llvm::ConstantFolder; Inserter = llvm::IRBuilderDefaultInserter]’:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:1581:19: error: ‘static void llvm::User::operator delete(void*)’ called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\r\n 1581 |     return Insert(new LoadInst(Ty, Ptr), Name);\r\n      |                   ^~~~~~~~~~~~~~~~~~~~~\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:1581:19: note: returned from ‘static void* llvm::UnaryInstruction::operator new(size_t)’\r\n/opt/llvm/include/llvm/IR/IRBuilder.h: In member function ‘llvm::Value* llvm::IRBuilder<T, Inserter>::CreateFCmp(llvm::CmpInst::Predicate, llvm::Value*, llvm::Value*, const llvm::Twine&, llvm::MDNode*) [with T = llvm::ConstantFolder; Inserter = llvm::IRBuilderDefaultInserter]’:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:2181:30: error: ‘static void llvm::User::operator delete(void*)’ called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\r\n 2181 |     return Insert(setFPAttrs(new FCmpInst(P, LHS, RHS), FPMathTag, FMF), Name);\r\n      |                              ^~~~~~~~~~~~~~~~~~~~~~~~~\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:2181:30: note: returned from ‘static void* llvm::CmpInst::operator new(size_t)’\r\n/opt/llvm/include/llvm/IR/IRBuilder.h: In member function ‘llvm::Value* llvm::IRBuilder<T, Inserter>::CreateICmp(llvm::CmpInst::Predicate, llvm::Value*, llvm::Value*, const llvm::Twine&) [with T = llvm::ConstantFolder; Inserter = llvm::IRBuilderDefaultInserter]’:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:2173:19: error: ‘static void llvm::User::operator delete(void*)’ called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\r\n 2173 |     return Insert(new ICmpInst(P, LHS, RHS), Name);\r\n      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:2173:19: note: returned from ‘static void* llvm::CmpInst::operator new(size_t)’\r\n/opt/llvm/include/llvm/IR/IRBuilder.h: In member function ‘llvm::AllocaInst* llvm::IRBuilder<T, Inserter>::CreateAlloca(llvm::Type*, llvm::Value*, const llvm::Twine&) [with T = llvm::ConstantFolder; Inserter = llvm::IRBuilderDefaultInserter]’:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:1571:19: error: ‘static void llvm::User::operator delete(void*)’ called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\r\n 1571 |     return Insert(new AllocaInst(Ty, DL.getAllocaAddrSpace(), ArraySize), Name);\r\n      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:1571:19: note: returned from ‘static void* llvm::UnaryInstruction::operator new(size_t)’\r\n/opt/llvm/include/llvm/IR/IRBuilder.h: In member function ‘llvm::StoreInst* llvm::IRBuilder<T, Inserter>::CreateStore(llvm::Value*, llvm::Value*, bool) [with T = llvm::ConstantFolder; Inserter = llvm::IRBuilderDefaultInserter]’:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:1606:19: error: ‘static void llvm::User::operator delete(void*)’ called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\r\n 1606 |     return Insert(new StoreInst(Val, Ptr, isVolatile));\r\n      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:1606:19: note: returned from ‘static void* llvm::StoreInst::operator new(size_t)’\r\n/opt/llvm/include/llvm/IR/IRBuilder.h: In member function ‘llvm::Value* llvm::IRBuilder<T, Inserter>::CreateShuffleVector(llvm::Value*, llvm::Value*, llvm::Value*, const llvm::Twine&) [with T = llvm::ConstantFolder; Inserter = llvm::IRBuilderDefaultInserter]’:\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:2296:19: error: ‘static void llvm::User::operator delete(void*)’ called on pointer returned from a mismatched allocation function [-Werror=mismatched-new-delete]\r\n 2296 |     return Insert(new ShuffleVectorInst(V1, V2, Mask), Name);\r\n      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n/opt/llvm/include/llvm/IR/IRBuilder.h:2296:19: note: returned from ‘static void* llvm::ShuffleVectorInst::operator new(size_t)’`\r\n\r\n### Versions\r\n\r\nPyTorch Version = 8d35333498e9433a379611746c177285fa51c8c5\r\n\r\n$ lscpu\r\nArchitecture:             x86_64\r\n  CPU op-mode(s):         32-bit, 64-bit\r\n  Address sizes:          46 bits physical, 48 bits virtual\r\n  Byte Order:             Little Endian\r\nCPU(s):                   16\r\n  On-line CPU(s) list:    0-15\r\nVendor ID:                GenuineIntel\r\n  Model name:             Intel(R) Xeon(R) Platinum 8488C\r\n    CPU family:           6\r\n    Model:                143\r\n    Thread(s) per core:   2\r\n    Core(s) per socket:   8\r\n    Socket(s):            1\r\n    Stepping:             8\r\n    BogoMIPS:             4800.00\r\n    Flags:                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmp\r\n                          erf tsc_known_freq pni pclmulqdq monitor ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_\r\n                          enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16\r\n                          wbnoinvd ida arat avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 am\r\n                          x_tile amx_int8 flush_l1d arch_capabilities\n\ncc @malfet @seemethere"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2575573308,
+   "author_login": "malfet",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-01-07T15:26:30Z",
+   "updated_utc": "2025-01-07T15:26:30Z",
+   "permalink": "https://github.com/pytorch/pytorch/issues/144328#issuecomment-2575573308",
+   "body_markdown": "I suspect this is because you have llvm-dev and it tries to compile TensorExpr. Please disable it and try again. And if you have a PR that fixes the violation, please do not hesitate to submit one"
+  }
+ ]
+}

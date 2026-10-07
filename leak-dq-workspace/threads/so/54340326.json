@@ -1,0 +1,68 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 54340326,
+ "url": "https://stackoverflow.com/questions/54340326/what-will-happens-if-before-freeing-memory-allocated-by-new-operator-exception",
+ "title": "What will happens if before freeing memory allocated by new operator, exception occurred?",
+ "tags": [
+  "c++",
+  "new-operator",
+  "free",
+  "dynamic-memory-allocation"
+ ],
+ "score": 0,
+ "view_count": 83,
+ "answer_count": 2,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2019-01-24T06:09:05Z",
+ "last_activity_utc": "2019-01-24T06:39:33Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 7035151,
+ "author_display_name": "Jayesh",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/54340326/what-will-happens-if-before-freeing-memory-allocated-by-new-operator-exception",
+ "body_html": "<p>I just curious to know, What will happens if before freeing memory allocated by new operator, exception occurred?  Is it memory leak problem occurred?</p>\n\n<pre><code>#include &lt;iostream&gt;\n#include&lt;new&gt;\n\nusing namespace std;\n\nvoid func()\n{\n    try\n    {\n        int *p = new int[10];\n\n        /*\n            Number of lines code here\n            .\n            .\n            .\n            .\n            .\n            Suppose here I got exception then What heppens????\n            .\n            .\n            .\n            .\n        */\n        delete []p;\n    }\n    catch(const std::exception&amp; e)\n    {\n        cout&lt;&lt;\"Exception occured\"&lt;&lt;endl;\n    }\n}\n\nint main() {\n    func();\n    return 0;\n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 54340356,
+   "parent_id": 54340326,
+   "author_user_id": 817643,
+   "author_display_name": "StoryTeller RIP 16.5.26",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/54340356",
+   "score": 6,
+   "created_utc": "2019-01-24T06:11:06Z",
+   "last_edit_utc": "2019-01-24T06:17:30Z",
+   "last_activity_utc": "2019-01-24T06:17:30Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<blockquote>\n  <p>Is it memory leak problem occurred?</p>\n</blockquote>\n\n<p><strong>Yes</strong>. This is the whole reason smart pointers and the whole RAII idiom were devised. Destructors of block scoped variable are still called when a handler is found, so those can free the allocated resources. A raw pointer will just leak.</p>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 54340705,
+   "parent_id": 54340326,
+   "author_user_id": 3599970,
+   "author_display_name": "Timmy_A",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/54340705",
+   "score": 2,
+   "created_utc": "2019-01-24T06:39:33Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2019-01-24T06:39:33Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>Memory leak occurs because operator <code>delete</code> has never been called. Use <code>std::unique_ptr&lt;T&gt;</code> instead of the raw C++ pointers. C++ standard library provides <code>std::unique_ptr&lt;T&gt;</code> that automatically de-allocates wrapped pointer when it's out of scope. C++ standard library also provides <code>std::shared_ptr&lt;T&gt;</code>, that uses reference counting and de-allocates memory only if the last reference to the pointer is released.</p>\n"
+  }
+ ]
+}

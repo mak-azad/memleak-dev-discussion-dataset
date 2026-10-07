@@ -1,0 +1,66 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 1963745,
+ "url": "https://stackoverflow.com/questions/1963745/how-does-free-know-how-much-memory-to-deallocate",
+ "title": "How does free() know how much memory to deallocate?",
+ "tags": [
+  "c",
+  "malloc"
+ ],
+ "score": 15,
+ "view_count": 10944,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 1963766,
+ "created_utc": "2009-12-26T16:39:00Z",
+ "last_activity_utc": "2014-08-09T22:00:37Z",
+ "license": null,
+ "author_user_id": 200688,
+ "author_display_name": "AndyL",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/1963745/how-does-free-know-how-much-memory-to-deallocate",
+ "body_html": "<blockquote>\n  <p><strong>Possible Duplicate:</strong><br>\n  <a href=\"https://stackoverflow.com/questions/1518711/c-programming-how-does-free-know-how-much-to-free\">C programming : How does free know how much to free?</a>  </p>\n</blockquote>\n\n<p>When programming in C, I often use<code>malloc()</code> to allocate memory and <code>free()</code> to release it:</p>\n\n<pre><code>MyObject* objArr= (MyObject*) malloc(sizeof(MyObject)*numberOfObjects);\n/** Do stuff **/\nfree(objArr);\n</code></pre>\n\n<p>How does <code>free()</code> know how much memory to deallocate? Does <code>malloc()</code> create a table somewhere to remember pointers and how much memory each pointer pointed to?</p>\n\n<p>If that is the case, will <code>free()</code> fail if I rename the pointer? e.g.:</p>\n\n<pre><code>MyObject* objArr= (MyObject*) malloc(sizeof(MyObject)*numberOfObjects);\nMyObject* newPtr= objArr;\nfree(newPtr); /** Does this fail? **/\n</code></pre>\n\n<p>What will happen if I increment the pointer and then run <code>free()</code>? e.g.:</p>\n\n<pre><code>MyObject* objArr= (MyObject*) malloc(sizeof(MyObject)*numberOfObjects);\nnewPtr++;\nfree(newPtr); /** What happens now? **/\n</code></pre>\n\n<p>Will it deallocate an additional chunk of memory just off the end of the original array? </p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 1877256,
+   "parent_id": 1963745,
+   "parent_type": "question",
+   "author_user_id": 227665,
+   "author_display_name": "codaddict",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/1963745/#comment1877256_1963745",
+   "score": 3,
+   "created_utc": "2009-12-26T16:43:14Z",
+   "edited": false,
+   "license": "CC BY-SA 2.5",
+   "body_html": "Duplicate of <a href=\"http://stackoverflow.com/questions/1518711/c-programming-how-does-free-know-how-much-to-free\" title=\"c programming how does free know how much to free\">stackoverflow.com/questions/1518711/&hellip;</a>"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 1963766,
+   "parent_id": 1963745,
+   "author_user_id": 29809,
+   "author_display_name": "R Samuel Klatchko",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/1963766",
+   "score": 21,
+   "created_utc": "2009-12-26T16:46:12Z",
+   "last_edit_utc": "2014-08-09T22:00:37Z",
+   "last_activity_utc": "2014-08-09T22:00:37Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>The most common way is that it stores some information immediately before the address it returns to you.  So if malloc returns the address  0x1004, internally, malloc will have put aside the memory started at 0x0FFC and will store various information such as the size somewhere in the memory between 0xFFC - 0x1003 but the application will be told the allocation starts at 0x1004.</p>\n\n<p>The only thing that matters to free is getting the exact same address as what malloc returned.</p>\n"
+  }
+ ]
+}

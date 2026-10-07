@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/swftools/swftools/issues/202",
+ "passes": [
+  "main"
+ ],
+ "title": "Heap-buffer-overflow when processing an png file in png_read_chunk()",
+ "author_login": "Hee-won",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:34Z",
+ "final_url": "https://github.com/swftools/swftools/issues/202",
+ "repo": "swftools/swftools",
+ "repo_language": "C",
+ "number": 202,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-07-01T08:50:15Z",
+ "updated_at": "2023-09-06T08:36:00Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Hee-won",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-07-01T08:50:15Z",
+   "updated_utc": "2023-09-06T08:36:00Z",
+   "permalink": "https://github.com/swftools/swftools/issues/202",
+   "body_markdown": "Hi there\r\n\r\nWe would like to share that the latest version of pdf2swf causes heap-buffer-overflow when executed with a crafted png input.\r\n\r\nWe assume that the invalid memory access happens due to the improper processing malformed input in png_read_chunk() in spite of the error handling.\r\n\r\nHere is the output of program with address sanitizer attached.\r\n\r\nBug Report\r\n=================================================================\r\n==32129==ERROR: AddressSanitizer: allocator is out of memory trying to allocate 0x9c000000 bytes\r\n    #0 0x7f9ccb581808 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144\r\n    #1 0x56345b1588fa in png_read_chunk /home/ubuntu/targets/swftools/lib/png.c:63\r\n    #2 0x56345b158cab in png_read_header /home/ubuntu/targets/swftools/lib/png.c:106\r\n    #3 0x56345b15bc0f in png_load /home/ubuntu/targets/swftools/lib/png.c:498\r\n    #4 0x56345b131d40 in MovieAddFrame /home/ubuntu/targets/swftools/src/png2swf.c:494\r\n    #5 0x56345b12e2f6 in main /home/ubuntu/targets/swftools/src/png2swf.c:822\r\n    #6 0x7f9ccad9e082 in __libc_start_main ../csu/libc-start.c:308\r\n\r\n==32129==HINT: if you don't care about these errors you may set allocator_may_return_null=1\r\nSUMMARY: AddressSanitizer: out-of-memory ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144 in __interceptor_malloc\r\n==32129==ABORTING\r\n\r\n### Environment\r\nOS: Ubuntu 20.04.5 LTS\r\nRelease: latest commit of master branch on this github \r\nProgram: png2swf\r\n\r\n### How to reproduce\r\n$ png2swf poc-file\r\npoc-file is attached.\r\n[poc-file.txt](https://github.com/matthiaskramm/swftools/files/11925311/poc-file.txt)\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1707911459,
+   "author_login": "choonginlee",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2023-09-06T08:36:00Z",
+   "updated_utc": "2023-09-06T08:36:00Z",
+   "permalink": "https://github.com/swftools/swftools/issues/202#issuecomment-1707911459",
+   "body_markdown": "The release tested is commit [772e55a](https://github.com/matthiaskramm/swftools/commit/772e55a271f66818b06c6e8c9b839befa51248f4)"
+  }
+ ]
+}

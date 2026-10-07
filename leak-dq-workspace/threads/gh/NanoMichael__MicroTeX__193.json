@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/NanoMichael/MicroTeX/issues/193",
+ "passes": [
+  "main"
+ ],
+ "title": "Fix malloc/delete mismatch in Linux resource path detection",
+ "author_login": "Danmoreng",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:03Z",
+ "final_url": "https://github.com/NanoMichael/MicroTeX/issues/193",
+ "repo": "NanoMichael/MicroTeX",
+ "repo_language": "C++",
+ "number": 193,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2026-08-13T07:36:38Z",
+ "updated_at": "2026-09-12T08:18:49Z",
+ "closed_at": "2026-09-12T08:18:49Z",
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Danmoreng",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-13T07:36:38Z",
+   "updated_utc": "2026-09-12T08:18:49Z",
+   "permalink": "https://github.com/NanoMichael/MicroTeX/issues/193",
+   "body_markdown": "## Problem\n\n`LaTeX::queryResourceLocation` allocates `userdata_fallback` with `asprintf`, then releases it with `delete`. On Linux this is an allocator mismatch (`malloc` vs. `operator delete`) and undefined behavior.\n\nAddressSanitizer reports:\n\n```text\nERROR: AddressSanitizer: alloc-dealloc-mismatch (malloc vs operator delete)\n  #1 tex::LaTeX::queryResourceLocation(...) src/latex.cpp:59\n\nallocated by:\n  #3 asprintf\n  #4 tex::LaTeX::queryResourceLocation(...) src/latex.cpp:57\n```\n\nThe issue is triggered whenever `HOME` is set and `LaTeX::init` queries resource locations. It was reproduced against current `master` (`0e3707f6dafebb121d98b53c64364d16fefe481d`) with GCC and ASan/UBSan on Linux.\n\n## Proposed fix\n\nAvoid the temporary C allocation entirely:\n\n```cpp\nchar* home = getenv(\"HOME\");\nif (home != NULL && strcmp(home, \"\") != 0) {\n  paths.push(string(home) + \"/.local/share/clatexmath/\");\n}\n```\n\nThis removes the allocator mismatch and the GNU-specific `asprintf` call. The change has been verified with an ASan/UBSan test run in a downstream application. I will follow up with a small pull request.\n"
+  }
+ ]
+}

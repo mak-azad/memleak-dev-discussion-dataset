@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/justdan96/tsMuxer/issues/778",
+ "passes": [
+  "main"
+ ],
+ "title": "Alloc-dealloc-mismatch on tsMuxer",
+ "author_login": "Frank-Z7",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:54Z",
+ "final_url": "https://github.com/justdan96/tsMuxer/issues/778",
+ "repo": "justdan96/tsMuxer",
+ "repo_language": "C++",
+ "number": 778,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-10-06T08:07:19Z",
+ "updated_at": "2023-10-20T13:37:11Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "762",
+  "761",
+  "459"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Frank-Z7",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-10-06T08:07:19Z",
+   "updated_utc": "2023-10-20T13:37:11Z",
+   "permalink": "https://github.com/justdan96/tsMuxer/issues/778",
+   "body_markdown": "### Description\r\n\r\n**We found a alloc-dealloc-mismatch (operator new [] vs operator delete) error when using tsMuxer/tsmuxer.**\r\n\r\n### ASAN Log\r\n\r\n```shell\r\n=================================================================\r\n==4087327==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x610000000040\r\n    #0 0x5d946d in operator delete(void*) (/afltest/tsMuxer/tsMuxer/tsmuxer+0x5d946d)\r\n    #1 0x6e88a3 in MatroskaDemuxer::readClose() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1041:42\r\n    #2 0x6fca23 in MatroskaDemuxer::~MatroskaDemuxer() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.h:11:35\r\n    #3 0x6fcc97 in MatroskaDemuxer::~MatroskaDemuxer() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.h:11:33\r\n    #4 0x73ed9e in METADemuxer::DetectStreamReader(BufferedReaderManager const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) /afltest/tsMuxer/tsMuxer/metaDemuxer.cpp:669:9\r\n    #5 0x6bb225 in detectStreamReader(char const*, MPLSParser*, bool) /afltest/tsMuxer/tsMuxer/main.cpp:114:34\r\n    #6 0x6c76ef in main /afltest/tsMuxer/tsMuxer/main.cpp:689:17\r\n    #7 0x7ffff798b082 in __libc_start_main /build/glibc-BHL3KM/glibc-2.31/csu/../csu/libc-start.c:308:16\r\n    #8 0x530d5d in _start (/afltest/tsMuxer/tsMuxer/tsmuxer+0x530d5d)\r\n\r\n0x610000000040 is located 0 bytes inside of 184-byte region [0x610000000040,0x6100000000f8)\r\nallocated by thread T0 here:\r\n    #0 0x5d8d1d in operator new[](unsigned long) (/afltest/tsMuxer/tsMuxer/tsmuxer+0x5d8d1d)\r\n    #1 0x6f3be7 in MatroskaDemuxer::matroska_add_stream() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1893:53\r\n    #2 0x6ee754 in MatroskaDemuxer::matroska_parse_tracks() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1746:19\r\n    #3 0x6e9989 in MatroskaDemuxer::matroska_read_header() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1228:19\r\n    #4 0x6e7b5a in MatroskaDemuxer::openFile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1027:5\r\n    #5 0x73c0d9 in METADemuxer::DetectStreamReader(BufferedReaderManager const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) /afltest/tsMuxer/tsMuxer/metaDemuxer.cpp:608:18\r\n    #6 0x6bb225 in detectStreamReader(char const*, MPLSParser*, bool) /afltest/tsMuxer/tsMuxer/main.cpp:114:34\r\n    #7 0x6c76ef in main /afltest/tsMuxer/tsMuxer/main.cpp:689:17\r\n    #8 0x7ffff798b082 in __libc_start_main /build/glibc-BHL3KM/glibc-2.31/csu/../csu/libc-start.c:308:16\r\n\r\nSUMMARY: AddressSanitizer: alloc-dealloc-mismatch (/afltest/tsMuxer/tsMuxer/tsmuxer+0x5d946d) in operator delete(void*)\r\n==4087327==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0\r\n==4087327==ABORTING\r\n\r\n```\r\n\r\n### Location\r\n\r\n0x610000000040 is located 0 bytes inside of 184-byte region [0x610000000040,0x6100000000f8)\r\nallocated by thread T0 here:\r\n    #0 0x5d8d1d in operator new[](unsigned long) (/afltest/tsMuxer/tsMuxer/tsmuxer+0x5d8d1d)\r\n    #1 0x6f3be7 in MatroskaDemuxer::matroska_add_stream() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1893:53\r\n    #2 0x6ee754 in MatroskaDemuxer::matroska_parse_tracks() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1746:19\r\n    #3 0x6e9989 in MatroskaDemuxer::matroska_read_header() /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1228:19\r\n    #4 0x6e7b5a in MatroskaDemuxer::openFile(std::\\__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /afltest/tsMuxer/tsMuxer/matroskaDemuxer.cpp:1027:5\r\n    #5 0x73c0d9 in METADemuxer::DetectStreamReader(BufferedReaderManager const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) /afltest/tsMuxer/tsMuxer/metaDemuxer.cpp:608:18\r\n    #6 0x6bb225 in detectStreamReader(char const*, MPLSParser*, bool) /afltest/tsMuxer/tsMuxer/main.cpp:114:34\r\n    #7 0x6c76ef in main /afltest/tsMuxer/tsMuxer/main.cpp:689:17\r\n    #8 0x7ffff798b082 in \\__libc_start_main /build/glibc-BHL3KM/glibc-2.31/csu/../csu/libc-start.c:308:16\r\n\r\n\r\n![image-20231006143638493](https://github.com/justdan96/tsMuxer/assets/67280615/ab3efd40-72b4-4fcd-8fbd-f12f858584aa)\r\n\r\n![image-20231006143714557](https://github.com/justdan96/tsMuxer/assets/67280615/04b82d02-5e69-4774-b937-303f071e9727)\r\n\r\n![image-20231006143835928](https://github.com/justdan96/tsMuxer/assets/67280615/3a375a1b-51b1-4bb1-a40d-0bb8c5840d28)\r\n\r\n![image-20231006144239334](https://github.com/justdan96/tsMuxer/assets/67280615/295340e5-7dd3-4f2d-ae78-96be7b57164e)\r\n\r\n![image-20231006151150514](https://github.com/justdan96/tsMuxer/assets/67280615/aed450c4-6329-4753-9893-89f06f89ad24)\r\n\r\n![image-20231006151242007](https://github.com/justdan96/tsMuxer/assets/67280615/a5b03961-e1ba-4be0-9756-652f778deb4b)\r\n\r\n![image-20231006151341860](https://github.com/justdan96/tsMuxer/assets/67280615/2a6c2910-b0f3-4812-bee6-41d0f9ab909f)\r\n\r\n#### Destructor of class MatroskaDemuxer：\r\n\r\n![image-20231006151517201](https://github.com/justdan96/tsMuxer/assets/67280615/bddeb039-a2ce-41ec-9c69-d9cc1401ce68)\r\n\r\n![image-20231006151642860](https://github.com/justdan96/tsMuxer/assets/67280615/d2e87fd8-a335-4887-877e-34953477b4b5)\r\n\r\n\r\n### Version\r\n\r\n```shell\r\n./tsmuxer --version\r\ntsMuxeR version git-2539d07. github.com/justdan96/tsMuxer\r\n```\r\n\r\ntsMuxeR version git-2539d07 is the latest version.\r\n\r\n### Reference\r\n\r\nhttps://github.com/justdan96/tsMuxer\r\n\r\n### **Actual Behavior**\r\n\r\nAlloc-dealloc-mismatch\r\n\r\n### PoC\r\n\r\nPocTsmuxer.mkv:  https://github.com/Frank-Z7/z-vulnerabilitys/blob/main/PocTsmuxer.mkv\r\n\r\n### Reproduction\r\n\r\n```shell\r\ncd tsMuxer\r\n./tsMuxer/tsmuxer PocTsmuxer.mkv\r\n```\r\n\r\n### Environment\r\n\r\n```\r\nubuntu:20.04\r\ngcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2)\r\nclang version 10.0.0-4ubuntu1\r\nafl-cc++4.09\r\n```\r\n\r\n### Credit\r\n\r\nZeng Yunxiang ([[Huazhong University of Science and Technology](http://cse.hust.edu.cn/)](http://cse.hust.edu.cn/))\r\nSong Jiaxuan"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1772427170,
+   "author_login": "jcdr428",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-10-20T09:53:06Z",
+   "updated_utc": "2023-10-20T13:37:11Z",
+   "permalink": "https://github.com/justdan96/tsMuxer/issues/778#issuecomment-1772427170",
+   "body_markdown": "@Frank-Z7 I can't understand the reason for this \"mismatch\".\r\ntracks is a MatroskaTrack[64]:\r\n\r\n![image](https://github.com/justdan96/tsMuxer/assets/56721609/a3968bac-ecd8-4e74-b456-5d22d723ab42)\r\n\r\nEdit: ok, so the char[] was cast to a MastroskaTrack object in line 1893. I believe the mismatch is solved simply by casting the MastroskaTrack back to the original char[] then we can delete[].\r\n\r\nCommit pushed, can you please check tomorrow's release."
+  }
+ ]
+}

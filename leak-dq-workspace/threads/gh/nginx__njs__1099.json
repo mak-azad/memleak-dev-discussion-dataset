@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/nginx/njs/issues/1099",
+ "passes": [
+  "main",
+  "offcwe"
+ ],
+ "title": "Potential memory leak in njs_fs_fd_read error paths",
+ "author_login": "minami-0213",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:59Z",
+ "final_url": "https://github.com/nginx/njs/issues/1099",
+ "repo": "nginx/njs",
+ "repo_language": "C",
+ "number": 1099,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-14T11:32:37Z",
+ "updated_at": "2026-07-14T18:48:57Z",
+ "closed_at": null,
+ "labels": [
+  "njs"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "minami-0213",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-14T11:32:37Z",
+   "updated_utc": "2026-07-14T18:48:57Z",
+   "permalink": "https://github.com/nginx/njs/issues/1099",
+   "body_markdown": "## Description\n\n`njs_fs_fd_read()` in `external/njs_fs_module.c` can leave its VM-pool buffer allocated when `read()` fails or when a buffer-growth allocation fails. Its caller, `njs_fs_read_file()`, closes the file descriptor on these paths but does not release `data.start`.\n\nThe buffer therefore remains allocated until the VM memory pool is destroyed. Repeated failing `readFile` operations in a long-lived VM could accumulate unreleased memory and increase memory consumption.\n\n## Details\n\nAnalyzed commit: `e7eac4565bd0933e9ee066098109abbe6ce06650`\n\nAffected locations:\n\n- `external/njs_fs_module.c:247-260` in `njs_flags_table`\n- `external/njs_fs_module.c:1843-1849` and `1861-1904` in `njs_fs_read_file()`\n- `external/njs_fs_module.c:2852-2907` in `njs_fs_fd_read()`\n- `src/njs_vm.c:204-208` in `njs_vm_destroy()`\n\nRelevant code:\n\n`external/njs_fs_module.c:247-260`\n\n```c\nstatic njs_fs_entry_t njs_flags_table[] = {\n    { njs_str(\"a\"),   O_APPEND | O_CREAT | O_WRONLY },\n    { njs_str(\"a+\"),  O_APPEND | O_CREAT | O_RDWR },\n    { njs_str(\"as\"),  O_APPEND | O_CREAT | O_SYNC | O_WRONLY },\n    { njs_str(\"as+\"), O_APPEND | O_CREAT | O_RDWR | O_SYNC },\n    { njs_str(\"ax\"),  O_APPEND | O_CREAT | O_EXCL | O_WRONLY },\n    { njs_str(\"ax+\"), O_APPEND | O_CREAT | O_EXCL | O_RDWR },\n    { njs_str(\"r\"),   O_RDONLY },\n    { njs_str(\"r+\"),  O_RDWR },\n    { njs_str(\"rs+\"), O_RDWR   | O_SYNC },\n    { njs_str(\"w\"),   O_CREAT  | O_TRUNC | O_WRONLY },\n    { njs_str(\"w+\"),  O_CREAT  | O_TRUNC | O_RDWR },\n    { njs_str(\"wx\"),  O_CREAT  | O_TRUNC | O_EXCL | O_WRONLY },\n    { njs_str(\"wx+\"), O_CREAT  | O_TRUNC | O_EXCL | O_RDWR },\n```\n\n`external/njs_fs_module.c:1843-1849`\n\n```c\n        (void) njs_vm_object_prop(vm, options, &string_flag, &flag);\n\n        (void) njs_vm_object_prop(vm, options, &string_encoding, &encode);\n    }\n\n    flags = njs_fs_flags(vm, njs_value_arg(&flag), O_RDONLY);\n    if (njs_slow_path(flags == -1)) {\n```\n\n`external/njs_fs_module.c:1878-1904`\n\n```c\n    data.start = NULL;\n    data.length = sb.st_size;\n\n    ret = njs_fs_fd_read(vm, fd, &data);\n    if (njs_slow_path(ret != NJS_OK)) {\n        if (ret == NJS_DECLINED) {\n            ret = njs_fs_error(vm, \"read\", strerror(errno), path, errno,\n                               &result);\n        }\n\n        goto done;\n    }\n\n    if (encoding == NULL) {\n        ret = njs_buffer_set(vm, njs_value_arg(&result), data.start,\n                             data.length);\n\n    } else {\n        ret = encoding->encode(vm, njs_value_arg(&result), &data);\n        njs_mp_free(njs_vm_memory_pool(vm), data.start);\n    }\n\ndone:\n\n    if (fd != -1) {\n        (void) close(fd);\n```\n\n`external/njs_fs_module.c:2858-2901`\n\n```c\n    size = data->length;\n\n    if (size == 0) {\n        size = 4096;\n    }\n\n    data->start = njs_mp_alloc(njs_vm_memory_pool(vm), size);\n    if (data->start == NULL) {\n        njs_vm_memory_error(vm);\n        return NJS_ERROR;\n    }\n\n    p = data->start;\n    end = p + size;\n\n    for ( ;; ) {\n        n = read(fd, p, end - p);\n\n        if (njs_slow_path(n < 0)) {\n            return NJS_DECLINED;\n        }\n\n        p += n;\n\n        if (n == 0) {\n            break;\n        }\n\n        if (end - p < 2048) {\n            size *= 2;\n\n            start = njs_mp_alloc(njs_vm_memory_pool(vm), size);\n            if (start == NULL) {\n                njs_vm_memory_error(vm);\n                return NJS_ERROR;\n            }\n\n            memcpy(start, data->start, p - data->start);\n\n            njs_mp_free(njs_vm_memory_pool(vm), data->start);\n\n            p = start + (p - data->start);\n            end = start + size;\n            data->start = start;\n```\n\n`njs_fs_read_file()` obtains the requested open flags from the JavaScript options, opens the path, verifies that the descriptor refers to a regular file, initializes `data.length` from `sb.st_size`, and passes the descriptor and `data` to `njs_fs_fd_read()`. The accepted flag table includes write-only modes, so a successfully opened regular file can reach the helper with a descriptor on which `read()` returns an error.\n\nThe helper allocates `data.start` from the VM memory pool before its first `read()`. A negative `read()` result returns `NJS_DECLINED` immediately without freeing that allocation. If the file requires the buffer to grow, the helper allocates a doubled buffer and frees the previous buffer only after the new allocation succeeds; failure of the growth allocation returns `NJS_ERROR` while the current `data.start` allocation remains live.\n\nIn both cases, ownership remains with the helper's `data.start` pointer and is not transferred to a JavaScript Buffer. `njs_fs_read_file()` branches to `done`, where it closes only the descriptor. The later `njs_mp_free()` applies only to the encoding branch after `njs_fs_fd_read()` succeeds, so it cannot cover either helper error return. On successful unencoded reads, `njs_buffer_set()` instead attaches the allocation to the resulting Buffer.\n\nBecause the lost allocation belongs to the VM memory pool, it remains live until `njs_vm_destroy()` destroys that pool. Repeatedly reaching either error path within the same VM can consequently retain additional memory for the remainder of that VM's lifetime.\n\nThis behavior is most directly classified as CWE-401: Missing Release of Memory after Effective Lifetime.\n"
+  }
+ ]
+}

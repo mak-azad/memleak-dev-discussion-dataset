@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/akhellad/Minishell/issues/6",
+ "passes": [
+  "main"
+ ],
+ "title": "exit - free(): invalid pointer",
+ "author_login": "unkn0wn107",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:39Z",
+ "final_url": "https://github.com/akhellad/Minishell/issues/6",
+ "repo": "akhellad/Minishell",
+ "repo_language": "C",
+ "number": 6,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-08-04T00:00:50Z",
+ "updated_at": "2023-08-14T19:25:11Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "unkn0wn107",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-08-04T00:00:50Z",
+   "updated_utc": "2023-08-14T19:25:11Z",
+   "permalink": "https://github.com/akhellad/Minishell/issues/6",
+   "body_markdown": "```\r\nminishell> exit\r\nfree(): invalid pointer\r\nAborted (core dumped)\r\n```\r\n\r\nça ne corrige pas le problème :\r\n```\r\nif (infos->old_pwd)\r\n     free(infos->old_pwd);\r\n```\r\n\r\nC'est donc que old_pwd n'est pas NULL mais a certainement une adresse invalide, probablement du à un mauvais retour de `ft_substr()`  L40 de main.c : \r\n```\r\nif (!ft_strncmp(infos->envp[i], \"OLDPWD=\", 7))\r\n\tinfos->old_pwd = ft_substr(infos->envp[i],\r\n\t\t\t7, ft_strlen(infos->envp[i]) - 7);\r\n```\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1677933447,
+   "author_login": "akhellad",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2023-08-14T19:25:11Z",
+   "updated_utc": "2023-08-14T19:25:11Z",
+   "permalink": "https://github.com/akhellad/Minishell/issues/6#issuecomment-1677933447",
+   "body_markdown": "je n'ai pas encore pull ton travail mais sur mon minishell le exit fonctionne bien, je te redis ca quand j'ai finis d'observer tous ca"
+  }
+ ]
+}

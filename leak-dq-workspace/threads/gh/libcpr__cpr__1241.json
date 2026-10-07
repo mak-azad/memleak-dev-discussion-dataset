@@ -1,0 +1,54 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/libcpr/cpr/issues/1241",
+ "passes": [
+  "main"
+ ],
+ "title": "ASAN Error - CPR 1.11.2",
+ "author_login": "amikhail48",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:32Z",
+ "final_url": "https://github.com/libcpr/cpr/issues/1241",
+ "repo": "libcpr/cpr",
+ "repo_language": "C++",
+ "number": 1241,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-08-04T22:34:30Z",
+ "updated_at": "2026-01-30T14:35:16Z",
+ "closed_at": null,
+ "labels": [
+  "Bug :bug:",
+  "Needs Investigation :mag:"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "amikhail48",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-08-04T22:34:30Z",
+   "updated_utc": "2026-01-30T14:35:16Z",
+   "permalink": "https://github.com/libcpr/cpr/issues/1241",
+   "body_markdown": "### Description\n\nObserving address sanitizer error in `cpr::Session::prepareHeader()`. See ASAN backtrace:\n\n```\n=================================================================\n==9562==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x0001033dd470 in thread T0\n    #0 0x000103d5734d in _ZdlPv+0x7d (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0xad34d)\n    #1 0x00010320c7c1 in cpr::Session::prepareHeader()+0x281 (libcpr.1.dylib:x86_64+0x1d7c1)\n    #2 0x00010320fc06 in cpr::Session::prepareCommonShared()+0xd6 (libcpr.1.dylib:x86_64+0x20c06)\n    #3 0x00010321098f in cpr::Session::prepareCommon()+0x1f (libcpr.1.dylib:x86_64+0x2198f)\n    #4 0x00010321b154 in cpr::Session::Post()+0x14 (libcpr.1.dylib:x86_64+0x2c154)\n    #5 0x0001021d6e51 in cpr::Response cpr::Post<cpr::Url, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>, cpr::CaseInsensitiveCompare, std::__1::allocator<std::__1::pair<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>>>>, cpr::Body, cpr::Timeout>(cpr::Url&&, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>, cpr::CaseInsensitiveCompare, std::__1::allocator<std::__1::pair<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> const, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>>>>&&, cpr::Body&&, cpr::Timeout&&)+0x171\n```\n\n### Example/How to Reproduce\n\n1. Create a `cpr::Post` request to any URL with `{\"Content-Type\", \"application/json\"}` in `cpr::Header`\n2. Build with ASAN configuration\n`ASAN_OPTIONS=detect_leaks=1 gcc -g -O1 -fsanitize=address -DADDRESS_SANITIZER -fno-omit-frame-pointer <program>`\n3. Observe error\n\n### Possible Fix\n\n_No response_\n\n### Where did you get it from?\n\nGitHub (branch e.g. master)\n\n### Additional Context/Your Environment\n\n- OS: macOS\n- Version: Sequoia 15.5\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3824087653,
+   "author_login": "COM8",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-01-30T14:35:16Z",
+   "updated_utc": "2026-01-30T14:35:16Z",
+   "permalink": "https://github.com/libcpr/cpr/issues/1241#issuecomment-3824087653",
+   "body_markdown": "@amikhail48 thanks for reporting! Could you please provide a minimal example to reproduce this?"
+  }
+ ]
+}

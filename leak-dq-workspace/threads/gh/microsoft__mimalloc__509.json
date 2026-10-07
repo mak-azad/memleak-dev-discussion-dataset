@@ -1,0 +1,87 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/microsoft/mimalloc/issues/509",
+ "passes": [
+  "main"
+ ],
+ "title": "Difference between mimalloc's freed report and valgrind --leak-check=full",
+ "author_login": "MasterDuke17",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:09Z",
+ "final_url": "https://github.com/microsoft/mimalloc/issues/509",
+ "repo": "microsoft/mimalloc",
+ "repo_language": "C",
+ "number": 509,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-12-21T11:42:11Z",
+ "updated_at": "2022-01-13T09:02:10Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 4,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "MasterDuke17",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-12-21T11:42:11Z",
+   "updated_utc": "2022-01-13T09:02:10Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/509",
+   "body_markdown": "I have been investigating whether we should use mimalloc for [MoarVM](https://github.com/MoarVM/MoarVM) (the primary backend for the [Rakudo](https://github.com/rakudo/rakudo) Raku compiler) and initial results are very promising. However, am wondering about a difference I see between the stats reported when I use `MIMALLOC_SHOW_STATS=1` with `LD_PRELOAD=/path/to/libmimalloc-debug.so` compared to `valgrind --leak-check=full`. For a minimal test case `MIMALLOC_SHOW_STATS=1 LD_PRELOAD=/path/to/libmimalloc-debug.so raku --full-cleanup -e ''` (where the `--full-cleanup` flag to `raku` tells the VM to free every thing on exit instead of just letting the OS cleanup), mimalloc reports 1.2 MiB total for `current`. However, for `valgrind --leak-check=full raku --full-cleanup -e ''`, valgrind reports `All heap blocks were freed -- no leaks are possible`. Is this just an artifact of using dynamic loading? Or could there be some other reason?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1001712579,
+   "author_login": "daanx",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2021-12-27T19:29:20Z",
+   "updated_utc": "2021-12-27T19:29:37Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/509#issuecomment-1001712579",
+   "body_markdown": "Hi @MasterDuke17, very interesting -- hope mimalloc can work well for the MoarVM :-) (feel free to contact me if you have further questions or need help).\r\n\r\nThe statistics of mimalloc indeed report any allocation while valgrind usually has a list of exceptions where the \"leak\" is expected; for example when the loader allocates thread local storage dynamically which is never released (or locale's etc). I think that is the case here too (although 1.2MiB seems a bit much). \r\n\r\nOne thing you can do is to call `mi_stats_reset()` at the start of `main()` and `mi_stats_print(NULL)` at the end of `main` (or any reasonable block) which avoids counting at least any of the C runtime allocations."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1011039537,
+   "author_login": "MasterDuke17",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-01-12T13:21:21Z",
+   "updated_utc": "2022-01-12T13:21:21Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/509#issuecomment-1011039537",
+   "body_markdown": "We're now using mimalloc in MoarVM via the single static file and using the `mi_*` functions (implemented in https://github.com/MoarVM/MoarVM/pull/1638). However, I'm now seeing even odder stats. `MIMALLOC_SHOW_STATS=1 ./install/bin/raku --full-cleanup -e ''` reports:\r\n```\r\nheap stats:    peak       total        freed    current       unit      count   \r\n  reserved:  128.0 MiB  128.0 MiB    8.0 KiB  128.0 MiB                        not all freed!\r\n committed:  128.0 MiB  128.0 MiB    8.0 KiB  128.0 MiB                        not all freed!\r\n```\r\nI just tried adding `mi_stats_reset()` at the beginning of `main()` and `mi_stats_print(NULL)` at the end of `main()`, but it still printed almost exactly the same stats."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1011624436,
+   "author_login": "daanx",
+   "author_association": "COLLABORATOR",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2022-01-13T01:16:29Z",
+   "updated_utc": "2022-01-13T01:16:29Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/509#issuecomment-1011624436",
+   "body_markdown": "Ah, yes that is confusing :-(.  I just tried myself and get the same -- I will look into improving this when using `mi_stats_reset`.  \r\n\r\nThe statistics are adjusted at the lowest level (in order to be correct) but this also means that for a stand alone program you may never see the reserved/committed memory for the main thread go away -- leading to the \"not all freed!\" message. This is technically true but can also be ignored.  \r\n\r\nWhen building in debug mode, the individual allocation bucket statistics are more useful and these will report more as expected (except for some never freed allocations related to the CRT locale's, TLS , etc). \r\n\r\nThe last line of the statistics, starting with process does report the actual OS reported stats which are better than mimallocs \"reserved\" and \"committed\" as these are virtual ranges. The `rss` in particular shows the peak physical touched memory. \r\n\r\nI think your goal is to see if any memory was leaked? (is that right?) and this is unfortunately hard to see from the mimalloc stats. In the [Koka](http://koka-lang.org) language I disable mimalloc and use address sanitizer or valgrind to track leaks. It would be nice though if mimalloc could support his scenario better though. \r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 1011931518,
+   "author_login": "MasterDuke17",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-01-13T09:02:10Z",
+   "updated_utc": "2022-01-13T09:02:10Z",
+   "permalink": "https://github.com/microsoft/mimalloc/issues/509#issuecomment-1011931518",
+   "body_markdown": "> I think your goal is to see if any memory was leaked? (is that right?) and this is unfortunately hard to see from the mimalloc stats.\r\n\r\nYeah. I was just experimenting to see what the numbers look like. We can also conditionally build MoarVM without mimalloc, so for now at least I'll just do that when I want to use valgrind or heaptrack to check for leaks.\r\n\r\nThanks for following up, feel free to close this if you'd like."
+  }
+ ]
+}

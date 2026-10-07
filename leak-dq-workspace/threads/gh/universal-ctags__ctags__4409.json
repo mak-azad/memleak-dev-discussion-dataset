@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/universal-ctags/ctags/issues/4409",
+ "passes": [
+  "main"
+ ],
+ "title": "JavaScript parser can crash or exhaust memory with deeply nested functions",
+ "author_login": "theteatoast",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:31Z",
+ "final_url": "https://github.com/universal-ctags/ctags/issues/4409",
+ "repo": "universal-ctags/ctags",
+ "repo_language": "C",
+ "number": 4409,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-03-31T13:20:20Z",
+ "updated_at": "2026-04-01T02:07:07Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "theteatoast",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-31T13:20:20Z",
+   "updated_utc": "2026-04-01T02:07:07Z",
+   "permalink": "https://github.com/universal-ctags/ctags/issues/4409",
+   "body_markdown": "## Description:\n\nThe JS parser (parsers/jscript.c) performs recursive descent parsing without any depth limits.\n\nA crafted input with deeply nested function definitions can trigger:\n\n- Stack exhaustion (segmentation fault)\n- Memory exhaustion\n\n## Proof of Concept:\n\nGenerate nested JavaScript file:\n\npython3 -c 'f=open(\"poc.js\",\"w\");depth=100000\nfor i in range(depth): f.write(f\"var f{i} = function() {{\\n\")\nfor i in range(depth): f.write(\"};\\n\")\nf.close()'\n\n\n## Steps to reproduce:\n\n 1. Memory Exhaustion:\n\n`ctags --language-force=JavaScript poc.js`\n\nresult: Killed\n\n``` [5035590.873930] [1461105]     0 1461105     3522     1019      347      672         0    69632        0             0 sshd\n[5035590.873936] [1461106]   105 1461106     3038      700      252      448         0    69632        0             0 sshd\n[5035590.873942] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/user.slice/user-1000.slice/session-10010.scope,task=ctags,pid=1461102,uid=1000\n[5035590.873991] Out of memory: Killed process 1461102 (ctags) total-vm:10936548kB, anon-rss:7376128kB, file-rss:2304kB, shmem-rss:0kB, UID:1000 pgtables:21400kB oom_score_adj:0\n```\n\n2. Segmentation Fault:\n\n`ulimit -s 1024`\n`ctags --language-force=JavaScript poc.js`\n\nresult: Segmentation fault (core dumped)\n\n<details>\n  <summary>GDB</summary>\n\n```\n(gdb) run\nStarting program: /usr/bin/ctags --language-force=JavaScript poc.js\n[Thread debugging using libthread_db enabled]\nUsing host libthread_db library \"/lib/x86_64-linux-gnu/libthread_db.so.1\".\n\nProgram received signal SIGSEGV, Segmentation fault.\n0x00007ffff7aacbf2 in sysmalloc (av=0x7ffff7c03ac0 <main_arena>, nb=65552) at ./malloc/malloc.c:2709\nwarning: 2709   ./malloc/malloc.c: No such file or directory\n(gdb) bt\n#0  0x00007ffff7aacbf2 in sysmalloc (av=0x7ffff7c03ac0 <main_arena>, nb=65552) at ./malloc/malloc.c:2709\n#1  _int_malloc (av=av@entry=0x7ffff7c03ac0 <main_arena>, bytes=bytes@entry=65537) at ./malloc/malloc.c:4481\n#2  0x00007ffff7aad045 in _int_realloc (av=av@entry=0x7ffff7c03ac0 <main_arena>, oldp=oldp@entry=0x55556e849200,\n    oldsize=oldsize@entry=48, nb=nb@entry=65552) at ./malloc/malloc.c:4975\n#3  0x00007ffff7aae315 in __GI___libc_realloc (oldmem=0x55556e849210, bytes=65536) at ./malloc/malloc.c:3508\n#4  0x000055555558c6eb in ?? ()\n#5  0x000055555558de76 in ?? ()\n#6  0x00005555555ced3a in ?? ()\n#7  0x00005555555ce748 in ?? ()\n#8  0x00005555555ceda6 in ?? ()\n#9  0x00005555555ce748 in ?? ()\n#10 0x00005555555ceda6 in ?? ()\n#11 0x00005555555ce748 in ?? ()\n#12 0x00005555555ceda6 in ?? ()\n#13 0x00005555555ce748 in ?? ()\n#14 0x00005555555ceda6 in ?? ()\n#15 0x00005555555ce748 in ?? ()\n#16 0x00005555555ceda6 in ?? ()\n#17 0x00005555555ce748 in ?? ()\n#18 0x00005555555ceda6 in ?? ()\n#19 0x00005555555ce748 in ?? ()\n#20 0x00005555555ceda6 in ?? ()\n#21 0x00005555555ce748 in ?? ()\n#22 0x00005555555ceda6 in ?? ()\n#23 0x00005555555ce748 in ?? ()\n#24 0x00005555555ceda6 in ?? ()\n#25 0x00005555555ce748 in ?? ()\n#26 0x00005555555ceda6 in ?? ()\n#27 0x00005555555ce748 in ?? ()\n--Type <RET> for more, q to quit, c to continue without paging--\n```\n</details>\n\n\n## Tested on:\n\n- Ubuntu 24.04.3 LTS\n- Universal Ctags 5.9.0\n\n## Suggested Fix:\n\n- Introduce recursion depth limits\n- Consider iterative parsing for deeply nested constructs\n\n\n\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4166561859,
+   "author_login": "masatake",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-04-01T00:22:57Z",
+   "updated_utc": "2026-04-01T00:22:57Z",
+   "permalink": "https://github.com/universal-ctags/ctags/issues/4409#issuecomment-4166561859",
+   "body_markdown": "Thank you for reporting. I should apply the technique introduced to the V parser to the JavaScript parser, too."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4166933784,
+   "author_login": "masatake",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-04-01T02:07:07Z",
+   "updated_utc": "2026-04-01T02:07:07Z",
+   "permalink": "https://github.com/universal-ctags/ctags/issues/4409#issuecomment-4166933784",
+   "body_markdown": "See #4387."
+  }
+ ]
+}

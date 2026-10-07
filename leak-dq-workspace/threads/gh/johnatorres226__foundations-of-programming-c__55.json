@@ -1,0 +1,44 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/johnatorres226/foundations-of-programming-c/issues/55",
+ "passes": [
+  "main"
+ ],
+ "title": "[M7.4] Leaks and Use-After-Free",
+ "author_login": "johnatorres226",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:23Z",
+ "final_url": "https://github.com/johnatorres226/foundations-of-programming-c/issues/55",
+ "repo": "johnatorres226/foundations-of-programming-c",
+ "repo_language": "HTML",
+ "number": 55,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-13T00:19:28Z",
+ "updated_at": "2026-09-13T22:14:52Z",
+ "closed_at": null,
+ "labels": [
+  "type:chapter",
+  "blocked",
+  "agent:sonnet",
+  "module:7"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "johnatorres226",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-13T00:19:28Z",
+   "updated_utc": "2026-09-13T22:14:52Z",
+   "permalink": "https://github.com/johnatorres226/foundations-of-programming-c/issues/55",
+   "body_markdown": "**Blocked by:** #25\n_Indirectly, through the above:_ #1 · #2\n\n**Module 7 — Dynamic Memory** · **Chapter 7.4** · Difficulty ●●● · Exercises: 4 · One sitting (~1 hour) · Agent: Sonnet\n\n## Outcome — from SYLLABUS.md\nOn finishing this chapter, the learner can: **Reproduce a leak and a use-after-free, then find both with AddressSanitizer**\n\n## Context for a cold start\n- **Recap source.** Previous chapter **7.3 Ownership** — declared outcome: \"State who is responsible for freeing a pointer, and design functions with a clear ownership contract\"\n- **Zoom Out target.** Next chapter **8.1 How Memory Is Laid Out** — declared outcome: \"Describe text, static, stack, and heap regions and say where any given variable lives\"\n- Write the Recap against that *declared outcome*, never against the neighbouring chapter's prose — that is what lets chapters be written in parallel (PRD §3).\n\n## Files\n| Path | |\n|---|---|\n| `src/modules/7-module-dynamic-memory/4-chapter-leaks-and-use-after-free/tests/` | written **first**; layout per #1 |\n| `src/back-of-the-book/module-7/` | reference solutions + `ANSWERS.md`; layout per #1 |\n| `src/modules/7-module-dynamic-memory/4-chapter-leaks-and-use-after-free/exercises/` | learner stubs |\n| `src/modules/7-module-dynamic-memory/4-chapter-leaks-and-use-after-free/exercises/HOMEWORK.html` | copy `.claude/templates/homework-template.html`; bridges chapter to exercises (PRD §9); asset paths → `../../../../../assets/` |\n| `src/modules/7-module-dynamic-memory/4-chapter-leaks-and-use-after-free/CONTENT.html` | copy `.claude/templates/chapter-template.html`; asset paths → `../../../../assets/` |\n| `src/modules/7-module-dynamic-memory/4-chapter-leaks-and-use-after-free/QUIZ.html` | copy `.claude/templates/quiz-template.html`; edit only the JSON |\n| `src/modules/7-module-dynamic-memory/4-chapter-leaks-and-use-after-free/README.md` | flip status to ✅ |\n\n## Work order — TDD, in this order (PRD §9)\n1. [ ] **Tests** — 4 exercises, `assert`-based, together proving the outcome above. They fail against the stubs.\n2. [ ] **Reference solution** — passes `make check`.\n3. [ ] **Exercise stubs** — compile clean under `-Werror`; fail the tests until the learner finishes them.\n4. [ ] **Prose** — `CONTENT.html` (six sections, chapter table of contents in the header), `exercises/HOMEWORK.html` (one part per exercise, linking back to the `.how` subsection it exercises), `QUIZ.html` (a `why` on every option), chapter `README.md`.\n\n## Definition of done (PRD §13)\n- [ ] Tests written before the solution (enforced per #2)\n- [ ] Six sections in order: Recap → Big Picture → Core Idea → How It Works → Try It → Zoom Out\n- [ ] `.chapter-toc` in the header, right after `<h1>`, nesting How It Works' subsections, plus a final Homework → entry if this chapter has one (PRD §3)\n- [ ] `exercises/HOMEWORK.html` present, copied from the template, one part per exercise, each linking back to its `.how` subsection — the full solution stays in back-of-the-book, not here (PRD §9)\n- [ ] Core Idea is **one sentence**\n- [ ] Recap is 2–3 sentences, written against the declared outcome above\n- [ ] Every quiz option has a `why`; back-of-the-book holds correct answers + reasoning only\n- [ ] Every new term defined on first use; no banned words\n- [ ] Citations respect the tiers; every URL checked live\n- [ ] Opens from `file://` with wifi off; readable at phone width\n- [ ] **About one sitting.** If it won't fit, propose a continuation chapter instead of overflowing (PRD §5)\n- [ ] Word count in the PRD §5 depth band (3,500–5,200 across Big Picture + How It Works + Zoom Out), or a documented reason if not\n- [ ] Footer feedback link title is `[M7C4]`\n- [ ] `make check` and `make lint` pass; CI green\n- [ ] No `CHANGELOG.md` or module `README.md` edits here — per CONTRIBUTING.md § Git workflow (the actual resolution of #2), those update once when the whole module's chapters close, not per chapter\n\n## Rules that bite\n- **Readability: 6th grade.** Short sentences. Define every term on first use. Never \"simply\", \"just\", \"obviously\", \"of course\", \"as you know\". (PRD §4)\n- **Offline.** Renders from `file://` with wifi off. No CDN, no web fonts, no network. (PRD §2)\n- **Code:** `-std=c17 -Wall -Wextra -Werror`, sanitizers on, `clang-format` clean. Every shown example compiles as shown. (PRD §8)\n- **Citations:** cite, never mirror. learn-c.org, CS50x (Week 1), cppreference from Module 1. **Beej's Guide only from Module 6.** *Modern C* is CC BY-NC-ND — link only. Check every URL is live. (PRD §7)\n- **No saved state.** No `localStorage`. (PRD §2)\n- **Diagrams required.** Inline SVG by default (`currentColor`, labelled, dark-mode safe). This is where learners quit.\n"
+  }
+ ]
+}

@@ -1,0 +1,5971 @@
+{
+"main": [
+{
+"question_id": 47362651,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 25988153,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 38416318,
+"query_cwes": [
+"CWE-401",
+"CWE-459"
+]
+},
+{
+"question_id": 31061326,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 31622764,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 51875536,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 49394746,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 10332561,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 56057004,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 33178242,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 19390136,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 26284110,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 8657337,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 34573039,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 5226691,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 7886176,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 11738938,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 12084404,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 14025613,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 45270093,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 43869559,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 22670130,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 66364507,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 60676833,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 4833747,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 17357035,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 24201561,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 34841678,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 14952637,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 10750299,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 30376601,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 66068134,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 1997171,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 15831029,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 13490718,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 6973489,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 14073483,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 45538993,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 31091276,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 53486637,
+"query_cwes": [
+"CWE-401",
+"CWE-763"
+]
+},
+{
+"question_id": 42028271,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 8708758,
+"query_cwes": [
+"CWE-401",
+"CWE-459"
+]
+},
+{
+"question_id": 79549625,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 65280097,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 69227316,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 68013661,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 69532644,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 69521611,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 78170333,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 66645743,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 41547762,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 51553115,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 76031197,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 61320241,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 31273016,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 73797568,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 64405126,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 79998945,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 79941820,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 79350384,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 66075705,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 58500146,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 73563370,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 53404321,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 55398804,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 76108611,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 49536956,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 28475194,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 70678060,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 30374655,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 59306779,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 57749945,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 66406763,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 75716112,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 46575977,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 44627258,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 20401823,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 52479755,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 28915036,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 54056875,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 58189961,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 5339282,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 46695254,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 27589846,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 67227329,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 4548385,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 7078019,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 20297524,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 13546650,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 3317207,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 17071460,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 40975450,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 1611756,
+"query_cwes": [
+"CWE-401",
+"CWE-459"
+]
+},
+{
+"question_id": 32953397,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 36815937,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 21000218,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 69622142,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 5873029,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 63930204,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 29132197,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 24865899,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 19826688,
+"query_cwes": [
+"CWE-401",
+"CWE-789"
+]
+},
+{
+"question_id": 25962716,
+"query_cwes": [
+"CWE-401",
+"CWE-459"
+]
+},
+{
+"question_id": 5776218,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 4094996,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 21889240,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 20067830,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 34933628,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 54340326,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 17804312,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 5776206,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 6783939,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 500656,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 19331396,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 40991687,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 18478354,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 18138509,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 13847953,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 1089296,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 43915004,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 273209,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 5134891,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 13132798,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 17642433,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 3261883,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 45000938,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 37042076,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 11963940,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 6503661,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 28040438,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 654754,
+"query_cwes": [
+"CWE-401",
+"CWE-459",
+"CWE-590"
+]
+},
+{
+"question_id": 3840582,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 3536153,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 12825148,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 45627,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 15467298,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 8175827,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 1008019,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 6261201,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 6500313,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 2975831,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 53413647,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 6804849,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 52262766,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 53372775,
+"query_cwes": [
+"CWE-401",
+"CWE-459"
+]
+},
+{
+"question_id": 78490933,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 752658,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 655065,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 37514509,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 53870522,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 67068436,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 50502971,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 58926945,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 51702867,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 8366172,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 12434179,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 25737661,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 10078002,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 3844678,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 9033931,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 10223677,
+"query_cwes": [
+"CWE-401"
+]
+},
+{
+"question_id": 10079843,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 75603229,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 67345194,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 48198166,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 61446459,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 41553309,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 13151961,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 56809877,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 26431573,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 29076516,
+"query_cwes": [
+"CWE-459",
+"CWE-761",
+"CWE-763"
+]
+},
+{
+"question_id": 76377626,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 24986335,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 75885820,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 46486989,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 35420629,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 70407733,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 60872361,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 72085495,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 55083128,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 32808638,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 7025328,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 27594992,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 30308992,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 6972531,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 4952426,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 55957454,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 24280361,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 5011990,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 36063200,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 45256601,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 75497146,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 40926653,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 64597278,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 67174550,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 76025633,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 19951190,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 74792797,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 40458179,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 77349868,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 14262531,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 3948412,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 76808559,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 66652015,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 37344697,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 35858184,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 20132297,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 1913343,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 30325372,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 5638761,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 42321912,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 62878935,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 17702936,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 15286450,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 40106941,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 8918791,
+"query_cwes": [
+"CWE-459",
+"CWE-762"
+]
+},
+{
+"question_id": 6256492,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 273720,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 12313405,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 6966984,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 45628694,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 28139509,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 56792856,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 34493967,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 8752111,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 42845059,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 31664064,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 10354866,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 65782061,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 33957037,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 22124981,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 15474684,
+"query_cwes": [
+"CWE-459",
+"CWE-590"
+]
+},
+{
+"question_id": 6966328,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 10546695,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 2597116,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 30082821,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 57851897,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 31487981,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 77459620,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 15671954,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 63098785,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 39962705,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 8835729,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 27593184,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 33392649,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 16400683,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 21233891,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 70982490,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 78851746,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 6463053,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 67226661,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 43389411,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 27839959,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 73900136,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 22471184,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 14069536,
+"query_cwes": [
+"CWE-459",
+"CWE-789"
+]
+},
+{
+"question_id": 8179958,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 1447018,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 35308274,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 24582177,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 19519364,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 12828091,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 16749860,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 49667744,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 49716580,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 46800987,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 20992792,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 19606963,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 35937148,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 956611,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 27770050,
+"query_cwes": [
+"CWE-459"
+]
+},
+{
+"question_id": 34847051,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 10466819,
+"query_cwes": [
+"CWE-590",
+"CWE-761",
+"CWE-763"
+]
+},
+{
+"question_id": 9114657,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 50728345,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 47758987,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 73972782,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 40197981,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 68998306,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 5543330,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 40333284,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 31528824,
+"query_cwes": [
+"CWE-590",
+"CWE-763"
+]
+},
+{
+"question_id": 14170010,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 57758280,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 57738142,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 19338823,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 15731703,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 7577976,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 73209678,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 23537890,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 55208988,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 29070751,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 42159456,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 21124065,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 8217694,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 72217371,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 64992429,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 20415642,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 2525136,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 47090725,
+"query_cwes": [
+"CWE-590",
+"CWE-763"
+]
+},
+{
+"question_id": 10939158,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 24216008,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 24582389,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 8611198,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 71074993,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 36563103,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 26005389,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 9504588,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 32144812,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 33281700,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 32663893,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 29793157,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 23418728,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 3398719,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 19600526,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 62233020,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 47187310,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 28896609,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 52734501,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 52855674,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 4970823,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 1233063,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 26950411,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 6447376,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 3902126,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 6058909,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 21547180,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 18017074,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 38855343,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 47371101,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 12513426,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 3788005,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 15454403,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 24747269,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 43120223,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 679571,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 10836591,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 447379,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 75966130,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 14199689,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 3802454,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 34568150,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 5713099,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 10716013,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 14109257,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 71273492,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 75315299,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 39385520,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 43680991,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 27438004,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 7079062,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 79827412,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 22793669,
+"query_cwes": [
+"CWE-590",
+"CWE-789"
+]
+},
+{
+"question_id": 437279,
+"query_cwes": [
+"CWE-590",
+"CWE-763"
+]
+},
+{
+"question_id": 5316379,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 12159739,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 9564026,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 62649203,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 23820713,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 15238745,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 44314867,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 605845,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 1538420,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 1119134,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 22159920,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 2688466,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 13990532,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 11440846,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 62597088,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 14500880,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 4418708,
+"query_cwes": [
+"CWE-590",
+"CWE-762"
+]
+},
+{
+"question_id": 14588767,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 7050798,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 32652213,
+"query_cwes": [
+"CWE-590",
+"CWE-763"
+]
+},
+{
+"question_id": 2022335,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 63789313,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 76838834,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 72583216,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 65847255,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 76985778,
+"query_cwes": [
+"CWE-590"
+]
+},
+{
+"question_id": 2426277,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 17440621,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 32849739,
+"query_cwes": [
+"CWE-761",
+"CWE-763"
+]
+},
+{
+"question_id": 5414549,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 30378416,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 62993273,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 1963745,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 38385176,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 8466743,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 49568052,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 8424684,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 10608781,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 19779846,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 5124799,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 29213142,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 11494379,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 77748456,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 6013713,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 36515604,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 58530570,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 5943071,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 21777598,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 31769793,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 10069597,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 10865749,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 39986092,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 38252408,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 67887264,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 39796122,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 35879793,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 56165180,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 56884510,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 64246400,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 49712352,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 75991615,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 54333382,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 32392837,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 41611598,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 35385154,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 44293723,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 33381783,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 39883455,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 57644453,
+"query_cwes": [
+"CWE-761",
+"CWE-789"
+]
+},
+{
+"question_id": 77460808,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 58930300,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 38875667,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 64733514,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 39282669,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 46836994,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 59593891,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 71011228,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 32415774,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 39113727,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 41070416,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 21847068,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 78547254,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 77284405,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 51223203,
+"query_cwes": [
+"CWE-761"
+]
+},
+{
+"question_id": 7875764,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 40509986,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 69459004,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 46988712,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 53922209,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 6791522,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 32898449,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 4059012,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 33063463,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 25922895,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 21377360,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 9238731,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 345003,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 58110985,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 3872290,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 42663978,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 75526643,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 79224819,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 32394833,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 21500469,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 43171413,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 34239797,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 15511982,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 67803107,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 7647964,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 12576825,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 55273029,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 240212,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 10854210,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 370195,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 21374891,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 2570552,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 21767320,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 2983182,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 3184118,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 75319496,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 19154980,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 13286706,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 9986591,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 1232262,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 23271495,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 6727383,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 4025869,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 993590,
+"query_cwes": [
+"CWE-762",
+"CWE-789"
+]
+},
+{
+"question_id": 49651149,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 16714937,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 2677097,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 52479989,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 74218524,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 63470660,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 33718268,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 4394606,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 67578185,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 5026197,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 28977302,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 871234,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 17562943,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 1917411,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 13654927,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 1612031,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 59151808,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 9327003,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 78725496,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 15073970,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 17612,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 8405099,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 22877956,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 161053,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 10195343,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 15752659,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 66930450,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 703691,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 15079057,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 33374483,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 536439,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 4255598,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 65160150,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 34294,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 1344126,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 68457968,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 1007188,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 33321056,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 494530,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 73973154,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 512841,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 41741448,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 4595675,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 10129047,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 1635869,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 65677448,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 39935218,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 11537367,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 62867252,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 55289824,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 35166218,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 44370580,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 33378180,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 47236570,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 21143932,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 35500740,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 24150154,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 19427576,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 25411433,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 23605169,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 23027862,
+"query_cwes": [
+"CWE-762"
+]
+},
+{
+"question_id": 32118545,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 9550286,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 18383844,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 3838855,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 30068377,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 9043685,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 68293501,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 34887157,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 33460988,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 1052818,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 3944505,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 551069,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 2060974,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 17024866,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 12645647,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 37800739,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 17423967,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 27272992,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 62469680,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 50546512,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 44424820,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 9419370,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 10779474,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 35163015,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 33395724,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 4803352,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 31333077,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 5120768,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 704466,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 10360461,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 7432100,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 8936063,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 728233,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 9020372,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 11598990,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 18160776,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 77773950,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 19523179,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 79004677,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 28973502,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 1478693,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 67652342,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 8999994,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 20735026,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 37184733,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 20623956,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 7448984,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 66606248,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 13238192,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 8148443,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 3647953,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 61476655,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 2848273,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 72331609,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 1588788,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 7733308,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 77619006,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 25414839,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 11572631,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 73899093,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 2008173,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 37988849,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 50610274,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 39366248,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 4237812,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 32177183,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 76044569,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 22029845,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 2662652,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 70799842,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 43187986,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 49136390,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 12746885,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 14773420,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 67318357,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 9514475,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 8750690,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 18253413,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 4841126,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 38792542,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 2902064,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 20019512,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 15024612,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 44349329,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 50700253,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 28317035,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 47175974,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 40610969,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 47245000,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 38278874,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 1879550,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 12230788,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 9646608,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 1145,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 29335795,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 12548868,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 21438154,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 38540414,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 13148119,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 40857626,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 23223476,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 35859579,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 54100524,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 25540653,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 17894985,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 39642200,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 27327426,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 21437482,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 26009570,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 28256350,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 22824802,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 1334929,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 32025292,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 17914579,
+"query_cwes": [
+"CWE-763"
+]
+},
+{
+"question_id": 71886062,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 71984360,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 6111972,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 61553192,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 59120971,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 76095270,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 42710999,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 77885684,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 26353694,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 22901208,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 42125850,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 19502423,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 39368659,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 19339086,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 65595869,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 62110270,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 42470350,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 7466971,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 36273231,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 10250766,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 18968513,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 33934310,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 7951433,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 64373405,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 910314,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 22837508,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 41660675,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 20494688,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 23723215,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 17306417,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 8317011,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 10986551,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 11560902,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 1663000,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 30239619,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 33614009,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 24482090,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 10423992,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 839291,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 11700500,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 1171833,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 17925771,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 20197667,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 48590861,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 22714760,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 12099719,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 74645824,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 37035739,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 75202566,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 69771578,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 66764918,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 68944842,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 8973129,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 60856679,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 54937992,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 49972975,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 51175664,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 17631453,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 16800074,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 20475295,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 18764952,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 17791892,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 28797000,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 79290961,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 49028842,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 3703658,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 6406356,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 59618533,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 63196352,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 36390489,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 7455982,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 26020580,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 28767234,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 48645210,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 53001194,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 13991018,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 68094459,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 13575276,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 71113770,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 78680333,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 13294715,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 13435374,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 75905946,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 33104998,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 28471327,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 29529890,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 22577735,
+"query_cwes": [
+"CWE-789"
+]
+},
+{
+"question_id": 43575838,
+"query_cwes": [
+"CWE-789"
+]
+}
+],
+"offcwe": [
+{
+"question_id": 33114152,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 2620313,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 4083608,
+"search_themes": [
+"RES-file/fd/socket",
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 7297001,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 13691107,
+"search_themes": [
+"RES-file/fd/socket",
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 23793992,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 33310675,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 66048264,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 5130375,
+"search_themes": [
+"RES-file/fd/socket",
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 21847068,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 64390291,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 60161967,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 38356997,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 28897965,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 19502423,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 30308992,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 39068621,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 41023657,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 38915566,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 18866743,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 62148840,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 48443105,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 8338570,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 3764072,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 19331396,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 68352718,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 7902452,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 3130734,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 32970935,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 1410226,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 65867094,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 1667909,
+"search_themes": [
+"RES-file/fd/socket"
+]
+},
+{
+"question_id": 17642433,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 7886176,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 622890,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 28527521,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 15207762,
+"search_themes": [
+"RES-thread",
+"RES-thread"
+]
+},
+{
+"question_id": 11161306,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 41553309,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 13132890,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 7278216,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 71835177,
+"search_themes": [
+"RES-thread"
+]
+},
+{
+"question_id": 6500313,
+"search_themes": [
+"RES-thread",
+"STL-containers",
+"STL-containers"
+]
+},
+{
+"question_id": 1008019,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 752658,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 655065,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 6261201,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 273209,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 37514509,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 12825148,
+"search_themes": [
+"RES-thread",
+"STL-containers"
+]
+},
+{
+"question_id": 14084151,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 5734066,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 9981946,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 11437942,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 18357956,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 58697105,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 63003465,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 29761900,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 32025292,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 38490320,
+"search_themes": [
+"GROWTH-no-leak",
+"DOUBLE-FREE/UAF",
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 68567989,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 32891780,
+"search_themes": [
+"GROWTH-no-leak",
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 3087439,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 46734808,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 47266630,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 79217807,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 55768549,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 3190146,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 1386776,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 10116033,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 4292368,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 20436690,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 39753265,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 73314413,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 14867024,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 11196482,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 78686832,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 53822553,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 76274268,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 70653113,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 77382967,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 77777506,
+"search_themes": [
+"GROWTH-no-leak"
+]
+},
+{
+"question_id": 6977161,
+"search_themes": [
+"REFCOUNT-bindings",
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 18693744,
+"search_themes": [
+"REFCOUNT-bindings",
+"REFCOUNT-bindings",
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 39948237,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 54738087,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 64886398,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 5508904,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 5606589,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 350647,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 58263736,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 79336417,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 76168695,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 51419371,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 1014584,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 7700446,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 1533378,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 2916549,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 33334126,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 5322492,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 21885986,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 9098890,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 45627,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 17732598,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 8798905,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 57188832,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 41003046,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 33613357,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 15419669,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 75141650,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 7771885,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 13644380,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 6845691,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 16007223,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 1198829,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 7284477,
+"search_themes": [
+"REFCOUNT-bindings"
+]
+},
+{
+"question_id": 2902064,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 14063791,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 29504070,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 45133276,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 29335795,
+"search_themes": [
+"DOUBLE-FREE/UAF",
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 14050058,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 23557363,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 14002026,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 654754,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 260915,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 1549945,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 47090725,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 19304815,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 530278,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 39366248,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 44429933,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 1913343,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 24308647,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 79268109,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 13679635,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 41741448,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 26525350,
+"search_themes": [
+"DOUBLE-FREE/UAF"
+]
+},
+{
+"question_id": 13247126,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 12724057,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 2303740,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 14156099,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 48307411,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 1848575,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 48792331,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 56317418,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 55801993,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 71866535,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 1424635,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 56855852,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 56662038,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 64514138,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 77008484,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 21057393,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 68639266,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 15786076,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 28715052,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 36536612,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 47930089,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 71550137,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 72425767,
+"search_themes": [
+"HEAP-CORRUPTION"
+]
+},
+{
+"question_id": 299761,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 30374655,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 15431365,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 30374811,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 9615249,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 65928467,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 56329377,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 62026229,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 13150955,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 41775549,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 8040149,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 7026129,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 36241598,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 63455251,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 69803025,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 11484895,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 66898984,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 33040770,
+"search_themes": [
+"GPU/OS-resource"
+]
+},
+{
+"question_id": 56074898,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 55288638,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 66878316,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 16659303,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 4617328,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 27900525,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 26862876,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 13833518,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 49896108,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 76858919,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 77844327,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 4254610,
+"search_themes": [
+"LIB-cleanup",
+"POOL/ARENA"
+]
+},
+{
+"question_id": 27834257,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 10560910,
+"search_themes": [
+"LIB-cleanup",
+"POOL/ARENA"
+]
+},
+{
+"question_id": 79482618,
+"search_themes": [
+"LIB-cleanup",
+"LIB-cleanup"
+]
+},
+{
+"question_id": 12672770,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 22197735,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 9989496,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 59591905,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 8795871,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 8370468,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 6503661,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 7655834,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 30754437,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 7955109,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 78525668,
+"search_themes": [
+"LIB-cleanup"
+]
+},
+{
+"question_id": 19390136,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 770577,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 48861544,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 20607642,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 3844630,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 44980711,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 40106941,
+"search_themes": [
+"POOL/ARENA",
+"STL-containers"
+]
+},
+{
+"question_id": 4735113,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 18455698,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 15474684,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 52829477,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 14235858,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 724096,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 59384221,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 13159564,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 30836359,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 74956010,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 2798413,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 79336699,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 14764553,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 26932750,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 79542518,
+"search_themes": [
+"POOL/ARENA"
+]
+},
+{
+"question_id": 1361139,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 12795196,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 13587791,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 39102028,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 31410858,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 20158793,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 38674268,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 19414331,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 75600524,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 66068134,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 6199729,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 1919626,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 9033931,
+"search_themes": [
+"STL-containers"
+]
+},
+{
+"question_id": 14379328,
+"search_themes": [
+"STL-containers"
+]
+}
+]
+}

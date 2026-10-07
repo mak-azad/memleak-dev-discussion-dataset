@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/eclipse-paho/paho.mqtt.c/issues/1705",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Socket descriptor leak in v1.3.16 release",
+ "author_login": "bguan-radionix",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:02Z",
+ "final_url": "https://github.com/eclipse-paho/paho.mqtt.c/issues/1705",
+ "repo": "eclipse-paho/paho.mqtt.c",
+ "repo_language": "C",
+ "number": 1705,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-23T19:31:22Z",
+ "updated_at": "2026-10-01T09:16:57Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "RES-socket"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "bguan-radionix",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-23T19:31:22Z",
+   "updated_utc": "2026-10-01T09:16:57Z",
+   "permalink": "https://github.com/eclipse-paho/paho.mqtt.c/issues/1705",
+   "body_markdown": "**Describe the bug**\n\nIn v1.3.16, commit 375e76d8 (PR #1642, issue #1430) added an internal socketpair() used to wake poll()/select() when connect or close happens on another thread.\n\nSocket_outInitialize() creates that pair and stores the descriptors in sockfd[0] (read end, added to the poll/select set) and sockfd[1] (write end, not tracked there). Destroying the last client runs Socket_outTerminate(), which frees the socket-module lists and buffers but does not close those two descriptors. The next MQTTAsync_create() / MQTTClient_create() calls Socket_outInitialize() → Socket_pair() again, which overwrites sockfd[] and leaks two file descriptors per create/destroy cycle.\n\nLong-running processes that recreate the last client (reconnect loops, failed connect then destroy) grow the process fd count by 2 each cycle and can hit EMFILE / “Too many open files”.\n\n**To Reproduce**\nTrace is optional (MQTT_C_CLIENT_TRACE=ON, MQTT_C_CLIENT_TRACE_LEVEL=PROTOCOL as in the README). The leak is easier to see from the process fd count than from protocol logs.\n\nUse Paho C v1.3.16 (libpaho-mqtt3a or libpaho-mqtt3c; SSL is not required).\nEnsure no broker is required for the leak; a failed connect still triggers library init/terminate if you destroy the last (or only) client.\nLoop: create a client, optionally connect (success or failure), then destroy it. Example with the synchronous API:\n```\nfor (int i = 0; i < 20; ++i) {\n    MQTTClient client = NULL;\n    MQTTClient_create(&client, \"tcp://127.0.0.1:1883\", \"fd-leak-test\",\n                      MQTTCLIENT_PERSISTENCE_NONE, NULL);\n    MQTTClient_connectOptions opts = MQTTClient_connectOptions_initializer;\n    opts.connectTimeout = 1;\n    MQTTClient_connect(client, &opts);   /* success or failure both leak */\n    MQTTClient_disconnect(client, 0);\n    MQTTClient_destroy(&client);\n    /* count fds, e.g. entries in /proc/self/fd */\n}\n```\nThe same pattern applies to MQTTAsync_create / MQTTAsync_destroy when that client is the last one and the library fully terminates.\n\nWatch `/proc/<pid>/fd` or `lsof -p <pid>`. After each cycle the count increases by 2.\n\n\n**Expected behavior**\nAfter MQTTClient_destroy() / MQTTAsync_destroy() of the last client, Socket_outTerminate() should close both ends of the interrupt pair and forget the descriptors (INVALID_SOCKET). A later create/initialize should not leave the previous pair open. The process fd count should stay stable across create/destroy cycles.\n\n**Screenshots**\nNot applicable.\n\n**Log files**\n\n`lsof/ls -l /proc/<pid>/fd` shows leftover socket:[…] entries that persist after destroy and are not replaced by the new pair.\n\n** Environment (please complete the following information):**\n - OS: Embedded Linux\n\n**Additional context**\nAdd any other context about the problem here.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5928447469,
+   "author_login": "matthiasklein",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-10-01T09:16:57Z",
+   "updated_utc": "2026-10-01T09:16:57Z",
+   "permalink": "https://github.com/eclipse-paho/paho.mqtt.c/issues/1705#issuecomment-5928447469",
+   "body_markdown": "We've also encountered this problem in the field, and it causes us to run out of file descriptors over time.\n\nWe're using this patch:\n\n```\n--- a/src/Socket.c\n+++ b/src/Socket.c\n@@ -278,7 +278,7 @@\n \n #endif /* _WIN32 */\n \n-static SOCKET sockfd[2];\n+static SOCKET sockfd[2] = {INVALID_SOCKET, INVALID_SOCKET};\n \n int Socket_pair()\n {\n@@ -293,12 +293,44 @@\n \n int Socket_interrupt()\n {\n+\tint rc;\n+\n \tFUNC_ENTRY;\n-\tint rc = send(sockfd[1], \"\\0\", 1, 0);\n+\t/* the pair is closed by Socket_outTerminate, and Socket_close_only can\n+\t   still run afterwards, so the write end must be checked here */\n+\tif (sockfd[1] == INVALID_SOCKET)\n+\t\trc = SOCKET_ERROR;\n+\telse\n+\t\trc = send(sockfd[1], \"\\0\", 1, 0);\n \tFUNC_EXIT_RC(rc);\n \treturn rc;\n }\n \n+\n+/**\n+ * Close both ends of the interrupt pair created by Socket_pair and forget them,\n+ * so that a later Socket_outInitialize does not overwrite still open descriptors.\n+ */\n+static void Socket_closePair(void)\n+{\n+\tint i;\n+\n+\tFUNC_ENTRY;\n+\tfor (i = 0; i < 2; ++i)\n+\t{\n+\t\tif (sockfd[i] != INVALID_SOCKET)\n+\t\t{\n+#if defined(_WIN32)\n+\t\t\tclosesocket(sockfd[i]);\n+#else\n+\t\t\tclose(sockfd[i]);\n+#endif\n+\t\t\tsockfd[i] = INVALID_SOCKET;\n+\t\t}\n+\t}\n+\tFUNC_EXIT;\n+}\n+\n /**\n  * Initialize the socket module\n  */\n@@ -347,6 +379,7 @@\n void Socket_outTerminate(void)\n {\n \tFUNC_ENTRY;\n+\tSocket_closePair();\n \tListFree(mod_s.connect_pending);\n \tListFree(mod_s.write_pending);\n #if defined(USE_SELECT)\n```\n"
+  }
+ ]
+}

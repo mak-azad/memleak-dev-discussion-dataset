@@ -1,0 +1,53 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/BChan-0/valkey/issues/224",
+ "passes": [
+  "main"
+ ],
+ "title": "[TEST-FAILURE] Leaked memory in debugCommand (debug.c:569)",
+ "author_login": "BChan-0",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:14Z",
+ "final_url": "https://github.com/BChan-0/valkey/issues/224",
+ "repo": "BChan-0/valkey",
+ "repo_language": "C",
+ "number": 224,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-07-30T03:42:59Z",
+ "updated_at": "2026-07-30T03:43:01Z",
+ "closed_at": null,
+ "labels": [
+  "test-failure"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "BChan-0",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-30T03:42:59Z",
+   "updated_utc": "2026-07-30T03:43:01Z",
+   "permalink": "https://github.com/BChan-0/valkey/issues/224",
+   "body_markdown": "<!-- valkey-ci-agent:memory-error:6717d324bc90c6ded1c2 -->\n<!-- valkey-ci-agent:memory-error:occurrences:1 -->\n\n**Summary**\n\n`Leaked memory in debugCommand (debug.c:569)` in `tests/unit/dummy-memory.tcl` is failing in CI.\n\n**Failing test(s)**\n\n- Test name: `[no test]`\n- Test file: `tests/unit/dummy-memory.tcl`\n- CI link(s):\n    - `test-sanitizer-address-clang`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244610#step:9:1)\n    - `test-sanitizer-address-gcc`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244306#step:9:1)\n    - `test-sanitizer-force-defrag`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244216#step:9:1)\n    - `test-valgrind-misc`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244200#step:9:1)\n    - `test-valgrind-no-malloc-usable-size-misc`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244163#step:9:1)\n    - `test-valgrind-no-malloc-usable-size-test`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244269#step:8:1)\n    - `test-valgrind-test`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244319#step:8:1)\n\n**Error stack trace**\n\n```\nSanitizer error: \n=================================================================\n==6086==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 41 byte(s) in 1 object(s) allocated from:\n    #0 0x5621317f9e33 in malloc (/home/runner/work/valkey/valkey/src/valkey-server+0x20de33) (BuildId: 15d5375fe17d9df88056cc97072348acfa6e2312)\n    #1 0x562131c01013 in ztrymalloc_usable_internal /home/runner/work/valkey/valkey/src/zmalloc.c:172:17\n    #2 0x562131c01013 in zmalloc_usable /home/runner/work/valkey/valkey/src/zmalloc.c:268:17\n    #3 0x562131af3da7 in _sdsnewlen /home/runner/work/valkey/valkey/src/sds.c:102:22\n    #4 0x56213193428f in debugCommand /home/runner/work/valkey/valkey/src/debug.c:569:9\n    #5 0x562131b414a7 in call /home/runner/work/valkey/valkey/src/server.c:3933:5\n    #6 0x562131b456cc in processCommand /home/runner/work/valkey/valkey/src/server.c:4700:9\n    #7 0x562131a43451 in processCommandAndResetClient /home/runner/work/valkey/valkey/src/networking.c:3942:9\n    #8 0x562131a43451 in processInputBuffer /home/runner/work/valkey/valkey/src/networking.c:4246:13\n    #9 0x562131a2529e in readQueryFromClient /home/runner/work/valkey/valkey/src/networking.c:4359:17\n    #10 0x562131b5e23f in callHandler /home/runner/work/valkey/valkey/src/./connhelpers.h:79:18\n    #11 0x562131b5e23f in connSocketEventHandler /home/runner/work/valkey/valkey/src/socket.c:301:14\n    #12 0x562131855e80 in aeProcessEvents /home/runner/work/valkey/valkey/src/ae.c:486:17\n    #13 0x5621318568fc in aeMain /home/runner/work/valkey/valkey/src/ae.c:543:9\n    #14 0x562131b55ba8 in main /home/runner/work/valkey/valkey/src/server.c:7832:5\n    #15 0x7f641f02a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)\n    #16 0x7f641f02a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: 8e9fd827446c24067541ac5390e6f527fb5947bb)\n    #17 0x56213175efe4 in _start (/home/runner/work/valkey/valkey/src/valkey-server+0x172fe4) (BuildId: 15d5375fe17d9df88056cc97072348acfa6e2312)\n\nSUMMARY: AddressSanitizer: 41 byte(s) leaked in 1 allocation(s).\n\n```\n\n**Environments:** `test-sanitizer-address-clang`, `test-sanitizer-address-gcc`, `test-sanitizer-force-defrag`, `test-valgrind-misc`, `test-valgrind-no-malloc-usable-size-misc`, `test-valgrind-no-malloc-usable-size-test`, `test-valgrind-test`\n\n---\n*Auto-created by Test Failure Detector*\n<!-- valkey-ci-agent:memory-error:last-key:30499308370 -->"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5126157642,
+   "author_login": "BChan-0",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-07-30T03:43:01Z",
+   "updated_utc": "2026-07-30T03:43:01Z",
+   "permalink": "https://github.com/BChan-0/valkey/issues/224#issuecomment-5126157642",
+   "body_markdown": "Test failed again on 2026-07-30.\n\n**New error stack trace**\n\n```\nValgrind error: ==8335== Memcheck, a memory error detector\n==8335== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.\n==8335== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info\n==8335== Command: /home/runner/work/valkey/valkey/src/valkey-server ./tests/tmp/valkey.conf.8330.2\n==8335== \n==8335== \n==8335== HEAP SUMMARY:\n==8335==     in use at exit: 972,349 bytes in 13,544 blocks\n==8335==   total heap usage: 18,055 allocs, 4,511 frees, 1,383,159 bytes allocated\n==8335== \n==8335== 41 bytes in 1 blocks are definitely lost in loss record 900 of 1,111\n==8335==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==8335==    by 0x318E1D: ztrymalloc_usable_internal (zmalloc.c:172)\n==8335==    by 0x31905C: zmalloc_usable (zmalloc.c:268)\n==8335==    by 0x29065E: _sdsnewlen (sds.c:102)\n==8335==    by 0x2909EB: sdsnewlen (sds.c:169)\n==8335==    by 0x290AAA: sdsdup (sds.c:190)\n==8335==    by 0x1E8220: debugCommand (debug.c:569)\n==8335==    by 0x2ADB0C: call (server.c:3933)\n==8335==    by 0x2B0420: processCommand (server.c:4700)\n==8335==    by 0x24CE00: processCommandAndResetClient (networking.c:3942)\n==8335==    by 0x24DC65: processInputBuffer (networking.c:4246)\n==8335==    by 0x24E131: readQueryFromClient (networking.c:4359)\n==8335== \n==8335== LEAK SUMMARY:\n==8335==    definitely lost: 41 bytes in 1 blocks\n==8335==    indirectly lost: 0 bytes in 0 blocks\n==8335==      possibly lost: 40,781 bytes in 836 blocks\n==8335==    still reachable: 931,527 bytes in 12,707 blocks\n==8335==         suppressed: 0 bytes in 0 blocks\n==8335== Reachable blocks (those to which a pointer was found) are not shown.\n==8335== To see them, rerun with: --leak-check=full --show-leak-kinds=all\n==8335== \n==8335== For lists of detected and suppressed errors, rerun with: -s\n==8335== ERROR SUMMARY: 36 errors from 36 contexts (suppressed: 0 from 0)\n\n\n```\n\n**Failed in:**\n- `test-sanitizer-address-clang`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244610#step:9:1)\n- `test-sanitizer-address-gcc`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244306#step:9:1)\n- `test-sanitizer-force-defrag`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244216#step:9:1)\n- `test-valgrind-misc`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244200#step:9:1)\n- `test-valgrind-no-malloc-usable-size-misc`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244163#step:9:1)\n- `test-valgrind-no-malloc-usable-size-test`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244269#step:8:1)\n- `test-valgrind-test`: [CI link](https://github.com/BChan-0/valkey/actions/runs/30499308370/job/90735244319#step:8:1)"
+  }
+ ]
+}

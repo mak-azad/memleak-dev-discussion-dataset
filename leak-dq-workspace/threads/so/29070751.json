@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 29070751,
+ "url": "https://stackoverflow.com/questions/29070751/calling-free-in-a-procedure-in-c",
+ "title": "Calling free in a procedure in C",
+ "tags": [
+  "c",
+  "free"
+ ],
+ "score": 0,
+ "view_count": 66,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2015-03-16T06:26:04Z",
+ "last_activity_utc": "2015-03-16T06:31:41Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 4675108,
+ "author_display_name": "Raunak Kumar",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/29070751/calling-free-in-a-procedure-in-c",
+ "body_html": "<p>In this procedure, I am trying to copy 'b' characters of a string 'c' into an array of strings. So I created a local variable 'ans'.\nIf I call free like I do, my program doesn't output anything (because I free'd it) and valgrind gives me a bunch of errors. If I don't call free, I only get 1 error of memory leak. How do I free 'ans'?</p>\n\n<pre><code>void foo(void**av, void*bv, void*cv) {\n    char** a = (char**) av;\n    intptr_t b = (intptr_t) bv;\n    char* c = (char*) c;\n\n    char* ans = malloc(b*sizeof(char));\n    int i = 0;\n    while(c[i]!=0 &amp;&amp; i&lt;b)\n        ans[i] = c[i++];\n    ans[i] = 0;\n    *a = ans;\n    free (ans);\n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 46376201,
+   "parent_id": 29070751,
+   "parent_type": "question",
+   "author_user_id": 2173917,
+   "author_display_name": "Sourav Ghosh",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/29070751/#comment46376201_29070751",
+   "score": 0,
+   "created_utc": "2015-03-16T06:27:32Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "you can free <code>ans</code> from the caller function of <code>foo()</code>..."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 29070818,
+   "parent_id": 29070751,
+   "author_user_id": 721269,
+   "author_display_name": "David Schwartz",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/29070818",
+   "score": 3,
+   "created_utc": "2015-03-16T06:31:41Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2015-03-16T06:31:41Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>I think you're misunderstanding what <code>free (ans);</code> does. It doesn't free <code>ans</code> itself -- it still has the same value it always had. It frees the block you allocated when you called <code>malloc</code>. Since the caller still needs to access that block (that's why you did <code>*a = ans;</code> -- to let the caller access the memory you allocated), you can't free it except in the caller, after they're done with it.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 46376411,
+   "parent_id": 29070751,
+   "parent_type": "question",
+   "author_user_id": 4460500,
+   "author_display_name": "VolAnd",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/29070751/#comment46376411_29070751",
+   "score": 0,
+   "created_utc": "2015-03-16T06:39:03Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "actually you ape planning to use the allocated memory, so why you free it?  just delete <code>free (ans);</code> line"
+  }
+ ]
+}

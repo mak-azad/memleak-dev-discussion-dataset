@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 61476655,
+ "url": "https://stackoverflow.com/questions/61476655/how-time-h-handles-memory",
+ "title": "How time.h handles memory",
+ "tags": [
+  "c",
+  "time.h"
+ ],
+ "score": -1,
+ "view_count": 242,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 61476877,
+ "created_utc": "2020-04-28T09:15:26Z",
+ "last_activity_utc": "2020-04-28T09:26:22Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 11437756,
+ "author_display_name": "Demiler",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/61476655/how-time-h-handles-memory",
+ "body_html": "<p>Sorry, this is probably a stupid question, but I couldn't find answer in the documentation for <code>time.h</code>.</p>\n\n<p>So when I call, for example, <code>gmtime</code></p>\n\n<pre><code>time_t today;\nstruct tm *info;\ntime(&amp;today);\ninfo = gmtime(&amp;today);\n</code></pre>\n\n<p>It returns pointer to the tm structure. I have assumed that it returns pointer to a part of memory allocated with malloc, but if I call <code>free</code> for <code>info</code> now - <code>free</code> returns error. So how does library <code>time.h</code> handles memory allocation and should I be worried about \"freeing\" it?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 108749519,
+   "parent_id": 61476655,
+   "parent_type": "question",
+   "author_user_id": 635608,
+   "author_display_name": "Mat",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/61476655/#comment108749519_61476655",
+   "score": 4,
+   "created_utc": "2020-04-28T09:18:20Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "<a href=\"https://en.cppreference.com/w/c/chrono/gmtime\" rel=\"nofollow noreferrer\">en.cppreference.com/w/c/chrono/gmtime</a>"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 61476877,
+   "parent_id": 61476655,
+   "author_user_id": 9072753,
+   "author_display_name": "KamilCuk",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/61476877",
+   "score": 1,
+   "created_utc": "2020-04-28T09:26:22Z",
+   "last_edit_utc": "2020-06-20T09:12:55Z",
+   "last_activity_utc": "2020-04-28T09:26:22Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<blockquote>\n<p>that it returns pointer to a part of memory allocated with malloc, but if I call free for info now</p>\n</blockquote>\n<p>No, <code>gmtime</code> returns a pointer to a static object.</p>\n<p>From <a href=\"https://port70.net/%7Ensz/c/c99/n1256.html#7.23.3p1\" rel=\"nofollow noreferrer\">C99 7.23.3p1</a>:</p>\n<blockquote>\n<p>Except for the strftime function, these functions each return a pointer to one of two types of static objects: a broken-down time structure or an array of char. Execution of any of the functions that return a pointer to one of these object types may overwrite the information in any object of the same type pointed to by the value returned from any previous call to any of them. The implementation shall behave as if no other library functions call these functions.</p>\n<p>how does library time.h handles memory allocation</p>\n</blockquote>\n<p>It uses memory allocated with static storage duration valid for the whole execution of your program.</p>\n<blockquote>\n<p>should I be worried about &quot;freeing&quot; it?</p>\n</blockquote>\n<p>No.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 108749841,
+   "parent_id": 61476655,
+   "parent_type": "question",
+   "author_user_id": 9072753,
+   "author_display_name": "KamilCuk",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/61476655/#comment108749841_61476655",
+   "score": 1,
+   "created_utc": "2020-04-28T09:28:08Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Does this answer your question? <a href=\"https://stackoverflow.com/questions/8694365/how-is-the-result-struct-of-localtime-allocated-in-c\">How is the result struct of localtime allocated in C?</a>"
+  }
+ ]
+}

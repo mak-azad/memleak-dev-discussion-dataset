@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/HDFGroup/hdf5/issues/6386",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in H5O__add_cont_msg when opening corrupted object via H5Rdereference",
+ "author_login": "tbeu",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:45Z",
+ "final_url": "https://github.com/HDFGroup/hdf5/issues/6386",
+ "repo": "HDFGroup/hdf5",
+ "repo_language": "C",
+ "number": 6386,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-04-28T19:06:02Z",
+ "updated_at": "2026-09-11T19:20:05Z",
+ "closed_at": null,
+ "labels": [
+  "Component - C Library"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "tbeu",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-04-28T19:06:02Z",
+   "updated_utc": "2026-09-11T19:20:05Z",
+   "permalink": "https://github.com/HDFGroup/hdf5/issues/6386",
+   "body_markdown": "When reading corrupted HDF5 files, `H5Rdereference2` can trigger object header deserialization (`H5O__chunk_deserialize`) that allocates continuation message buffers via `H5O__add_cont_msg` / `H5FL_blk_malloc`. If the object header is corrupted, these allocations are not freed, causing a memory leak.\n\nThis was found by [OSS-Fuzz](https://github.com/google/oss-fuzz) via the [matio](https://github.com/tbeu/matio) project's fuzzer (ClusterFuzz testcase 6294340632117248).\n\n### LeakSanitizer report\n\n\\\\\\\n==411==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 56 byte(s) in 1 object(s) allocated from:\n    # 0 __interceptor_malloc\n    # 1 H5FL__malloc hdf5/src/H5FL.c:203:30\n    # 2 H5FL_blk_malloc hdf5/src/H5FL.c:765:48\n    # 3 H5O__add_cont_msg hdf5/src/H5Ocache.c:953:26\n    # 4 H5O__chunk_deserialize hdf5/src/H5Ocache.c:1429:21\n    # 5 H5O__cache_deserialize hdf5/src/H5Ocache.c:300:9\n    # 6 H5C__load_entry hdf5/src/H5Centry.c:1193:26\n    # 7 H5C_protect hdf5/src/H5Centry.c:3101:30\n    # 8 H5AC_protect hdf5/src/H5AC.c:1276:26\n    # 9 H5O_protect hdf5/src/H5Oint.c:987:32\n    # 10 H5O__obj_class hdf5/src/H5Oint.c:1647:23\n    # 11 H5O_open_by_loc hdf5/src/H5Oint.c:716:30\n    # 12 H5O__open_by_addr hdf5/src/H5Oint.c:688:30\n    # 13 H5VL__native_object_open hdf5/src/H5VLnative_object.c:112:38\n    # 14 H5VL__object_open hdf5/src/H5VLcallback.c:5543:30\n    # 15 H5VL_object_open hdf5/src/H5VLcallback.c:5575:30\n    # 16 H5Rdereference2 hdf5/src/H5Rdeprec.c:639:31\n\\\\\\\n\nThe leak occurs because `H5O__add_cont_msg` allocates via `H5FL_SEQ_REALLOC` (line 955) to grow the continuation message array, but when subsequent deserialization of the corrupted object header fails, the error cleanup path does not free this allocation."
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/signalwire/freeswitch/issues/1392",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "fs_cli socket leak when FreeSWITCH is restarted",
+ "author_login": "adrien-martin",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:06Z",
+ "final_url": "https://github.com/signalwire/freeswitch/issues/1392",
+ "repo": "signalwire/freeswitch",
+ "repo_language": "C",
+ "number": 1392,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-10-20T13:22:21Z",
+ "updated_at": "2021-10-20T13:22:21Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "RES-socket"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "adrien-martin",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-20T13:22:21Z",
+   "updated_utc": "2021-10-20T13:22:21Z",
+   "permalink": "https://github.com/signalwire/freeswitch/issues/1392",
+   "body_markdown": "**Describe the bug**\r\nWhen FreeSWITCH restarts fs_cli can reconnect with the -R option.\r\nIn this case the old sockets are not closed and stay in state CLOSE-WAIT.\r\n\r\n**To Reproduce**\r\n1. `fs_cli -R`\r\n2. restart FreeSWITCH\r\n3. `ss -ntp dport = 8021`\r\n\r\n**Expected behavior**\r\nOld sockets are closed.\r\n\r\n**Package version or git hash**\r\n - `1.10.6~release~18~1ff9d0a60e~buster-1~buster+1` (from files.freeswitch.org/repo/deb/debian-release/)"
+  }
+ ]
+}

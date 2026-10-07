@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/bytedance/volclava/issues/118",
+ "passes": [
+  "main"
+ ],
+ "title": "initSubmit() 未释放上一次的 subReq.askedHosts，mbatchd 每处理一次 bsub -m 提交泄漏一块主机名数组",
+ "author_login": "qinan-cn",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:07Z",
+ "final_url": "https://github.com/bytedance/volclava/issues/118",
+ "repo": "bytedance/volclava",
+ "repo_language": "C",
+ "number": 118,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-30T02:40:50Z",
+ "updated_at": "2026-09-30T02:40:50Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "qinan-cn",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-30T02:40:50Z",
+   "updated_utc": "2026-09-30T02:40:50Z",
+   "permalink": "https://github.com/bytedance/volclava/issues/118",
+   "body_markdown": "**关联用例**：`TC-LEDGER-RESOURCE-VALGRIND`（SC-003 稳定失败；3 次 live 运行 + 1 次独立复验均复现）\n\n> 注：本缺陷的真实代码位置是 `lsbatch/daemons/mbd.serv.c:2486-2487`（`initSubmit()`），该行不在本 PR 的 diff 内，因此本条评论挂在提交路径上最接近的 diff 行；请在 `mbd.serv.c` 的 `initSubmit()` 中按下方定位查看。\n\n### 现象\n\nmbatchd 的作业提交解码路径存在确定内存泄漏。Valgrind 实测（同一 mbatchd 实例）：\n\n| 同一实例处理的 `bsub -m` 次数 | `definitely lost` |\n| --- | --- |\n| 1 | 0 字节 |\n| 2 | 8 字节 |\n| 3 | 16 字节 |\n\n即除首次外，每处理一次带 `-m` 的提交就泄漏 `numAskedHosts * sizeof(char *)`，外加间接引用的主机名字符串（`indirectly lost`）。\n\n分配栈：\n\n```\ncalloc\n -> xdr_submitReq (lsbatch/lib/lsb.xdr.c:138)\n -> do_submitReq  (lsbatch/daemons/mbd.serv.c:225)\n -> processClient (lsbatch/daemons/mbd.main.c:795)\n -> clientIO      (lsbatch/daemons/mbd.main.c:650)\n```\n\n### 根因\n\n`lsbatch/daemons/mbd.serv.c` 的 `initSubmit()`（函数起始行 2453）把 `askedHosts` 当作「每次重置为空的输出参数」处理：\n\n```c\n2476    } else {\n2477        FREEUP(subReq->chkpntDir);\n2478        FREEUP(submitReply->badJobName);\n2479        FREEUP(submitReply->pendLimitReason);\n2480        subReq->chkpntDir = (char *) my_malloc(MAXFILENAMELEN, fname);\n2481        submitReply->badJobName = (char *) my_malloc(MAX_CMD_DESC_LEN, fname);\n2482        submitReply->pendLimitReason = (char *) my_malloc(MAX_CMD_DESC_LEN, fname);\n2483    }\n2484\n2485\n2486    subReq->askedHosts = NULL;      /* <-- 旧数组在此失去唯一引用，从未被释放 */\n2487    subReq->numAskedHosts = 0;\n```\n\n首次调用分支（2460-2475）分配各字段；后续调用分支（2476-2483）只释放并重建 `chkpntDir` / `badJobName` / `pendLimitReason`，**从不释放** `subReq->askedHosts`，随后 2486 行无条件把指针置 `NULL`。\n\n而 `lsbatch/lib/lsb.xdr.c` 的 `xdr_submitReq()` 在 `XDR_DECODE && numAskedHosts > 0` 时每次都会重新 `calloc` 覆盖该指针：\n\n```c\n136    if (xdrs->x_op == XDR_DECODE && submitReq->numAskedHosts > 0) {\n137        submitReq->askedHosts = (char **)\n138            calloc(submitReq->numAskedHosts, sizeof (char *));\n```\n\n于是上一次的数组失去唯一引用。两条路径对 `askedHosts` 的所有权约定不一致：`initSubmit()` 认为它是「自己重置的输出参数」，`xdr_submitReq()` 认为「解码时自行分配、由调用方负责释放」。\n\n### 与本 PR 的关系\n\n`askedHosts` 在 `mbd.serv.c` 中由初始提交引入；本 PR 对 `mbd.serv.c` 的改动只有 `#include \"mbd.rsrclimit.h\"` 与若干未使用局部变量的清理，与本路径无调用关系。**属既有缺陷**，由本轮的 Valgrind 检测真实命中。\n\n### 影响\n\nmbatchd 是常驻 daemon，每处理一次带指定主机的提交就泄漏一块指针数组与主机名字符串，长时间运行会持续增长。\n\n### 复现步骤\n\n1. 以 Valgrind 启动 mbatchd：`valgrind --leak-check=full --log-file=<log> $LSF_SERVERDIR/mbatchd -d $LSF_ENVDIR`。\n2. 在同一实例上连续执行 N 次 `bsub -m <host> <cmd>`（N = 1, 2, 3）。\n3. 读取 Valgrind 日志的 `LEAK SUMMARY`：`definitely lost` 呈 `(N-1) * 8` 字节线性增长，调用栈首帧为 `xdr_submitReq`。\n\n### 修复建议\n\n在 `initSubmit()` 的 `subReq->askedHosts = NULL;`（2486 行）之前补上对上一次分配的释放，并释放其中各元素指向的主机名字符串：\n\n```c\nif (subReq->askedHosts) {\n    int k;\n    for (k = 0; k < subReq->numAskedHosts; k++)\n        FREEUP(subReq->askedHosts[k]);\n    FREEUP(subReq->askedHosts);\n}\n```\n\n或改为让 `xdr_submitReq()` 不再覆盖已分配指针、由 `initSubmit()` 统一管理生命周期，使「每次提交解码前旧数组必被释放、解码后新数组必被接管」这一约定在两条路径上一致。\n\n修复后回归：重跑 `TC-LEDGER-RESOURCE-VALGRIND`（重点 SC-003），确认连续多次 `bsub -m` 后 `definitely lost` 与 `indirectly lost` 均为 0 且调用栈不再出现 `xdr_submitReq`；同时用 `TC-LEDGER-RESOURCE-HIGHLOAD-STABILITY` 回归确认 daemon 常驻内存无单调增长。\n\n> 本评论由 VolclavaTester 自动生成。"
+  }
+ ]
+}

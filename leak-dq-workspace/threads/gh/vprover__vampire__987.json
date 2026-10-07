@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/vprover/vampire/issues/987",
+ "passes": [
+  "main"
+ ],
+ "title": "TPTP parser leaks temporary type-declaration nodes",
+ "author_login": "shalashaska117",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:21Z",
+ "final_url": "https://github.com/vprover/vampire/issues/987",
+ "repo": "vprover/vampire",
+ "repo_language": "C++",
+ "number": 987,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-25T10:20:23Z",
+ "updated_at": "2026-09-25T10:20:23Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "shalashaska117",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-25T10:20:23Z",
+   "updated_utc": "2026-09-25T10:20:23Z",
+   "permalink": "https://github.com/vprover/vampire/issues/987",
+   "body_markdown": "A successful TPTP type declaration leaves a temporary type node allocated by `TPTP::simpleType()`.\n\nTested on Linux x86-64 at production commit `af03e1547d9381cea97c051ed65a7918d07a2b0e`, using GCC 15.2.0, Valgrind 3.26.0 and a Debug build with `CHECK_LEAKS=ON` and Z3 enabled. No production fixes were applied. The commands below assume the repository dependencies are available:\n\n```sh\ncmake -S . -B build/memcheck -DCMAKE_BUILD_TYPE=Debug -DCHECK_LEAKS=ON\ncmake --build build/memcheck --target vampire vtest -j4\n```\n\nSave this as `typed.p`:\n\n```text\ntff(a_type,type,a:$i).\ncnf(a,axiom,p(a)).\n```\n\n```sh\nvalgrind --tool=memcheck --leak-check=full --show-leak-kinds=all \\\n  --errors-for-leak-kinds=definite,indirect,possible --track-origins=yes \\\n  --error-exitcode=97 --trace-children=yes \\\n  build/memcheck/vampire -p off -t 0 typed.p\n```\n\nExcerpt from the recorded Valgrind XML, with the stack shortened:\n\n```text\n16 bytes in 1 blocks are definitely lost in loss record 6 of 20\n  operator new(unsigned long) (vg_replace_malloc.c:488)\n  Parse::TPTP::simpleType() (TPTP.cpp:4623)\n  Parse::TPTP::parseImpl(Parse::TPTP::State) (TPTP.cpp:299)\n  Parse::TPTP::parse() (TPTP.cpp:181)\n```\n\nThe allocation is at [TPTP::simpleType](https://github.com/vprover/vampire/blob/af03e1547d9381cea97c051ed65a7918d07a2b0e/Parse/TPTP.cpp#L4623). The parser needs to retain ownership of its temporary type nodes through successful declarations and error paths, with child links remaining borrowed.\n\nThe 16-byte `simpleType` allocation is separate from the duplicate `OperatorType` candidate records also seen in this run. A historical six-case parser experiment covered atomic, product and polymorphic declarations and parser errors; it is supporting evidence, not a claim that every parser allocation is covered by this minimal current-master reproduction.\n\n## Discovery and test\n\nFound while checking typed TPTP inputs with Valgrind. The minimal declaration below retains a temporary simpleType allocation after a successful parse and solve, separately from OperatorType interning losses.\n\nThe campaign, strict Valgrind handling and failure-reporting methods are shared in [testing PR #978](https://github.com/vprover/vampire/pull/978). The input and direct command above reproduce the selected check without that runner.\n"
+  }
+ ]
+}

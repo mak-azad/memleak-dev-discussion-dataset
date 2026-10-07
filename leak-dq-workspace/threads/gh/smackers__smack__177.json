@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/smackers/smack/issues/177",
+ "passes": [
+  "main"
+ ],
+ "title": "Make behavior of memory allocation functions uniform",
+ "author_login": "zvonimir",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:08Z",
+ "final_url": "https://github.com/smackers/smack/issues/177",
+ "repo": "smackers/smack",
+ "repo_language": "C",
+ "number": 177,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2016-06-13T01:35:00Z",
+ "updated_at": "2026-08-27T03:23:03Z",
+ "closed_at": null,
+ "labels": [
+  "enhancement"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "zvonimir",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2016-06-13T01:35:00Z",
+   "updated_utc": "2026-08-27T03:23:03Z",
+   "permalink": "https://github.com/smackers/smack/issues/177",
+   "body_markdown": "Currently `malloc` cannot fail, while `calloc` can nondeterministally fail and return `0`. We should make that uniform, and maybe have a command like option that turns on nondeterministic failures.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5433953537,
+   "author_login": "shaobo-he",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-08-27T03:23:03Z",
+   "updated_utc": "2026-08-27T03:23:03Z",
+   "permalink": "https://github.com/smackers/smack/issues/177#issuecomment-5433953537",
+   "body_markdown": "#853 settles one half of this: `malloc(0)` and `alloca(0)` now behave uniformly with every other allocation. All three memory models used to treat a size-zero request specially — the default left the result unassigned, `reuse` and `no-reuse` returned null — and they now return a real, non-null, distinct block of size zero that must not be dereferenced and must be freed, following the SV-COMP rule that allocation never fails.\n\nThat leaves `calloc` as the remaining non-uniform case this issue describes: it still returns null nondeterministically, so a program is verified against an allocation failure that `malloc` in the same program cannot have. If the option suggested here is added, the natural shape is one switch that turns nondeterministic failure on for every allocation function at once, rather than `calloc` differing by default.\n\nOne related observation while measuring #853: an allocation request that is negative as a signed value — `malloc(SIZE_MAX)`, which reaches `$$alloc` as a negative `ref` — is silently pruned by `assume $sle.ref.bool($0.ref, n)`, so the rest of the path is dead rather than the allocation failing or the size being rejected. Same on develop and on #853; worth deciding alongside the failure switch.\n"
+  }
+ ]
+}

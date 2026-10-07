@@ -1,0 +1,49 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 36273231,
+ "url": "https://stackoverflow.com/questions/36273231/next-fit-memory-allocation-issue",
+ "title": "Next Fit Memory Allocation Issue",
+ "tags": [
+  "c",
+  "memory-management"
+ ],
+ "score": 0,
+ "view_count": 1200,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 36273805,
+ "created_utc": "2016-03-29T00:01:16Z",
+ "last_activity_utc": "2016-03-29T01:16:51Z",
+ "license": null,
+ "author_user_id": 6118100,
+ "author_display_name": "John Doe",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/36273231/next-fit-memory-allocation-issue",
+ "body_html": "<p>I am trying to write an algorithm to simulate next-fit memory allocation and I have a specific doubt that I have not been able to find the answer too.</p>\n\n<p>My situation:\nA process has been added to the memory at the memories 1/2 way point. Now another process of size 50 wants to be added to the memory. All the holes after the spot we are currently at are all less than size 50. I know that the algorithm will check every hole after the 1/2 way point to see if there is enough space for this new process of size 50. Now my question is, after it has reached the end of memory, will it go back to the start of memory to see there is a big enough hole BEFORE the 1/2 way point where we initially started off.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 36273805,
+   "parent_id": 36273231,
+   "author_user_id": 4453524,
+   "author_display_name": "ElleJay",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/36273805",
+   "score": 1,
+   "created_utc": "2016-03-29T01:16:51Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2016-03-29T01:16:51Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Yes, that's why it's sometimes also called \"rotating-first-fit\".</p>\n\n<p>Otherwise you'd be pretty soon running \"out of memory\" anyway ;-)</p>\n"
+  }
+ ]
+}

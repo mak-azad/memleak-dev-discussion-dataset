@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/nothings/stb/issues/2002",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "stb_truetype.h: heap-use-after-free in ttUSHORT via stbtt__GetGlyphShapeTT",
+ "author_login": "KhaledAlsaqabi",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:59Z",
+ "final_url": "https://github.com/nothings/stb/issues/2002",
+ "repo": "nothings/stb",
+ "repo_language": "C",
+ "number": 2002,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-10T22:39:54Z",
+ "updated_at": "2026-09-10T22:39:54Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "KhaledAlsaqabi",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-10T22:39:54Z",
+   "updated_utc": "2026-09-10T22:39:54Z",
+   "permalink": "https://github.com/nothings/stb/issues/2002",
+   "body_markdown": "Title:\nstb_truetype.h: heap-use-after-free in ttUSHORT via stbtt__GetGlyphShapeTT\n\nDescription:\n## Summary\n\nA heap-use-after-free vulnerability was discovered in `stb_truetype.h` v1.26\n(commit `2c980bb`) through coverage-guided fuzzing with AFL++ using\nASAN/UBSAN/CMPLOG instrumentation.\n\nThis is a **different vulnerability class** from the heap-buffer-overflow\nreported in #1905. This is a **use-after-free (CWE-416)**, not an OOB read.\n\n## Details\n\n`stbtt__rasterize()` frees a heap buffer at line 3544. A subsequent call to\n`stbtt__GetGlyphShapeTT()` reads from the freed memory region via `ttUSHORT()`\nat line 1286.\n\n**Impact:** Crash (DoS). Potential code execution if freed memory is\nreallocated with attacker-controlled data.\n\n## ASAN Output\n\nERROR: AddressSanitizer: heap-use-after-free on address 0x6ef4bb5e8318\nREAD of size 1 at 0x6ef4bb5e8318 thread T0\n    #0 ttUSHORT stb_truetype.h:1286:55\n    #1 stbtt__GetGlyphShapeTT stb_truetype.h:1695:13\n    #2 stbtt_GetGlyphShape stb_truetype.h:2300:14\n    #3 stbtt_GetGlyphBitmapSubpixel stb_truetype.h:3718:20\n    #4 stbtt_GetGlyphBitmap stb_truetype.h:3755:11\n\nfreed by thread T0 here:\n    #0 free\n    #1 stbtt__rasterize stb_truetype.h:3544:4\n    #2 stbtt_Rasterize stb_truetype.h:3702:7\n    #3 stbtt_GetGlyphBitmapSubpixel stb_truetype.h:3746:10\n\npreviously allocated here:\n    #0 malloc\n    #1 stbtt__GetGlyphShapeTT stb_truetype.h:1680:51\n\n## Reproduction\n\n```c\n#define STB_TRUETYPE_IMPLEMENTATION\n#include \"stb_truetype.h\"\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(int argc, char **argv) {\n    FILE *f = fopen(argv[1], \"rb\");\n    fseek(f, 0, SEEK_END);\n    long sz = ftell(f);\n    fseek(f, 0, SEEK_SET);\n    unsigned char *data = malloc(sz);\n    fread(data, 1, sz, f);\n    fclose(f);\n    stbtt_fontinfo font;\n    if (stbtt_InitFont(&font, data, 0)) {\n        float scale = stbtt_ScaleForPixelHeight(&font, 32.0f);\n        for (int g = 0; g < 64 && g < font.numGlyphs; g++) {\n            int w, h, xo, yo;\n            unsigned char *bmp = stbtt_GetGlyphBitmap(&font, scale, scale, g, &w, &h, &xo, &yo);\n            if (bmp) stbtt_FreeBitmap(bmp, NULL);\n        }\n    }\n    free(data);\n}\n\nclang -fsanitize=address,undefined -g -O1 test.c -lm -o test\n./test bug1_uaf.ttf\n\nEnvironment\n\n- stb_truetype.h v1.26 (commit 2c980bb59875b0d32144a71867fbdebb2f77cd20)\n- clang 21.1.8, Linux x86_64\n- AFL++ 5.03a with ASAN + UBSAN + CMPLOG\n\nPoC\n\nSee attached: bug1_uaf.ttf (22964 bytes)\n\n---\n\n[bug1_uaf.ttf.gz](https://github.com/user-attachments/files/32079199/bug1_uaf.ttf.gz)"
+  }
+ ]
+}

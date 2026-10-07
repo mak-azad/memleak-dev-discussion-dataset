@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/wesgarland/gpsee/issues/90",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "module compilation file descriptor leak",
+ "author_login": "GoogleCodeExporter",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:53Z",
+ "final_url": "https://github.com/wesgarland/gpsee/issues/90",
+ "repo": "wesgarland/gpsee",
+ "repo_language": "C",
+ "number": 90,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2015-08-23T12:23:09Z",
+ "updated_at": "2015-08-23T12:23:10Z",
+ "closed_at": null,
+ "labels": [
+  "auto-migrated",
+  "Priority-Medium",
+  "Type-Defect"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "RES-fd"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "GoogleCodeExporter",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2015-08-23T12:23:09Z",
+   "updated_utc": "2015-08-23T12:23:10Z",
+   "permalink": "https://github.com/wesgarland/gpsee/issues/90",
+   "body_markdown": "```\nSpotted this doing this something else -- but it looks like we have a file \ndescriptor leak of the .jsc file when the script compilation throws:\n\n=1814== Open file descriptor 5: /opt/local/gpsee/libexec/.fs-base.jsc\n==1814==    at 0x755C52: open$NOCANCEL$UNIX2003 (in /usr/lib/libSystem.B.dylib)\n==1814==    by 0x79879: gpsee_compileScript (in \n/opt/local/gpsee/lib/libgpsee.dylib)\n==1814==    by 0x75DDB: loadJSModule (in /opt/local/gpsee/lib/libgpsee.dylib)\n==1814==    by 0x767B1: loadDiskModule_inDir (in \n/opt/local/gpsee/lib/libgpsee.dylib)\n==1814==    by 0x768DB: loadDiskModule_onPath (in \n/opt/local/gpsee/lib/libgpsee.dylib)\n==1814==    by 0x76BDE: loadDiskModule (in /opt/local/gpsee/lib/libgpsee.dylib)\n==1814==    by 0x7749A: gpsee_loadModule (in \n/opt/local/gpsee/lib/libgpsee.dylib)\n\nThis particular script had a syntax error in it (new was used a variable name).\n```\n\nOriginal issue reported on code.google.com by `wes@page.ca` on 26 Sep 2011 at 2:06\n"
+  }
+ ]
+}

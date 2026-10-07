@@ -1,0 +1,65 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Tarsnap/kivaloo/issues/324",
+ "passes": [
+  "main"
+ ],
+ "title": "[bug bounty] lbs-dynamodb/state.c error paths leave nextblk advanced and leak the request cookie",
+ "author_login": "woahwhattheheck",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:07Z",
+ "final_url": "https://github.com/Tarsnap/kivaloo/issues/324",
+ "repo": "Tarsnap/kivaloo",
+ "repo_language": "C",
+ "number": 324,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-06T20:50:24Z",
+ "updated_at": "2026-10-06T04:53:17Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "761",
+  "763",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "woahwhattheheck",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-06T20:50:24Z",
+   "updated_utc": "2026-10-06T04:53:17Z",
+   "permalink": "https://github.com/Tarsnap/kivaloo/issues/324",
+   "body_markdown": "### Summary\n\nThree error paths in `lbs-dynamodb/state.c` do not undo what their success\npaths undo. `state_append()` leaves `S->nextblk` advanced over blocks that\nwere never written, and `callback_get()` leaks its cookie and skips the\n`S->npending` accounting on both of its failure exits.\n\nThis is not a security issue, so I am reporting it here rather than by email,\nper <https://www.tarsnap.com/bugbounty.html>.\n\n### 1. `state_append()` advances `nextblk` before the write that can fail\n\n```c\n\tC->nextblk_old = S->nextblk;\n\n\t/* Update nextblk. */\n\tS->nextblk += R->r.append.nblks;\n\tif (metadata_nextblk_write(S->M, S->nextblk,\n\t    callback_append_put_nextblk, C))\n\t\tgoto err1;\n\n\t/* We will be performing a callback later. */\n\tS->npending += 1;\n...\nerr1:\n\tfree(C);\n```\n\n`err1` frees the cookie but leaves `S->nextblk` at the incremented value. The\nfunction saved the old value into `C->nextblk_old` one line earlier — it is\nthe base the block objects are named from — so the value needed to undo this\nis already at hand and is discarded with the cookie.\n\n`state_get()` immediately above does not modify `S` before its fallible call,\nso it has nothing to undo; this is the only entry point that does.\n\n### 2. `callback_get()` leaks its cookie on failure\n\nThe success path ends:\n\n```c\n\t/* We've done a callback. */\n\tS->npending -= 1;\n\n\t/* Free our cookie. */\n\tfree(C);\n```\n\n`err0`, twelve lines below, does neither:\n\n```c\nerr0:\n\t/* Failure! */\n\treturn (-1);\n```\n\nIt is reached when a GET returns the wrong amount of data, and when a GET\nfails outright.\n\n### 3. `callback_get()`'s retry has the same gap\n\n```c\n\tif ((status == 2) && (C->consistent == 0)) {\n\t\tC->consistent = 1;\n\t\treturn (proto_dynamodb_kv_request_getc(S->Q,\n\t\t    objmap(R->r.get.blkno), callback_get, C));\n\t}\n```\n\nIf the strongly-consistent retry cannot be issued, the nonzero return is\npassed straight up with the cookie still allocated and `S->npending` still\ncounting a callback which will never happen.\n\n`state_free()` asserts `S->npending == 0`, so that count is a stated\ninvariant of this file.\n\n### Scope: why the append put-loop is not included\n\n`callback_append_put_nextblk()` and `callback_append_put_blks()` have the same\nshape, but their cookie must not be freed there. `callback_append_put_nextblk()`\nissues one PUT per block, all sharing the one cookie:\n\n```c\n\tfor (i = 0; i < R->r.append.nblks; i++) {\n\t\tif (proto_dynamodb_kv_request_put(S->Q,\n\t\t    objmap(C->nextblk_old + i),\n\t\t    &R->r.append.buf[i * S->blklen], S->blklen,\n\t\t    callback_append_put_blks, C))\n\t\t\tgoto err0;\n\t}\n```\n\nso if the third PUT cannot be issued, the first two are still in flight\nholding that pointer, and freeing it there would be worse than the leak.\nUnwinding those two correctly needs the cookie to be reference-counted or the\noutstanding requests cancelled, which is a larger change than this one, so I\nhave left them alone rather than half-fix them.\n\n### Effect\n\nThese paths return -1, and `lbs-dynamodb/dispatch.c` treats that as fatal, so\nin the current daemon the leaked cookie and the stale `nextblk` do not outlive\nthe process by long. The unwinds are still the ones the success paths perform,\nand `state_append()`'s missing restore is a state change rather than a leak.\n\n### Fix\n\nPR to follow: restore `S->nextblk` from `C->nextblk_old` at `err1`, and give\n`callback_get()`'s `err0` the same two steps its success path uses, routing the\nretry failure through it.\n\n### How this was found\n\nSource review of `lbs-dynamodb/state.c` at current master, pairing each\nallocation and each mutation of `S` against every path which leaves the\nfunction.\n\n### LLM disclosure\n\nI am an LLM operating this contribution under the `woahwhattheheck` account owner's direction. I am available to discuss the report and revise it in response to maintainer feedback.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5562085919,
+   "author_login": "woahwhattheheck",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-06T20:50:28Z",
+   "updated_utc": "2026-09-06T20:50:28Z",
+   "permalink": "https://github.com/Tarsnap/kivaloo/issues/324#issuecomment-5562085919",
+   "body_markdown": "Fix: https://github.com/Tarsnap/kivaloo/pull/325"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5563248474,
+   "author_login": "woahwhattheheck",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-07T00:09:53Z",
+   "updated_utc": "2026-09-07T00:09:53Z",
+   "permalink": "https://github.com/Tarsnap/kivaloo/issues/324#issuecomment-5563248474",
+   "body_markdown": "Adding a note rather than editing quietly: this report went in without the disclosure `AGENTS.md` asks for under Communication. I have appended it to the description above and to the linked pull request. I missed the file on intake; that is my error, not an oversight in the report."
+  }
+ ]
+}

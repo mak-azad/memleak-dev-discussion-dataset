@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/valkey-io/valkey-glide-php/issues/328",
+ "passes": [
+  "main"
+ ],
+ "title": "CI: flaky Valgrind 9.0 job from glide-core global 'possibly lost' allocations (OTel init + client-registry DashMap)",
+ "author_login": "prateek-kumar-improving",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:10Z",
+ "final_url": "https://github.com/valkey-io/valkey-glide-php/issues/328",
+ "repo": "valkey-io/valkey-glide-php",
+ "repo_language": "PHP",
+ "number": 328,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-28T06:11:51Z",
+ "updated_at": "2026-08-28T06:45:15Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "prateek-kumar-improving",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-28T06:11:51Z",
+   "updated_utc": "2026-08-28T06:45:15Z",
+   "permalink": "https://github.com/valkey-io/valkey-glide-php/issues/328",
+   "body_markdown": "## Summary\n\nThe **PHP Valgrind Tests (EngineVersion 9.0)** CI job intermittently fails with\n`possibly lost` memory reported against glide-core global allocations, even when\nall tests pass. The failure signature and error count fluctuate run-to-run\n(e.g. `ERROR SUMMARY: 2 errors from 2 contexts` on one run, `3 errors from 3\ncontexts` on the next), which points at timing-dependent thread-teardown\nbehavior rather than a real leak.\n\nThese allocations are **process-lifetime globals in the Rust glide-core** that\nare freed at process teardown, not per-connection. They are not caused by the\nPHP/C extension code. As a stopgap, `valgrind.supp` suppressions were added in\nPR #321 so the flaky gate stops blocking unrelated PRs. This issue tracks the\nproper fix.\n\n## Affected allocations (observed loss records)\n\n1. **OpenTelemetry resource init** — `opentelemetry::common::Value::clone`\n   (`Box<[u8]>`) → `opentelemetry_sdk::resource::Resource::from_detectors`,\n   during one-time `GlideOpenTelemetry::initialise` (`once_cell`). ~22 bytes.\n\n2. **glide-core client registry** — `glide_core::scope::register_client`\n   inserting into `DashMap<u64, glide_core::client::Client>`; the `hashbrown`\n   `RawTable::reserve_rehash` grows the backing table and valgrind marks the\n   pre-rehash table `possibly lost`. Reached via the normal `connect()` path for\n   both standalone (`create_glide_client`) and cluster\n   (`create_glide_cluster_client`) clients. ~2.2–2.6 KB across 15–16 blocks.\n\n## Why the existing suppressions don't catch these\n\n`valgrind.supp` already has `opentelemetry_resource_from_detectors`, but it only\nmatches the `hashbrown ... insert → from_detectors` frame chain. The observed\nrecord takes the `Value::clone` path instead, so it isn't matched.\n\n## Stopgap applied in PR #321\n\nAdded two tolerant suppressions to `valgrind.supp`:\n- `opentelemetry_resource_value_clone_from_detectors`\n- `glide_core_scope_register_client_dashmap_rehash`\n\n## Proper fix (this issue)\n\n- Investigate whether `glide_core::scope::register_client` /\n  `GlideOpenTelemetry::initialise` can be given deterministic teardown (or\n  pre-sized to avoid rehash) so valgrind no longer reports `possibly lost`.\n- Reassess the CI gate: `possibly lost > 0` on process-lifetime globals is a\n  weak signal; consider gating only on `definitely lost` / `indirectly lost`,\n  or on the delta vs a baseline, to reduce false positives.\n- Once addressed upstream, remove the stopgap suppressions.\n\n## Acceptance criteria\n\n- [ ] The Valgrind 9.0 job passes deterministically across repeated runs.\n- [ ] Root cause fixed in glide-core (or CI gate hardened) rather than relying\n      solely on suppressions.\n- [ ] Stopgap suppressions removed if no longer needed.\n\n## Confirmed pre-existing on `main`\n\nTo rule out PR #321 (mTLS) as the cause, the same `PHP CI` workflow was run via\n`workflow_dispatch` against `main` (which contains none of the mTLS changes):\n\n- Run: https://github.com/valkey-io/valkey-glide-php/actions/runs/33147818473\n- Valgrind 9.0 job: https://github.com/valkey-io/valkey-glide-php/actions/runs/33147818473/job/98772700807\n\nResult on `main`: the Valgrind 9.0 job **also fails** with no test failure —\n`possibly lost: 2,506 bytes in 16 blocks`, `ERROR SUMMARY: 3 errors from 3\ncontexts`. The three `possibly lost` records are identical in origin to those\nseen on the PR:\n\n- OpenTelemetry `Resource::from_detectors` init (~22 bytes)\n- `glide_core::scope::register_client` DashMap rehash via `create_glide_client`\n  (standalone, ~2.2 KB)\n- `glide_core::scope::register_client` DashMap rehash via\n  `create_glide_cluster_client` (cluster, ~280 bytes)\n\nByte/block counts jitter slightly run-to-run (e.g. 2,506 vs 2,522 bytes; 14 vs\n15 blocks), which is the DashMap-rehash timing variance that also makes the error\ncount flicker (2 ↔ 3) and the gate flaky. This confirms the issue is pre-existing\nin glide-core and independent of PR #321.\n\n\n---\n\n> [!IMPORTANT]\n> **Blocked by / fix first: #330.** The Valgrind job is currently not triggered\n> on `valkey-glide` submodule bumps (path-filter gap in `php.yml`), which is how\n> this regression landed unexercised. #330 must be fixed first so CI actually\n> runs the Valgrind job on glide-core bumps; otherwise regressions like this will\n> continue to slip through regardless of the work here.\n"
+  }
+ ]
+}

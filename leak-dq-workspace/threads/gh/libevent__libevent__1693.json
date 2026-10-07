@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/libevent/libevent/issues/1693",
+ "passes": [
+  "main"
+ ],
+ "title": "New security rules (other type)",
+ "author_login": "icy17",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:04Z",
+ "final_url": "https://github.com/libevent/libevent/issues/1693",
+ "repo": "libevent/libevent",
+ "repo_language": "C",
+ "number": 1693,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-07-13T08:02:35Z",
+ "updated_at": "2024-07-14T15:09:46Z",
+ "closed_at": null,
+ "labels": [
+  "prio:accepting-patches",
+  "type:doc"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "icy17",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-07-13T08:02:35Z",
+   "updated_utc": "2024-07-14T15:09:46Z",
+   "permalink": "https://github.com/libevent/libevent/issues/1693",
+   "body_markdown": "Similar to issue #1692 , there are additional types of security rules that are missing in the documentation. I believe incorporating these rules could help developers learn how to correctly use APIs and reduce the risk of security issues.\r\n\r\nI will provide a table describing the missing security rules:\r\n| API | parameter index (begin with 1) | Security rules |\r\n|:----------:|:----------:|:----------:|\r\n| event_add | 1 | parameter must not be freed/closed before |\r\n| event_base_dispatch | 1 | parameter must not be freed/closed before |\r\n| evhttp_request_get_connection | 1 | parameter must not be freed/closed before |\r\n| event_base_free | 1 | Parameter 1: Do not call `event_base_free()` multiple times for the same `base` parameter. |\r\n| evhttp_request_free | 1 | \"Parameter 1: `req` (evhttp_request) - The caller MUST NOT call `evhttp_request_free` multiple times consecutively for the same `evhttp_request` object. |\r\n| evhttp_uri_free | 1 |  The caller of the API must not free the `uri` parameter more than once. |\r\n| evutil_freeaddrinfo | 1 |  The caller MUST NOT call `evutil_freeaddrinfo` multiple times for the same `ai` parameter. |\r\n| evhttp_free | 1 |  The caller of this API must not free the `http` parameter multiple times. |\r\n| evutil_inet_pton | 1 |  Parameter 1: The caller MUST NOT leave the 'af' parameter uninitialized when calling the evutil_inet_pton function |\r\n| evutil_inet_ntop | 1 |  Parameter 1: The caller MUST NOT leave the `af` parameter uninitialized or pass an invalid value to `evutil_inet_ntop` |\r\n| evhttp_uri_free | 1 |  Parameter 1: The caller MUST NOT assign an invalid address or uninitialized variable to the `http` parameter before calling `evhttp_free` |\r\n| evhttp_uri_free | 1 |  Parameter 1 (uri): The caller MUST NOT modify the `uri` parameter after it has been freed by `evhttp_uri_free` function |"
+  }
+ ]
+}

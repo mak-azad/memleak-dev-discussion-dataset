@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lericson/pylibmc/issues/312",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "temporary-string leaks in `_make_behavior_consts()` (non-stealing append)",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:48Z",
+ "final_url": "https://github.com/lericson/pylibmc/issues/312",
+ "repo": "lericson/pylibmc",
+ "repo_language": "C",
+ "number": 312,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-02T13:03:43Z",
+ "updated_at": "2026-08-02T13:03:43Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-02T13:03:43Z",
+   "updated_utc": "2026-08-02T13:03:43Z",
+   "permalink": "https://github.com/lericson/pylibmc/issues/312",
+   "body_markdown": "There is a reference leak in `_make_behavior_consts()`. New references from `PyUnicode_FromString()` are passed to `PyList_Append()`, which does not steal, and are never released.\n\nFile: `src/_pylibmcmodule.c`\n\nFunction: `_make_behavior_consts`\n\nRelevant code:\n\n```c\nfor (b = PylibMC_callbacks; b->name != NULL; b++) {\n    sprintf(name, \"callback_%s\", b->name);\n    PyModule_AddIntConstant(mod, name, b->flag);\n    PyList_Append(names, PyUnicode_FromString(b->name));\n}\n...\nfor (b = PylibMC_behaviors; b->name != NULL; b++) {\n    PyList_Append(names, PyUnicode_FromString(b->name));\n}\n```\n\n`PyUnicode_FromString()` returns a new reference, and `PyList_Append()` creates its own reference without stealing the caller's, so each temporary string is leaked — once per callback and once per behavior.\n\nThis runs once at import, so the practical impact is a small, one-time leak per process, but the missing `Py_DECREF()`s are unambiguous.\n\nSuggested fix: store the string in a local, append, then decref:\n\n```c\nPyObject *s = PyUnicode_FromString(b->name);\nif (s != NULL) {\n    PyList_Append(names, s);\n    Py_DECREF(s);\n}\n```\n"
+  }
+ ]
+}

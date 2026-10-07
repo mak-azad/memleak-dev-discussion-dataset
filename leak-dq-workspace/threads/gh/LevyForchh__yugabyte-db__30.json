@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/LevyForchh/yugabyte-db/issues/30",
+ "passes": [
+  "main"
+ ],
+ "title": "CVE-2020-13757 (High) detected in rsa-3.4.2-py2.py3-none-any.whl",
+ "author_login": "mend-for-github-com[bot]",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:29Z",
+ "final_url": "https://github.com/LevyForchh/yugabyte-db/issues/30",
+ "repo": "LevyForchh/yugabyte-db",
+ "repo_language": "C",
+ "number": 30,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-02-19T01:24:26Z",
+ "updated_at": "2021-02-19T01:24:26Z",
+ "closed_at": null,
+ "labels": [
+  "security vulnerability"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mend-for-github-com[bot]",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-02-19T01:24:26Z",
+   "updated_utc": "2021-02-19T01:24:26Z",
+   "permalink": "https://github.com/LevyForchh/yugabyte-db/issues/30",
+   "body_markdown": "## CVE-2020-13757 - High Severity Vulnerability\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Library - <b>rsa-3.4.2-py2.py3-none-any.whl</b></p></summary>\n\n<p>Pure-Python RSA implementation</p>\n<p>Library home page: <a href=\"https://files.pythonhosted.org/packages/e1/ae/baedc9cb175552e95f3395c43055a6a5e125ae4d48a1d7a924baca83e92e/rsa-3.4.2-py2.py3-none-any.whl\">https://files.pythonhosted.org/packages/e1/ae/baedc9cb175552e95f3395c43055a6a5e125ae4d48a1d7a924baca83e92e/rsa-3.4.2-py2.py3-none-any.whl</a></p>\n<p>Path to dependency file: yugabyte-db/managed/devops/python3_requirements.txt</p>\n<p>Path to vulnerable library: yugabyte-db/managed/devops/python3_requirements.txt,yugabyte-db/managed/devops/python_requirements.txt,yugabyte-db/cloud/kubernetes/yb-multiregion-k8s</p>\n<p>\n\nDependency Hierarchy:\n  - oauth2client-3.0.0.tar.gz (Root Library)\n    - :x: **rsa-3.4.2-py2.py3-none-any.whl** (Vulnerable Library)\n<p>Found in HEAD commit: <a href=\"https://github.com/LevyForchh/yugabyte-db/commit/d5a0ed9bff63893a5435e09333d22846f6bb3acc\">d5a0ed9bff63893a5435e09333d22846f6bb3acc</a></p>\n<p>Found in base branch: <b>master</b></p>\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/high_vul.png' width=19 height=20> Vulnerability Details</summary>\n<p>  \n  \nPython-RSA before 4.1 ignores leading '\\0' bytes during decryption of ciphertext. This could conceivably have a security-relevant impact, e.g., by helping an attacker to infer that an application uses Python-RSA, or if the length of accepted ciphertext affects application behavior (such as by causing excessive memory allocation).\n\n<p>Publish Date: 2020-06-01\n<p>URL: <a href=https://vuln.whitesourcesoftware.com/vulnerability/CVE-2020-13757>CVE-2020-13757</a></p>\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/cvss3.png' width=19 height=20> CVSS 3 Score Details (<b>7.5</b>)</summary>\n<p>\n\nBase Score Metrics:\n- Exploitability Metrics:\n  - Attack Vector: Network\n  - Attack Complexity: Low\n  - Privileges Required: None\n  - User Interaction: None\n  - Scope: Unchanged\n- Impact Metrics:\n  - Confidentiality Impact: High\n  - Integrity Impact: None\n  - Availability Impact: None\n</p>\nFor more information on CVSS3 Scores, click <a href=\"https://www.first.org/cvss/calculator/3.0\">here</a>.\n</p>\n</details>\n<p></p>\n<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/suggested_fix.png' width=19 height=20> Suggested Fix</summary>\n<p>\n\n<p>Type: Upgrade version</p>\n<p>Origin: <a href=\"https://github.com/sybrenstuvel/python-rsa/commit/3283b1284475cf6c79a7329aee8bd7443cc72672\">https://github.com/sybrenstuvel/python-rsa/commit/3283b1284475cf6c79a7329aee8bd7443cc72672</a></p>\n<p>Release Date: 2020-06-01</p>\n<p>Fix Resolution: rsa - 4.1</p>\n\n</p>\n</details>\n<p></p>\n\n<!-- <REMEDIATE>{\"isOpenPROnVulnerability\":false,\"isPackageBased\":true,\"isDefaultBranch\":true,\"packages\":[{\"packageType\":\"Python\",\"packageName\":\"rsa\",\"packageVersion\":\"3.4.2\",\"packageFilePaths\":[\"/managed/devops/python3_requirements.txt\",\"/managed/devops/python_requirements.txt\",\"/cloud/kubernetes/yb-multiregion-k8s\"],\"isTransitiveDependency\":true,\"dependencyTree\":\"oauth2client:3.0.0;rsa:3.4.2\",\"isMinimumFixVersionAvailable\":true,\"minimumFixVersion\":\"rsa - 4.1\"}],\"baseBranches\":[\"master\"],\"vulnerabilityIdentifier\":\"CVE-2020-13757\",\"vulnerabilityDetails\":\"Python-RSA before 4.1 ignores leading \\u0027\\\\0\\u0027 bytes during decryption of ciphertext. This could conceivably have a security-relevant impact, e.g., by helping an attacker to infer that an application uses Python-RSA, or if the length of accepted ciphertext affects application behavior (such as by causing excessive memory allocation).\",\"vulnerabilityUrl\":\"https://vuln.whitesourcesoftware.com/vulnerability/CVE-2020-13757\",\"cvss3Severity\":\"high\",\"cvss3Score\":\"7.5\",\"cvss3Metrics\":{\"A\":\"None\",\"AC\":\"Low\",\"PR\":\"None\",\"S\":\"Unchanged\",\"C\":\"High\",\"UI\":\"None\",\"AV\":\"Network\",\"I\":\"None\"},\"extraData\":{}}</REMEDIATE> -->"
+  }
+ ]
+}

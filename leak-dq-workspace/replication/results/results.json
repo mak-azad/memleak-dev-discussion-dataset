@@ -1,0 +1,81 @@
+{
+ "main": {
+  "diagnostic_threads": 500,
+  "so_threads_with_questions": 380,
+  "gh_issues_with_units": 216,
+  "dq_threads": {
+   "V1": 76,
+   "T1": 70,
+   "L2": 59,
+   "D3": 53,
+   "R3": 52,
+   "D4": 52,
+   "R2": 51,
+   "D1": 50,
+   "C1": 44,
+   "R5": 41,
+   "L1": 41,
+   "A1": 39,
+   "A4": 37,
+   "O1": 37,
+   "C2": 33,
+   "R4": 30,
+   "G": 26,
+   "N1": 24,
+   "L3": 23,
+   "X1": 22,
+   "O2": 21,
+   "E1": 18,
+   "P": 18,
+   "N3": 17,
+   "A3": 16,
+   "E3": 16,
+   "N2": 16,
+   "D2": 15,
+   "A2": 12,
+   "K": 10,
+   "L4": 9,
+   "E2": 5
+  },
+  "cwe_threads": {
+   "CWE-401": 324,
+   "CWE-459": 163,
+   "CWE-590": 35,
+   "CWE-761": 24,
+   "CWE-762": 84,
+   "CWE-763": 65,
+   "CWE-789": 33
+  },
+  "role_group_n": {
+   "SO askers": 608,
+   "SO responders": 299,
+   "GH reporters (statements)": 403,
+   "GH responders (statements)": 93
+  }
+ },
+ "offcwe": {
+  "offcwe_threads": 197,
+  "theme_threads": {
+   "GRW": 42,
+   "RES": 37,
+   "REF": 35,
+   "UAF": 18,
+   "POOL": 13,
+   "GPU": 13,
+   "THR": 11,
+   "LIB": 11,
+   "HC": 9,
+   "UNI": 6,
+   "KER": 4,
+   "DF": 2,
+   "INFO": 1
+  },
+  "new_dq_threads": {
+   "RK": 64,
+   "R6": 40,
+   "D5": 19,
+   "H1": 10
+  },
+  "inside_seven_threads": 79
+ }
+}

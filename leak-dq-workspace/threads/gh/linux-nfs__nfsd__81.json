@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/linux-nfs/nfsd/issues/81",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory exhaustion testing",
+ "author_login": "chucklever",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:39Z",
+ "final_url": "https://github.com/linux-nfs/nfsd/issues/81",
+ "repo": "linux-nfs/nfsd",
+ "repo_language": "C",
+ "number": 81,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-04-22T13:32:46Z",
+ "updated_at": "2024-05-11T21:10:31Z",
+ "closed_at": null,
+ "labels": [
+  "testing gap"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "789"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "chucklever",
+   "author_association": "COLLABORATOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-04-22T13:32:46Z",
+   "updated_utc": "2024-05-11T21:10:31Z",
+   "permalink": "https://github.com/linux-nfs/nfsd/issues/81",
+   "body_markdown": "This includes:\n\n- Testing on small-memory systems\n- Testing with allocation fault injection\n- Testing with dynamically changing memory load"
+  }
+ ]
+}

@@ -1,0 +1,151 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/projectM-visualizer/projectm/issues/1000",
+ "passes": [
+  "main"
+ ],
+ "title": "[DEV BUG] Memory leak in libprojectM (master branch) renderer arrays during manual playlist switches on Windows",
+ "author_login": "HiroyukiHirohata",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:17Z",
+ "final_url": "https://github.com/projectM-visualizer/projectm/issues/1000",
+ "repo": "projectM-visualizer/projectm",
+ "repo_language": "C++",
+ "number": 1000,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-05-15T12:30:28Z",
+ "updated_at": "2026-10-05T15:12:18Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 9,
+ "query_buckets": [
+  "762",
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "HiroyukiHirohata",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-15T12:30:28Z",
+   "updated_utc": "2026-10-05T15:12:18Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000",
+   "body_markdown": "### Please confirm the following points:\n\n- [x] This report is NOT about the Android apps in the Play Store\n- [x] I have [searched the project page](https://github.com/search?q=org%3AprojectM-visualizer+type%3Aissue+&type=issues) to check if the issue was already reported\n\n### Affected Project\n\nlibprojectM (including the playlist library)\n\n### Affected Version\n\n4.1.6\n\n### Operating Systems and Architectures\n\nWindows (x64)\n\n### Build Tools\n\nCompiler: Microsoft Windows SDK\n\n### Additional Project, OS and Toolset Details\n\n_No response_\n\n### Type of Defect\n\nSpecific bug in projectM code (please link the code in question)\n\n### Log Output\n\n```shell\n\n```\n\n### Describe the Issue\n\nSummary\nMemory leak identified in libprojectM 4.1.6 during continuous playlist-driven preset transitions on Windows. Memory usage climbs linearly from an 80MB baseline to over 1.2GB within a 7-8 hour window.\nEnvironment\nLibrary Version: libprojectM v4.1.6 Core Release\nOperating System: Windows 11 x64\nIDE / Toolchain: Visual Studio 2026 / MSVC Compiler\n\nHow to Reproduce\nThe leak occurs when disabling projectM's internal auto-transitioning and driving preset switches authoritatively from the application layer using a Win32 timer:\n\nInstantiate the engine and immediately lock preset switching:\nprojectm_set_preset_locked(m_pProjectM, true);\n\nSet up a standard Win32 WM_TIMER callback.\nEvery interval (e.g., matching preset durations), manually call:\nprojectm_playlist_play_next(m_pProjectM, false);\n\nObserve memory usage over time via Task Manager or Diagnostic Tools.\n\nVisual Studio Diagnostic Profiler Evidence\nA heap snapshot differential taken between preset transition cycles reveals that while parent container structures are torn down, primitive array allocations inside the renderer namespace accumulate indefinitely on the process heap.\nHere is the raw data dump from the Visual Studio 2026 Memory Profiler Diff (sorted by size impact):\n\nvoid\t4094\t93016\nprojectM-4d.dll!libprojectM::Renderer::Color[]\t10\t84811\nprojectM-4d.dll!libprojectM::Renderer::Point[]\t18\t52042\nchar[]\t172\t20327\nunsigned int[]\t4\t16007\nprojectM-4d.dll!libprojectM::MilkdropPreset::MilkdropPreset\t1\t15632\nprojectM-4d.dll!M4::HLSLTree::NodePage\t2\t8208\nprojectM-4d.dll!libprojectM::Renderer::TextureUV[]\t3\t6255\nprojectM-4d.dll!libprojectM::MilkdropPreset::CustomShape\t4\t5920\nprojectM-4d.dll!libprojectM::MilkdropPreset::CustomWaveform\t4\t5440\nprojectM-4d.dll!std::_Container_proxy\t173\t2768\nprojectM-4d.dll!libprojectM::MilkdropPreset::MilkdropShader\t2\t1840\nchar *[]\t1\t1464\nprojectM-4d.dll!std::_Ref_count_obj2<libprojectM::Renderer::Texture>\t11\t1056\nprojectM-4d.dll!M4::HLSLMacro *[]\t1\t736\nprojectM-4d.dll!std::_Tree_node<std::pair<unsigned int const ,std::shared_ptr<libprojectM::Renderer::TextureAttachment> >,void *>\t8\t448\nprojectM-4d.dll!std::_Tree_node<std::pair<int const ,std::map<unsigned int,std::shared_ptr<libprojectM::Renderer::TextureAttachment>,std::less<unsigned int>,std::allocator<std::pair<unsigned int const ,std::shared_ptr<libprojectM::Renderer::TextureAttachment> > > > >,void *>\t7\t448\nprojectM-4d.dll!std::_Tree_node<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,void *>\t4\t288\nprojectM-4d.dll!std::_Ref_count_obj2<libprojectM::Renderer::TextureAttachment>\t5\t280\nprojectM-4d.dll!libprojectM::Renderer::TextureSamplerDescriptor\t2\t240\nprojectM-4d.dll!std::_Tree_node<std::pair<int const ,libprojectM::Renderer::TextureSamplerDescriptor>,void *>\t1\t160\nprojectM-4d.dll!std::_Tree_node<std::pair<M4::matrixCtor const ,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,void *>\t1\t112\nprojectM-4d.dll!std::_Ref_count_obj2<libprojectM::Renderer::Sampler>\t2\t64\nbool *[]\t1\t64\nprojectM-4-playlistd.dll!std::_List_node<unsigned int,void *>\t1\t24\nprojectM-4-playlistd.dll!std::_Container_proxy\t1\t16\nbool[]\t1\t16\nunsigned int\t2\t8\nchar\t1\t1\n\nTechnical Observation\nThe numbers indicate a clear structural correlation. For every single new MilkdropPreset initialized, the system accumulates a matching set of CustomShape (+4) and CustomWaveform (+4) allocations.\nCrucially, the raw vertex-drawing arrays associated with them (Color[] and Point[]) are left abandoned on the heap with positive count deltas. This confirms that while the parent objects are tracked, their low-level heap arrays lack a matching delete[] invocation during the transition sequence.\nTechnical Analysis\nSince ~CustomShape() inside CustomShape.hpp is properly declared as a defaulted virtual destructor (virtual ~CustomShape() = default;), the parent wrapper object drops correctly.\nHowever, the raw coordinate and color arrays (Color[], Point[]) used to instantiate the meshes for waveforms and shape elements are persisting on the system heap. This suggests that during a manual track change, the rendering pipeline misses an explicit array deallocation step (delete[]) or drops pointers before freeing the underlying memory boundaries of the active shader canvas elements."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4461593772,
+   "author_login": "kblaschke",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-05-15T16:44:25Z",
+   "updated_utc": "2026-05-15T16:44:25Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-4461593772",
+   "body_markdown": "This has already been fixed in the main development branch by completely outsourcing vertex buffers into separate management classes which properly allocate & destroy the buffers.\n\nI'll have a look into this leak though, as it's definitely not a great situation. Will fix it and then release projectM 4.1.7."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4467692941,
+   "author_login": "kblaschke",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-05-16T18:01:39Z",
+   "updated_utc": "2026-05-16T18:03:43Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-4467692941",
+   "body_markdown": "There are no classes `Renderer::Color` or ` Renderer::TextureUV` in libprojectM release 4.1.6 - are you absolutely sure you're using the correct code base? These classes only exist in the master branch as of now.\n\nCould you please download the actual release TGZ below and re-run the memory profiler on this?\n\nhttps://github.com/projectM-visualizer/projectm/releases/download/v4.1.6/libprojectM-4.1.6.tar.gz\n\nAlternatively, you can check out commit https://github.com/projectM-visualizer/projectm/commit/3158ee615eaafd93a8912b5f6dd84a9c47b2e00a."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4476758135,
+   "author_login": "HiroyukiHirohata",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-18T10:28:38Z",
+   "updated_utc": "2026-05-18T10:28:38Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-4476758135",
+   "body_markdown": "thanks for the response,\nI downloaded the source code from the following URL\nIn Assets section on the page https://github.com/projectM-visualizer/projectm/releases\n\"Source Code (zip)\" link, that is,\nhttps://github.com/projectM-visualizer/projectm/archive/refs/tags/v4.1.6.zip\n\nI will download the package you mentioned instead and recompile, then re-run the profiler.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4517613705,
+   "author_login": "kblaschke",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-05-22T09:50:24Z",
+   "updated_utc": "2026-05-22T09:50:24Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-4517613705",
+   "body_markdown": "Any new findings yet?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4523530248,
+   "author_login": "HiroyukiHirohata",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-23T00:30:03Z",
+   "updated_utc": "2026-05-23T00:30:03Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-4523530248",
+   "body_markdown": "No, no progress.\nstruggling with unresolved openGL API with 4.1.6\nI think, glew32 and some initialization code is needed.\nIMHO, I want to deploy the master (4.2 ?) instead, that is working ok except for a leak.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4561588014,
+   "author_login": "kblaschke",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-05-28T07:09:18Z",
+   "updated_utc": "2026-09-08T11:03:55Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-4561588014",
+   "body_markdown": "In 4.1.6, you have to call `glewInit()` once on Windows in your application before creating the projectM instance. Additionally, the application also needs to link against the same glew library as projectM.\n\nThe master branch no longer uses glew, but glad instead and thus doesn't require additional init code. It'll dynamically load opengl32.dll and resolve the required functions.\n\nSo I understand the leak is actually in the master branch, not in the stable release?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5971651721,
+   "author_login": "HiroyukiHirohata",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-03T17:27:48Z",
+   "updated_utc": "2026-10-03T17:31:42Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-5971651721",
+   "body_markdown": "took long since the last comment you gave. Am sorry\nyes, the version number I mentioned in my initial report was wrong. Seems I was using the code of 4.2 master(dev) , not 4.1.6\nSnippet of core.h header I compiled below\n\n`/**\n * @brief Creates a new projectM instance using the given function to resolve GL api functions.\n *\n * The load_proc function accepts a function name and a user data pointer.\n * If this function returns NULL, in most cases the OpenGL context is not initialized, not made\n * current or insufficient to render projectM visuals.\n *\n * The OpenGL resolver is initialized on the first call to either projectm_create() or projectm_create_with_opengl_load_proc().\n * All projectM instances share the same resolver, and subsequent calls ignore the provided load_proc.\n *\n * @param load_proc Callback function used to resolve OpenGL function pointers. Optional, may be NULL.\n * @param user_data Custom user data pointer to pass along to the load_proc call, e.g. context information. Optional, may be NULL.\n * @return A projectM handle for the newly created instance that must be used in subsequent API calls.\n *         NULL if the instance could not be created successfully.\n * @since 4.2.0\n */\nPROJECTM_EXPORT projectm_handle projectm_create_with_opengl_load_proc(projectm_load_proc load_proc, void* user_data);`"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5993232845,
+   "author_login": "kblaschke",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-10-05T11:09:01Z",
+   "updated_utc": "2026-10-05T11:09:01Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-5993232845",
+   "body_markdown": "Thanks for getting back on the issue! I've changed the issue title to say it's master that is affected, which more closely matches the report.\n\nI've not yet run the new rendering code through valgrind as my local OS uses some modern CPU instructions valgrind can't properly emulate yet, but I'll check the code manually and see if I can find the problem."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5997314643,
+   "author_login": "kblaschke",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-10-05T15:12:18Z",
+   "updated_utc": "2026-10-05T15:12:18Z",
+   "permalink": "https://github.com/projectM-visualizer/projectm/issues/1000#issuecomment-5997314643",
+   "body_markdown": "Sorry, but I can't find any clue in the code that even matches your initial bug description:\n> Technical Observation\n> The numbers indicate a clear structural correlation. For every single new MilkdropPreset initialized, the system accumulates a matching set of CustomShape (+4) and CustomWaveform (+4) allocations.\nCrucially, the raw vertex-drawing arrays associated with them (Color[] and Point[]) are left abandoned on the heap with positive count deltas. This confirms that while the parent objects are tracked, their low-level heap arrays lack a matching delete[] invocation during the transition sequence.\n> Technical Analysis\n> Since ~CustomShape() inside CustomShape.hpp is properly declared as a defaulted virtual destructor (virtual ~CustomShape() = default;), the parent wrapper object drops correctly.\nHowever, the raw coordinate and color arrays (Color[], Point[]) used to instantiate the meshes for waveforms and shape elements are persisting on the system heap. This suggests that during a manual track change, the rendering pipeline misses an explicit array deallocation step (delete[]) or drops pointers before freeing the underlying memory boundaries of the active shader canvas elements.\n\nThe first thing that I can't find in both the 4.1 release and in master is that there are _no_ \"raw vertex-drawing arrays\" being used anywhere. since you're saying you've used code from master, the only instances of these classes are part of the VertexBuffer template specializations, and declared as `std::vector<Point>` and `std::vector<Color>`, respectively - thus, no raw array, but a proper STL container. Which in turn means that if the class is destroyed, the instances stored in the vector will also be cleaned automatically. Note that the vertex buffers are members of the `Mesh` class being used in both the `CustomWave` and `CustomShape` classes. Again, no raw arrays/pointers (with `new`) being used in the whole class hierarchy.\nThen you again say \"low-level heap arrays\" - I can't find any in these classes.\n\nUnder \"Technical Analysis\", you again say \" the raw ... arrays ... used to instantiate the meshes\" - which I can't find either. The mesh is initialized via the `Mesh` members of both [`CustomShape`](https://github.com/projectM-visualizer/projectm/blob/dd89dfba0852c0c7e0c4e668929118d91ec3a3f0/src/libprojectM/MilkdropPreset/CustomShape.cpp#L13-L26) and [`CustomWaveform`](https://github.com/projectM-visualizer/projectm/blob/dd89dfba0852c0c7e0c4e668929118d91ec3a3f0/src/libprojectM/MilkdropPreset/CustomWaveform.cpp#L16-L28), which is basically a call to `std::vector::resize()`. Again - no raw arrays and no direct call to `new` is involved here.\n\nAdditionally, a manual preset change uses the _exact same function_ in libprojectM as an automatic change, because the library itself _isn't able to automatically load a new preset_. libprojectM will inform the application (or the projectM playlist library) that it _wants_ to change the preset, and then the application (or playlist library) will call the respective preset load function with either a file name or the preset contents. A preset switch can then be done immediately (\"hard cut\"), which will skip the transition shader, or with a transition, which will play both presets for a short duration. In both cases, after the transition is finished, the old preset will be destroyed.\n\n### TL;DR:\n\nI'll keep the bug open for now, and see if I can run this in Valgrind so see if there are any leaks being reported. I can't totally dismiss that, since memory profilers rarely give false positives (may happen in certain static allocation and shared library loading scenarios), so this might be a real thing.\n\nIf you could re-run your initial profiling with the current master branch, and actually pinpoint the allocation locations of the lost memory to specific lines of code, that would be really helpful. If Valgrind doesn't show anything, I'd rather consider this a fluke and close the issue in this case."
+  }
+ ]
+}

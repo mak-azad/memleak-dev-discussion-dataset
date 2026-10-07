@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/389ds/389-ds-base/issues/7746",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak triggered by sync repl",
+ "author_login": "mreynolds389",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:48Z",
+ "final_url": "https://github.com/389ds/389-ds-base/issues/7746",
+ "repo": "389ds/389-ds-base",
+ "repo_language": "C",
+ "number": 7746,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-20T21:04:34Z",
+ "updated_at": "2026-08-20T21:04:34Z",
+ "closed_at": null,
+ "labels": [
+  "needs triage",
+  "memory leak"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mreynolds389",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-20T21:04:34Z",
+   "updated_utc": "2026-08-20T21:04:34Z",
+   "permalink": "https://github.com/389ds/389-ds-base/issues/7746",
+   "body_markdown": "**Issue Description**\n\nFound when running sync_repl CI tests\n\n```\nIndirect leak of 704 byte(s) in 1 object(s) allocated from:\n    #0 0x7f22a1eef24f in calloc (/lib64/libasan.so.8+0xef24f) (BuildId: 5395ec74f54d9ec7bf97c06583dd39a96c230822)\n    #1 0x7f22a183cca8 in slapi_ch_calloc (/usr/lib64/dirsrv/libslapd.so.0+0x3cca8) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #2 0x7f22a19546f6 in plugin_setup (/usr/lib64/dirsrv/libslapd.so.0+0x1546f6) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #3 0x7f22a1956e94 in slapi_register_plugin_ext (/usr/lib64/dirsrv/libslapd.so.0+0x156e94) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #4 0x7b229d46675a in retrocl_plugin_init ldap/servers/plugins/retrocl/retrocl.c:699\n    #5 0x7f22a19550fd in plugin_setup (/usr/lib64/dirsrv/libslapd.so.0+0x1550fd) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #6 0x7f22a1842d23 in load_plugin_entry (/usr/lib64/dirsrv/libslapd.so.0+0x42d23) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #7 0x7f22a185b89d in dse_call_callback ldap/servers/slapd/dse.c:2894\n    #8 0x7f22a185c077 in dse_read_one_file ldap/servers/slapd/dse.c:841\n    #9 0x7f22a185c68b in dse_read_file (/usr/lib64/dirsrv/libslapd.so.0+0x5c68b) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #10 0x55b4bbe59f08 in init_dse_file ldap/servers/slapd/fedse.c:2656\n    #11 0x55b4bbe59f08 in setup_internal_backends ldap/servers/slapd/fedse.c:2895\n    #12 0x55b4bbe27230 in main (/usr/bin/ns-slapd+0x9230) (BuildId: 458b6e79250692f42e9f7ef198aa7ede69bc2164)\n    #13 0x7f22a160a680 in __libc_start_call_main (/lib64/libc.so.6+0x3680) (BuildId: 17f2e1fd905f485786f6fd6e3bede4ad737137e7)\n    #14 0x7f22a160a797 in __libc_start_main@GLIBC_2.2.5 (/lib64/libc.so.6+0x3797) (BuildId: 17f2e1fd905f485786f6fd6e3bede4ad737137e7)\n    #15 0x55b4bbe2ca34 in _start (/usr/bin/ns-slapd+0xea34) (BuildId: 458b6e79250692f42e9f7ef198aa7ede69bc2164)\n\nIndirect leak of 704 byte(s) in 1 object(s) allocated from:\n    #0 0x7f22a1eef24f in calloc (/lib64/libasan.so.8+0xef24f) (BuildId: 5395ec74f54d9ec7bf97c06583dd39a96c230822)\n    #1 0x7f22a183cca8 in slapi_ch_calloc (/usr/lib64/dirsrv/libslapd.so.0+0x3cca8) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #2 0x7f22a19546f6 in plugin_setup (/usr/lib64/dirsrv/libslapd.so.0+0x1546f6) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #3 0x7f22a1956e94 in slapi_register_plugin_ext (/usr/lib64/dirsrv/libslapd.so.0+0x156e94) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #4 0x7f22a19570c1 in slapi_register_plugin (/usr/lib64/dirsrv/libslapd.so.0+0x1570c1) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #5 0x7b229e1880c6 in sync_init ldap/servers/plugins/sync/sync_init.c:96\n    #6 0x7f22a19550fd in plugin_setup (/usr/lib64/dirsrv/libslapd.so.0+0x1550fd) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #7 0x7f22a1842d23 in load_plugin_entry (/usr/lib64/dirsrv/libslapd.so.0+0x42d23) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #8 0x7f22a185b89d in dse_call_callback ldap/servers/slapd/dse.c:2894\n    #9 0x7f22a185c077 in dse_read_one_file ldap/servers/slapd/dse.c:841\n    #10 0x7f22a185c68b in dse_read_file (/usr/lib64/dirsrv/libslapd.so.0+0x5c68b) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #11 0x55b4bbe59f08 in init_dse_file ldap/servers/slapd/fedse.c:2656\n    #12 0x55b4bbe59f08 in setup_internal_backends ldap/servers/slapd/fedse.c:2895\n    #13 0x55b4bbe27230 in main (/usr/bin/ns-slapd+0x9230) (BuildId: 458b6e79250692f42e9f7ef198aa7ede69bc2164)\n    #14 0x7f22a160a680 in __libc_start_call_main (/lib64/libc.so.6+0x3680) (BuildId: 17f2e1fd905f485786f6fd6e3bede4ad737137e7)\n    #15 0x7f22a160a797 in __libc_start_main@GLIBC_2.2.5 (/lib64/libc.so.6+0x3797) (BuildId: 17f2e1fd905f485786f6fd6e3bede4ad737137e7)\n```\n\nand also:\n\n```\nDirect leak of 48 byte(s) in 1 object(s) allocated from:\n    #0 0x7f2876eef24f in calloc (/lib64/libasan.so.8+0xef24f) (BuildId: 5395ec74f54d9ec7bf97c06583dd39a96c230822)\n    #1 0x7f287683cca8 in slapi_ch_calloc (/usr/lib64/dirsrv/libslapd.so.0+0x3cca8) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #2 0x7b287443425e in get_thread_primary_op ldap/servers/plugins/sync/sync_init.c:268\n    #3 0x7b287443479e in sync_update_persist_betxn_pre_op ldap/servers/plugins/sync/sync_persist.c:130\n    #4 0x7f287694ee1a in plugin_call_func ldap/servers/slapd/plugin.c:2018\n    #5 0x7f287694f371 in plugin_call_list ldap/servers/slapd/plugin.c:1961\n    #6 0x7f2876861798 in dse_add ldap/servers/slapd/dse.c:2602\n    #7 0x7f2876823e2d in op_shared_add ldap/servers/slapd/add.c:847\n    #8 0x7f287682711d in add_internal_pb.isra.0 (/usr/lib64/dirsrv/libslapd.so.0+0x2711d) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #9 0x7f28768276d9 in slapi_add_internal_pb (/usr/lib64/dirsrv/libslapd.so.0+0x276d9) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #10 0x7f28769ddf3a in slapi_plugin_task_register_handler (/usr/lib64/dirsrv/libslapd.so.0+0x1ddf3a) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #11 0x7f28769f5d8a in task_init (/usr/lib64/dirsrv/libslapd.so.0+0x1f5d8a) (BuildId: 538a75a9536149dbbcb2ba8978752137d4864dee)\n    #12 0x563b5a410edb in main (/usr/bin/ns-slapd+0xbedb) (BuildId: 458b6e79250692f42e9f7ef198aa7ede69bc2164)\n    #13 0x7f287660a680 in __libc_start_call_main (/lib64/libc.so.6+0x3680) (BuildId: 17f2e1fd905f485786f6fd6e3bede4ad737137e7)\n    #14 0x7f287660a797 in __libc_start_main@GLIBC_2.2.5 (/lib64/libc.so.6+0x3797) (BuildId: 17f2e1fd905f485786f6fd6e3bede4ad737137e7)\n    #15 0x563b5a413a34 in _start (/usr/bin/ns-slapd+0xea34) (BuildId: 458b6e79250692f42e9f7ef198aa7ede69bc2164)\n```"
+  }
+ ]
+}

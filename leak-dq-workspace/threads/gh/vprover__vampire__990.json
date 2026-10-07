@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/vprover/vampire/issues/990",
+ "passes": [
+  "main"
+ ],
+ "title": "Two Deque unit tests leak their heap-allocated containers",
+ "author_login": "shalashaska117",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:18Z",
+ "final_url": "https://github.com/vprover/vampire/issues/990",
+ "repo": "vprover/vampire",
+ "repo_language": "C++",
+ "number": 990,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-25T10:20:39Z",
+ "updated_at": "2026-09-25T10:20:39Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "shalashaska117",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-25T10:20:39Z",
+   "updated_utc": "2026-09-25T10:20:39Z",
+   "permalink": "https://github.com/vprover/vampire/issues/990",
+   "body_markdown": "Two existing `Deque` unit tests leave their outer container allocation behind. This is test-fixture cleanup, not evidence that the production `Deque` implementation leaks during solver use.\n\nTested on Linux x86-64 at production commit `af03e1547d9381cea97c051ed65a7918d07a2b0e`, using GCC 15.2.0, Valgrind 3.26.0 and a Debug build with `CHECK_LEAKS=ON` and Z3 enabled. No production fixes were applied. The commands below assume the repository dependencies are available:\n\n```sh\ncmake -S . -B build/memcheck -DCMAKE_BUILD_TYPE=Debug -DCHECK_LEAKS=ON\ncmake --build build/memcheck --target vampire vtest -j4\n```\n```sh\nvalgrind --tool=memcheck --leak-check=full --show-leak-kinds=all \\\n  --errors-for-leak-kinds=definite,indirect,possible --track-origins=yes \\\n  --error-exitcode=97 --trace-children=yes \\\n  build/memcheck/vtest run Deque\n```\n\n\nThe current-master run records a 40-byte definitely-lost container allocation for each test. One excerpt is:\n\n```text\n40 bytes in 1 blocks are definitely lost in loss record 68 of 182\n  operator new(unsigned long) (vg_replace_malloc.c:488)\n  __testFn__Deque__push_front_pop_back_expand() (tDeque.cpp:17)\n  Test::TestUnit::spawnTest(void (*)()) (UnitTesting.cpp:194)\n  Test::TestUnit::runTestsWithNameSubstring(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::ostream&) (UnitTesting.cpp:144)\n```\n\n[push_front_pop_back_expand](https://github.com/vprover/vampire/blob/af03e1547d9381cea97c051ed65a7918d07a2b0e/UnitTests/tDeque.cpp#L15) allocates `a_deque` and does not destroy it. [size_reset_desctructor](https://github.com/vprover/vampire/blob/af03e1547d9381cea97c051ed65a7918d07a2b0e/UnitTests/tDeque.cpp#L29) explicitly calls `~Deque()` but does not free the outer allocation. Normal scoped lifetime or `delete` would release both the contents and object storage while retaining the intended assertions.\n\nThe startup `OperatorType` records are separate and should not be attributed to these fixtures.\n\n## Discovery and test\n\nFound by running the existing `Deque` unit suite under Valgrind. The allocation stacks lead directly to `push_front_pop_back_expand` and `size_reset_desctructor`; source inspection confirms the missing outer-object deallocation in each fixture.\n\nThe campaign, strict Valgrind handling and failure-reporting methods are shared in [testing PR #978](https://github.com/vprover/vampire/pull/978). The input and direct command above reproduce the selected check without that runner.\n"
+  }
+ ]
+}

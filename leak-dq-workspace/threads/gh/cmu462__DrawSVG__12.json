@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/cmu462/DrawSVG/issues/12",
+ "passes": [
+  "main"
+ ],
+ "title": "New issue: alloc-dealloc-mismatch",
+ "author_login": "Cvjark",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:54Z",
+ "final_url": "https://github.com/cmu462/DrawSVG/issues/12",
+ "repo": "cmu462/DrawSVG",
+ "repo_language": "C",
+ "number": 12,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-07-06T08:10:17Z",
+ "updated_at": "2022-07-06T08:10:17Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Cvjark",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-07-06T08:10:17Z",
+   "updated_utc": "2022-07-06T08:10:17Z",
+   "permalink": "https://github.com/cmu462/DrawSVG/issues/12",
+   "body_markdown": "Hi, i found something unusual in this repo, is it some kind of new bug ?\r\n\r\n### sample file \r\n[id3_alloc-dealloc-mismatch.zip](https://github.com/cmu462/DrawSVG/files/9052908/id3_alloc-dealloc-mismatch.zip)\r\n\r\n\r\n### reproduce\r\ncommand to reproduce : `./drawsvg [sample file]`\r\nThe command will open a new window to display the svg file, close it and the crash info are as fellowed.\r\n\r\n### crash info\r\n```\r\n==41561==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x7ff1d825f800\r\n    #0 0x536d40 in operator delete(void*) /home/bupt/Desktop/tools/llvm-12.0.1/llvm/projects/compiler-rt/lib/asan/asan_new_delete.cpp:160\r\n    #1 0x5bc830 in CMU462::OSDText::~OSDText() /home/bupt/Desktop/DrawSVG/CMU462/src/osdtext.cpp:35:3\r\n    #2 0x591428 in CMU462::Viewer::~Viewer() /home/bupt/Desktop/DrawSVG/CMU462/src/viewer.cpp:56:3\r\n    #3 0x582515 in main /home/bupt/Desktop/DrawSVG/src/main.cpp:116:1\r\n    #4 0x7ff1e6f12c86 in __libc_start_main /build/glibc-CVJwZb/glibc-2.27/csu/../csu/libc-start.c:310\r\n    #5 0x45e1b9 in _start (/home/bupt/Desktop/DrawSVG/bu/drawsvg+0x45e1b9)\r\n\r\n0x7ff1d825f800 is located 0 bytes inside of 264372-byte region [0x7ff1d825f800,0x7ff1d82a00b4)\r\nallocated by thread T0 here:\r\n    #0 0x5364a8 in operator new[](unsigned long) /home/bupt/Desktop/tools/llvm-12.0.1/llvm/projects/compiler-rt/lib/asan/asan_new_delete.cpp:102\r\n    #1 0x5bdb1e in CMU462::OSDText::init(bool) /home/bupt/Desktop/DrawSVG/CMU462/src/osdtext.cpp:58:10\r\n    #2 0x591c2b in CMU462::Viewer::init() /home/bupt/Desktop/DrawSVG/CMU462/src/viewer.cpp:124:17\r\n    #3 0x5824cb in main /home/bupt/Desktop/DrawSVG/src/main.cpp:110:10\r\n    #4 0x7ff1e6f12c86 in __libc_start_main /build/glibc-CVJwZb/glibc-2.27/csu/../csu/libc-start.c:310\r\n\r\nSUMMARY: AddressSanitizer: alloc-dealloc-mismatch /home/bupt/Desktop/tools/llvm-12.0.1/llvm/projects/compiler-rt/lib/asan/asan_new_delete.cpp:160 in operator delete(void*)\r\n==41561==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0\r\n==41561==ABORTING\r\n```\r\n\r\n"
+  }
+ ]
+}

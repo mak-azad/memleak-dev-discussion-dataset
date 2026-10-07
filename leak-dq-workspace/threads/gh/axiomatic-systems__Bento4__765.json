@@ -1,0 +1,43 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/axiomatic-systems/Bento4/issues/765",
+ "passes": [
+  "main"
+ ],
+ "title": "Bad-free with ASAN in mp42aac",
+ "author_login": "17ssDP",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:35Z",
+ "final_url": "https://github.com/axiomatic-systems/Bento4/issues/765",
+ "repo": "axiomatic-systems/Bento4",
+ "repo_language": "C++",
+ "number": 765,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-09-19T06:29:50Z",
+ "updated_at": "2023-05-29T02:51:08Z",
+ "closed_at": null,
+ "labels": [
+  "fuzzing"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "762",
+  "590",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "17ssDP",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-09-19T06:29:50Z",
+   "updated_utc": "2023-05-29T02:51:08Z",
+   "permalink": "https://github.com/axiomatic-systems/Bento4/issues/765",
+   "body_markdown": "Hi, developers of Bento4:\r\nIn the test of the binary mp42aac instrumented with ASAN. There are some inputs causing attempting free on address which was not malloc. Here is the ASAN mode output:\r\n\r\n==9252==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x60200000ef50 in thread T0\r\n    #0 0x7ffff6f03d0a in operator delete[](void*) (/usr/lib/x86_64-linux-gnu/libasan.so.2+0x99d0a)\r\n    #1 0x5c124b in AP4_HdlrAtom::~AP4_HdlrAtom() /root/Bento4/Source/C++/Core/Ap4HdlrAtom.h:61\r\n    #2 0x5c124b in AP4_HdlrAtom::~AP4_HdlrAtom() /root/Bento4/Source/C++/Core/Ap4HdlrAtom.h:61\r\n    #3 0x4e7e4b in AP4_List<AP4_Atom>::DeleteReferences() /root/Bento4/Source/C++/Core/Ap4List.h:476\r\n    #4 0x4e7e4b in AP4_AtomParent::~AP4_AtomParent() /root/Bento4/Source/C++/Core/Ap4Atom.cpp:516\r\n    #5 0x57a323 in AP4_ContainerAtom::~AP4_ContainerAtom() /root/Bento4/Source/C++/Core/Ap4ContainerAtom.h:48\r\n    #6 0x57a323 in AP4_ContainerAtom::~AP4_ContainerAtom() /root/Bento4/Source/C++/Core/Ap4ContainerAtom.h:48\r\n    #7 0x4e7e4b in AP4_List<AP4_Atom>::DeleteReferences() /root/Bento4/Source/C++/Core/Ap4List.h:476\r\n    #8 0x4e7e4b in AP4_AtomParent::~AP4_AtomParent() /root/Bento4/Source/C++/Core/Ap4Atom.cpp:516\r\n    #9 0x417b8d in AP4_File::~AP4_File() /root/Bento4/Source/C++/Core/Ap4File.cpp:84\r\n    #10 0x417b8d in AP4_File::~AP4_File() /root/Bento4/Source/C++/Core/Ap4File.cpp:88\r\n    #11 0x4043f2 in main /root/Bento4/Source/C++/Apps/Mp42Aac/Mp42Aac.cpp:303\r\n    #12 0x7ffff61bb83f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)\r\n    #13 0x408508 in _start (/root/Bento4/mp42aac+0x408508)\r\n\r\n0x60200000ef50 is located 0 bytes inside of 1-byte region [0x60200000ef50,0x60200000ef51)\r\nallocated by thread T0 here:\r\n    #0 0x7ffff6f03712 in operator new[](unsigned long) (/usr/lib/x86_64-linux-gnu/libasan.so.2+0x99712)\r\n    #1 0x48ac75 in AP4_String::Assign(char const*, unsigned int) /root/Bento4/Source/C++/Core/Ap4String.cpp:165\r\n    #2 0x48ac75 in AP4_String::operator=(char const*) /root/Bento4/Source/C++/Core/Ap4String.cpp:123\r\n\r\nSUMMARY: AddressSanitizer: bad-free ??:0 operator delete[](void*)\r\n==9252==ABORTING\r\n\r\n### Crash input\r\nhttps://github.com/17ssDP/fuzzer_crashes/blob/main/Bento4/mp42aac-badfree\r\n\r\n### Validation steps\r\ngit clone https://github.com/axiomatic-systems/Bento4\r\ncd Bento4/\r\nmkdir check_build && cd check_build\r\ncmake ../ -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_FLAGS=\"-fsanitize=address\" -DCMAKE_CXX_FLAGS=\"-fsanitize=address\" -DCMAKE_BUILD_TYPE=Release\r\nmake -j\r\n./mp42aac mp42aac-badfree /dev/null\r\n\r\n### Environment\r\nUbuntu 16.04\r\nClang 10.0.1\r\ngcc 5.5"
+  }
+ ]
+}

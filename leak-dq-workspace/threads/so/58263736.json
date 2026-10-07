@@ -1,0 +1,51 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 58263736,
+ "url": "https://stackoverflow.com/questions/58263736/is-incrementing-py-true-py-false-refcount-always-necessary",
+ "title": "Is incrementing Py_True/Py_False refcount always necessary?",
+ "tags": [
+  "python",
+  "c",
+  "python-3.x",
+  "python-c-api"
+ ],
+ "score": 4,
+ "view_count": 749,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 58263855,
+ "created_utc": "2019-10-07T05:01:57Z",
+ "last_activity_utc": "2019-10-07T05:18:30Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 7954504,
+ "author_display_name": "Brad Solomon",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/58263736/is-incrementing-py-true-py-false-refcount-always-necessary",
+ "body_html": "<p>I'm new to the Python C-API and browsing through some source code to pick parts of it up.</p>\n\n<p>Here is a minimal version of a function that I found, in the C source of a package that contains extension modules:</p>\n\n<pre class=\"lang-c prettyprint-override\"><code>#define PY_SSIZE_T_CLEAN\n#include &lt;Python.h&gt;\n\nstatic PyObject *\nmodulename_myfunc(PyObject *self, PyObject *args) {\n\n    // Call PyArg_ParseTuple, etc ...\n\n    // Dummy values; in the real function they are calculated\n    int is_found = 1;\n    Py_ssize_t n_bytes_found = 1024;\n\n    PyObject *result;\n    result = Py_BuildValue(\"(Oi)\",\n                           is_found ? Py_True : Py_False,  // Py_INCREF?\n                           n_bytes_found);\n    return result;\n}\n</code></pre>\n\n<p><strong>Does this introduce a small memory leak by failing to use <code>Py_INCREF</code> on either <code>Py_True</code> or <code>Py_False</code>?</strong>  The C-API <a href=\"https://docs.python.org/3/c-api/bool.html\" rel=\"nofollow noreferrer\">docs for Boolean object</a> seem pretty explicit about always needing to incref/decref <code>Py_True</code> and <code>Py_False</code>.</p>\n\n<p>If a <code>Py_INCREF</code> does need to be introduced, how can it most properly be used here, assuming that <code>Py_RETURN_TRUE</code>/<code>Py_RETURN_FALSE</code> aren't really applicable because a tuple is being returned?</p>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 58263855,
+   "parent_id": 58263736,
+   "author_user_id": 11365663,
+   "author_display_name": "Ammar Askar",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/58263855",
+   "score": 4,
+   "created_utc": "2019-10-07T05:18:30Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2019-10-07T05:18:30Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>The reason a <code>Py_INCREF</code> is not used here is because <a href=\"https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue\" rel=\"nofollow noreferrer\"><code>Py_BuildValue</code></a>, when being passed an object with \"O\" will increment the reference count for you:</p>\n\n<blockquote>\n  <p>O (object) [PyObject *]</p>\n  \n  <p>Pass a Python object untouched (except for its reference count, which is incremented by one). If the object passed in is a NULL pointer, it is assumed that this was caused because the call producing the argument found an error and set an exception. Therefore, Py_BuildValue() will return NULL but won’t raise an exception. If no exception has been raised yet, SystemError is set.</p>\n</blockquote>\n\n<p>You'll see a similar usage here in CPython <a href=\"https://github.com/python/cpython/blob/526a01467b3277f9fcf7f91e66c23321caa1245d/Modules/itertoolsmodule.c#L1063\" rel=\"nofollow noreferrer\">itself</a> for example.</p>\n"
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 72583216,
+ "url": "https://stackoverflow.com/questions/72583216/is-it-unsafe-to-co-yield-a-pointer-to-a-local-coroutine-variable",
+ "title": "Is it unsafe to co_yield a pointer to a local coroutine variable?",
+ "tags": [
+  "c++",
+  "c++20",
+  "coroutine",
+  "c++-coroutine",
+  "dangling-pointer"
+ ],
+ "score": 11,
+ "view_count": 402,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2022-06-11T09:34:38Z",
+ "last_activity_utc": "2022-06-12T01:13:58Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 7021343,
+ "author_display_name": "user118534",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/72583216/is-it-unsafe-to-co-yield-a-pointer-to-a-local-coroutine-variable",
+ "body_html": "<p>It's common knowledge that returning a pointer to a stack variable is generally a bad idea:</p>\n<pre class=\"lang-cpp prettyprint-override\"><code>int* foo() {\n  int i = 0;\n  return &amp;i;\n}\n\nint main() {\n  int* p = foo();\n}\n</code></pre>\n<p>In the example above, my understanding is that the <code>int</code> is destroyed and so <code>p</code> is a dangling pointer.</p>\n<p>I am wondering about the extent to which this applies to the newly introduced coroutines of C++20:</p>\n<pre class=\"lang-cpp prettyprint-override\"><code>generator&lt;span&lt;byte&gt;&gt; read(stream&amp; s) {\n  array&lt;byte, 4096&gt; b;\n  while (s.is_open()) {\n    const size_t n = s.read_some(b);\n    co_yield span(b, n);\n  }\n}\n\nint main() {\n  stream s;\n  for (span&lt;byte&gt; v : read(s)) {\n    /* ... */\n  }\n}\n</code></pre>\n<p>In this example, the coroutine <code>read</code> yields a <code>span</code> view into the local buffer <code>b</code>. Internally, that view stores a pointer to the buffer. Will that pointer ever be dangling when <code>v</code> is used with the body of the range-<code>for</code> loop?</p>\n<p>For context, the coroutine code in the second example is modeled after the code in my own project. There, AddressSanitizer ends the program with a &quot;use-after-free&quot; error. Ordinarily I'd consider that enough to answer my question, but since coroutine development is still coming along at this point in time (my project is using <code>boost::asio::experimental::coro</code>, emphasis on &quot;experimental&quot;), I was wondering if the error was caused by a bug with <code>generator</code>'s implementation or if returning pointers in this way is fundamentally incorrect (similar to the first example).</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": true,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 128216553,
+   "parent_id": 72583216,
+   "parent_type": "question",
+   "author_user_id": 17732522,
+   "author_display_name": "user17732522",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/72583216/#comment128216553_72583216",
+   "score": 0,
+   "created_utc": "2022-06-11T11:35:20Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "If you take for example the <code>Generator</code> implementation at <a href=\"https://en.cppreference.com/w/cpp/language/coroutines\" rel=\"nofollow noreferrer\">en.cppreference.com/w/cpp/language/coroutines</a>, then I don&#39;t see any issue. Although it caches the yielded value, the coroutine progresses to the final suspension point (where <code>b</code>&#39;s lifetime ends) only when <code>operator bool</code> is called and going to return <code>false</code>, corresponding to the final condition test in the range-for, which should be evaluated only after the last iteration of the loop body. So it seems to me that your <code>generator</code> implementation is just faulty. (<code>co_return</code> would be different)"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 72587929,
+   "parent_id": 72583216,
+   "author_user_id": 8586227,
+   "author_display_name": "Davis Herring",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/72587929",
+   "score": 2,
+   "created_utc": "2022-06-11T21:23:22Z",
+   "last_edit_utc": "2022-06-12T01:13:58Z",
+   "last_activity_utc": "2022-06-12T01:13:58Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>With <strong>language</strong> coroutines, this has to be safe: the <strong>lifetime</strong> of <code>b</code> must continue until the generator is finished, so pointers to it must be useful that long.</p>\n"
+  }
+ ]
+}

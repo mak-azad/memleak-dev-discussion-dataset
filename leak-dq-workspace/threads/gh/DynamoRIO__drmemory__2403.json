@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/DynamoRIO/drmemory/issues/2403",
+ "passes": [
+  "main"
+ ],
+ "title": "Possible false positives",
+ "author_login": "giladfrid009",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:37Z",
+ "final_url": "https://github.com/DynamoRIO/drmemory/issues/2403",
+ "repo": "DynamoRIO/drmemory",
+ "repo_language": "C",
+ "number": 2403,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-04-17T15:50:27Z",
+ "updated_at": "2021-04-17T17:12:01Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "giladfrid009",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-04-17T15:50:27Z",
+   "updated_utc": "2021-04-17T17:12:01Z",
+   "permalink": "https://github.com/DynamoRIO/drmemory/issues/2403",
+   "body_markdown": "**Describe the bug**\r\nI'm getting possibly false positives for memory leaks (or real leaks, not from my executable).\r\nI've analyzed my exe with valgrind and it did't find any leaks, but with dr. memory i'm leak reports.\r\n\r\n**To Reproduce**\r\nSteps to reproduce the behavior:\r\nPrecise command line for running the application: `drmemory mtm_buggy.exe`\r\n\r\n- The problem goes away when running in light mode (pass `-light` to Dr. Memory)\r\n - The problem goes away when running with the option `-leaks_only`\r\n - ERROR #2 goes away when running with the option `-no_count_leaks`\r\n - **The analysis crashes** when running with the option `-no_track_allocs`\r\n - Passing `-debug -dr_debug -pause_at_assert`, does not change the outcome (leaks persist)\r\n\r\n**Expected behavior**\r\nNo memory leaks found.\r\n\r\n**Screenshots or Pasted Text**\r\n\r\n***Source code:***\r\n\r\n```c\r\nint main()\r\n{\r\n\treturn 0;\r\n}\r\n```\r\n\r\n***Build:***\r\n```json\r\n{\r\n\t\"version\": \"2.0.0\",\r\n\t\"tasks\": [\r\n\t\t{\r\n\t\t\t\"type\": \"cppbuild\",\r\n\t\t\t\"label\": \"C/C++: gcc.exe build active file\",\r\n\t\t\t\"command\": \"D:\\\\Program Files\\\\mingw-w64\\\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\\\mingw64\\\\bin\\\\gcc.exe\",\r\n\t\t\t\"args\": [\r\n\t\t\t\t\"-g\",\r\n\t\t\t\t\"-std=c99\",\r\n\t\t\t\t\"-Wall\",\r\n\t\t\t\t\"-pedantic-errors\",\r\n\t\t\t\t\"-Werror\",\r\n\t\t\t\t\"-ggdb\",\r\n\t\t\t\t\"${file}\",\r\n\t\t\t\t\"-o\",\r\n\t\t\t\t\"${fileDirname}\\\\${fileBasenameNoExtension}.exe\"\r\n\t\t\t],\r\n\t\t\t\"options\": {\r\n\t\t\t\t\"cwd\": \"${workspaceFolder}\"\r\n\t\t\t},\r\n\t\t\t\"problemMatcher\": [\r\n\t\t\t\t\"$gcc\"\r\n\t\t\t],\r\n\t\t\t\"group\": {\r\n\t\t\t\t\"kind\": \"build\",\r\n\t\t\t\t\"isDefault\": true\r\n\t\t\t},\r\n\t\t\t\"detail\": \"compiler: \\\"D:\\\\Program Files\\\\mingw-w64\\\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\\\mingw64\\\\bin\\\\gcc.exe\\\"\"\r\n\t\t}\r\n\t]\r\n}\r\n```\r\n\r\n***Dr. Memory output:***\r\n```\r\nDr. Memory version 2.3.18722 build 0 built on Apr 10 2021 02:45:45\r\nWindows version: WinVer=105;Rel=2009;Build=19042;Edition=Professional\r\nDr. Memory results for pid 10632: \"mtm_buggy.exe\"\r\nApplication cmdline: \"mtm_buggy.exe\"\r\nRecorded 124 suppression(s) from default D:\\Program Files (x86)\\Dr. Memory\\bin64\\suppress-default.txt\r\n\r\nError #1: UNADDRESSABLE ACCESS beyond top of stack: reading 0x000000000061fb40-0x000000000061fb48 8 byte(s)\r\n# 0 ___chkstk_ms                            [../../../../../src/gcc-8.1.0/libgcc/config/i386/cygwin.S:132]\r\n# 1 _pei386_runtime_relocator               [D:/Users/Gilad Freidkin/Source/university/hw0/mtm_buggy.c:160]\r\n# 2 __tmainCRTStartup\r\n# 3 .l_start     \r\n# 4 KERNEL32.dll!BaseThreadInitThunk       +0x13     (0x00007ffae16b7034 <KERNEL32.dll+0x17034>)\r\nNote: @0:00:00.474 in thread 532\r\nNote: 0x000000000061fb40 refers to 600 byte(s) beyond the top of the stack 0x000000000061fd98\r\nNote: instruction: or     $0x0000000000000000 (%rcx) -> (%rcx)\r\n\r\nError #2: POSSIBLE LEAK 31 direct bytes 0x00000000016701c0-0x00000000016701df + 0 indirect bytes\r\n# 0 replace_malloc                    [d:\\a\\drmemory\\drmemory\\common\\alloc_replace.c:2580]\r\n# 1 msvcrt.dll!malloc_crt\r\n# 2 msvcrt.dll!_setargv  \r\n# 3 msvcrt.dll!_getmainargs\r\n# 4 pre_cpp_init \r\n# 5 msvcrt.dll!initterm  \r\n# 6 __tmainCRTStartup\r\n# 7 .l_start     \r\n# 8 KERNEL32.dll!BaseThreadInitThunk +0x13     (0x00007ffae16b7034 <KERNEL32.dll+0x17034>)\r\n\r\n===========================================================================\r\nFINAL SUMMARY:\r\n\r\nDUPLICATE ERROR COUNTS:\r\n\tError #   1:      2\r\n\r\nSUPPRESSIONS USED:\r\n\r\nERRORS FOUND:\r\n      1 unique,     2 total unaddressable access(es)\r\n      0 unique,     0 total uninitialized access(es)\r\n      0 unique,     0 total invalid heap argument(s)\r\n      0 unique,     0 total GDI usage error(s)\r\n      0 unique,     0 total handle leak(s)\r\n      0 unique,     0 total warning(s)\r\n      0 unique,     0 total,      0 byte(s) of leak(s)\r\n      1 unique,     1 total,     31 byte(s) of possible leak(s)\r\nERRORS IGNORED:\r\n      4 unique,     4 total,   4142 byte(s) of still-reachable allocation(s)\r\n         (re-run with \"-show_reachable\" for details)\r\nDetails: C:\\Users\\Gilad Freidkin\\AppData\\Roaming\\Dr. Memory\\DrMemory-mtm_buggy.exe.10632.000\\results.txt\r\n```\r\n\r\n**Versions**\r\n - What version of Dr. Memory are you using? 2.3.18722\r\n- What operating system version are you running on? \r\n```\r\n  Edition\tWindows 10 Pro\r\n  Version\t20H2\r\n  Installed on\t‎27/‎03/‎2021\r\n  OS build\t19042.928\r\n  Experience\tWindows Feature Experience Pack 120.2212.551.0\r\n```\r\n- Is your application 32-bit or 64-bit? Don't know.\r\n"
+  }
+ ]
+}

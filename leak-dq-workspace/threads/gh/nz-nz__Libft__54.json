@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/nz-nz/Libft/issues/54",
+ "passes": [
+  "main"
+ ],
+ "title": "ft_lstdelone",
+ "author_login": "nz-nz",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:05Z",
+ "final_url": "https://github.com/nz-nz/Libft/issues/54",
+ "repo": "nz-nz/Libft",
+ "repo_language": "C",
+ "number": 54,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2019-06-29T17:49:30Z",
+ "updated_at": "2019-07-15T15:43:18Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "nz-nz",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2019-06-29T17:49:30Z",
+   "updated_utc": "2019-07-15T15:43:18Z",
+   "permalink": "https://github.com/nz-nz/Libft/issues/54",
+   "body_markdown": "\r\n \r\n--\r\nPrototype | void ft_lstdelone(t_list**alst,void(*del)(void *, size_t));\r\nDescription | Takes as a parameter a link’s pointer address and frees the memory of the link’s content using the function del given as a parameter, then frees the link’s memory using free(3). The memory of next must not be freed under any circumstance. Finally, the pointer to the link that was just freed must be set to NULL (quite similar to the function ft_memdel in the mandatory part).\r\nParam. #1 | The adress of a pointer to a link that needs to be freed.\r\nReturn value | None.\r\nLibc functions | free(3)\r\n\r\n"
+  }
+ ]
+}

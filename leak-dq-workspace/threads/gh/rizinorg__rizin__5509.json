@@ -1,0 +1,123 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/rizinorg/rizin/issues/5509",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Uninitialised value by a heap allocation within RzStrBuf",
+ "author_login": "SSharshunov",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:57Z",
+ "final_url": "https://github.com/rizinorg/rizin/issues/5509",
+ "repo": "rizinorg/rizin",
+ "repo_language": "C",
+ "number": 5509,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-11-08T04:51:49Z",
+ "updated_at": "2026-02-22T09:34:34Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 7,
+ "query_buckets": [
+  "UNINIT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "SSharshunov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-11-08T04:51:49Z",
+   "updated_utc": "2026-02-22T09:34:34Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509",
+   "body_markdown": "<!-- This template is meant for bug reports, if you have a feature request, please be as descriptive as possible and delete the template\n\nMake sure you are testing using the latest git version of rizin before submitting any issue.\n\nIf you would like to report a bug, please fill the template below\n-->\n\n### Work environment\n\n| Questions                                            | Answers\n|------------------------------------------------------|--------------------\n| OS/arch/bits (mandatory)                             | Ubuntu x64\n| File format of the file you reverse (mandatory)      | maybe all\n| Architecture/bits of the file (mandatory)            | maybe all\n| `rizin -v` full output, **not truncated** (mandatory)  | rizin 0.9.0 @ linux-x86-64, commit: bd9725b0b968577798790f8fc035e9fcaefd3153\n\n\n### Expected behavior\nNo leaks\n### Actual behavior\n\n```\n==760529== Conditional jump or move depends on uninitialised value(s)\n==760529==    at 0x4C3CFC9: ???\n==760529==    by 0x85FC72E: ???\n==760529==  Uninitialised value was created by a heap allocation\n==760529==    at 0x483D7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)\n==760529==    by 0x48FB060: rz_strbuf_append_n (strbuf.c:290)\n==760529==    by 0x48FABC0: rz_strbuf_append (strbuf.c:211)\n==760529==    by 0x48E102D: rz_print_colorize_asm_str (print.c:1452)\n==760529==    by 0x5B2CCF1: rz_asm_colorize_asm_str (asm.c:1897)\n==760529==    by 0x78E67E5: ds_opstr_try_colorize (disasm.c:892)\n==760529==    by 0x78E7345: ds_build_op_str (disasm.c:1034)\n==760529==    by 0x78F8A5B: rz_core_print_disasm (disasm.c:5476)\n==760529==    by 0x797CBBE: core_disassembly (cmd_print.c:2842)\n==760529==    by 0x797CE57: rz_cmd_disassembly_n_instructions_handler (cmd_print.c:2890)\n==760529==    by 0x799DDC8: argv_call_cb (cmd_api.c:766)\n==760529==    by 0x799DF46: call_cd (cmd_api.c:800)\n```\n```\n==670741== Conditional jump or move depends on uninitialised value(s)\n==670741==    at 0x4B7F978: ???\n==670741==    by 0x94A366F: ???\n==670741==  Uninitialised value was created by a heap allocation\n==670741==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)\n==670741==    by 0x48E5234: rz_strbuf_append_n (strbuf.c:231)\n==670741==    by 0x48E5234: rz_strbuf_append_n (strbuf.c:214)\n==670741==    by 0x48D1ED0: rz_print_colorize_asm_str (print.c:1449)\n==670741==    by 0x586706B: rz_asm_colorize_asm_str (asm.c:1898)\n==670741==    by 0x727B1B7: ds_opstr_try_colorize (disasm.c:892)\n==670741==    by 0x727CFB6: ds_build_op_str (disasm.c:1033)\n==670741==    by 0x7286C8A: rz_core_print_disasm.part.0 (disasm.c:5475)\n==670741==    by 0x72C7E46: core_disassembly (cmd_print.c:2842)\n==670741==    by 0x72E66FC: rz_cmd_disassembly_n_instructions_handler (cmd_print.c:2890)\n==670741==    by 0x7305215: argv_call_cb (cmd_api.c:766)\n==670741==    by 0x7305215: call_cd (cmd_api.c:800)\n==670741==    by 0x7305215: rz_cmd_call_parsed_args (cmd_api.c:813)\n==670741==    by 0x72FDE03: handle_ts_arged_stmt_internal (cmd.c:1149)\n==670741==    by 0x72FDE03: handle_ts_arged_stmt (cmd.c:1097)\n==670741==    by 0x72BDB57: handle_ts_stmt (cmd.c:2684)\n\n```\n```\n==670741== Invalid read of size 16\n==670741==    at 0x4B7F95F: ???\n==670741==    by 0x946B59F: ???\n==670741==  Address 0x946b5af is 15 bytes inside a block of size 27 alloc'd\n==670741==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)\n==670741==    by 0x4C3C38E: strdup (strdup.c:42)\n==670741==    by 0x48E5CC9: drain (strbuf.c:313)\n==670741==    by 0x48E5CC9: rz_strbuf_drain (strbuf.c:325)\n==670741==    by 0x727B1DB: ds_opstr_try_colorize (disasm.c:898)\n==670741==    by 0x727CFB6: ds_build_op_str (disasm.c:1033)\n==670741==    by 0x7286C8A: rz_core_print_disasm.part.0 (disasm.c:5475)\n==670741==    by 0x72C7E46: core_disassembly (cmd_print.c:2842)\n==670741==    by 0x72E66FC: rz_cmd_disassembly_n_instructions_handler (cmd_print.c:2890)\n==670741==    by 0x7305215: argv_call_cb (cmd_api.c:766)\n==670741==    by 0x7305215: call_cd (cmd_api.c:800)\n==670741==    by 0x7305215: rz_cmd_call_parsed_args (cmd_api.c:813)\n==670741==    by 0x72FDE03: handle_ts_arged_stmt_internal (cmd.c:1149)\n==670741==    by 0x72FDE03: handle_ts_arged_stmt (cmd.c:1097)\n==670741==    by 0x72BDB57: handle_ts_stmt (cmd.c:2684)\n==670741==    by 0x72EEE6B: handle_ts_statements_internal (cmd.c:2741)\n==670741==    by 0x72EEE6B: handle_ts_statements (cmd.c:2706)\n```\n```\n==744508== 1,344 bytes in 12 blocks are definitely lost in loss record 4 of 5\n==744508==    at 0x483D7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)\n==744508==    by 0x49519D6: _pcre2_memctl_malloc_8 (pcre2_context.c:89)\n==744508==    by 0x4951BD6: pcre2_match_context_create_8 (pcre2_context.c:190)\n==744508==    by 0x48E6AFC: match_first_8 (regex.c:671)\n==744508==    by 0x48E7911: match_all_internal_8 (regex.c:1037)\n==744508==    by 0x48E7FBB: rz_regex_match_all_multi (regex.c:1251)\n==744508==    by 0x7362B83: native_string_find (string_search.c:89)\n==744508==    by 0x73634FB: string_find (string_search.c:236)\n==744508==    by 0x735B704: search_iterator_io_map_cb (search.c:640)\n==744508==    by 0x490B14D: thread_iterate_list_cb (thread_iterators.c:57)\n==744508==    by 0x4908880: thread_main_function (thread.c:21)\n==744508==    by 0x4FB7608: start_thread (pthread_create.c:477)\n==744508== \n==744508== 1,064,448 bytes in 9,504 blocks are definitely lost in loss record 5 of 5\n==744508==    at 0x483D7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)\n==744508==    by 0x49519D6: _pcre2_memctl_malloc_8 (pcre2_context.c:89)\n==744508==    by 0x4951BD6: pcre2_match_context_create_8 (pcre2_context.c:190)\n==744508==    by 0x48E6AFC: match_first_8 (regex.c:671)\n==744508==    by 0x48E7987: match_all_internal_8 (regex.c:1043)\n==744508==    by 0x48E7FBB: rz_regex_match_all_multi (regex.c:1251)\n==744508==    by 0x7362B83: native_string_find (string_search.c:89)\n==744508==    by 0x73634FB: string_find (string_search.c:236)\n==744508==    by 0x735B704: search_iterator_io_map_cb (search.c:640)\n==744508==    by 0x490B14D: thread_iterate_list_cb (thread_iterators.c:57)\n==744508==    by 0x4908880: thread_main_function (thread.c:21)\n==744508==    by 0x4FB7608: start_thread (pthread_create.c:477)\n```\nResolved\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3506819975,
+   "author_login": "Rot127",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-11-08T19:26:27Z",
+   "updated_utc": "2025-11-08T19:26:27Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3506819975",
+   "body_markdown": "What is the command you run?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3507474751,
+   "author_login": "SSharshunov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-11-09T03:18:11Z",
+   "updated_utc": "2025-11-09T03:23:44Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3507474751",
+   "body_markdown": "I launched them in my fork, but I think you can find them in other architectures as well.\n\n`valgrind -s --track-origins=yes --leak-check=full --show-leak-kinds=all ./rizin -a c166 -qc 'pd' measure`"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3519846939,
+   "author_login": "SSharshunov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-11-12T04:10:44Z",
+   "updated_utc": "2025-11-12T04:11:56Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3519846939",
+   "body_markdown": "moved from PR #5515 \n\nThere is another problem by the way: if the buffer is less than 32 bytes, a memory access error appears.\nFor example: mnemonic 0xA5 `diswdt`\n\n---------------------------------------\n==3275266== Invalid read of size 16\n==3275266==    at 0x4C3CFDF: ???\n==3275266==    by 0x8E99F9F: ???\n==3275266==  Address 0x8e99faf is 15 bytes inside a block of size 30 alloc'd\n==3275266==    at 0x483D7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)\n==3275266==    by 0x4D0038E: strdup (strdup.c:42)\n==3275266==    by 0x48EE419: rz_str_dup (str.c:1112)\n==3275266==    by 0x48FB203: drain (strbuf.c:315)\n==3275266==    by 0x48FB259: rz_strbuf_drain (strbuf.c:327)\n==3275266==    by 0x78E6005: ds_opstr_try_colorize (disasm.c:898)\n==3275266==    by 0x78E6B1B: ds_build_op_str (disasm.c:1033)\n==3275266==    by 0x78F8231: rz_core_print_disasm (disasm.c:5475)\n==3275266==    by 0x797C8D4: core_disassembly (cmd_print.c:2842)\n==3275266==    by 0x797CB6D: rz_cmd_disassembly_n_instructions_handler (cmd_print.c:2890)\n==3275266==    by 0x799DAFC: argv_call_cb (cmd_api.c:766)\n==3275266==    by 0x799DC7A: call_cd (cmd_api.c:800)\n==3275266== \n==3275266== Conditional jump or move depends on uninitialised value(s)\n==3275266==    at 0x4C3CFC9: ???\n==3275266==    by 0x8E99F9F: ???\n==3275266== \n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3525294928,
+   "author_login": "wargio",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-11-13T04:31:36Z",
+   "updated_utc": "2025-11-13T04:31:36Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3525294928",
+   "body_markdown": "Please add the reproducer binary and commands "
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3940567888,
+   "author_login": "notxvilka",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-22T09:22:33Z",
+   "updated_utc": "2026-02-22T09:22:33Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3940567888",
+   "body_markdown": "@SSharshunov ping on this one"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3940583353,
+   "author_login": "SSharshunov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-22T09:34:16Z",
+   "updated_utc": "2026-02-22T09:34:16Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3940583353",
+   "body_markdown": "https://github.com/SSharshunov/rizin-testbins/blob/omf166/omf/omf166/measure"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3940583709,
+   "author_login": "SSharshunov",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-22T09:34:34Z",
+   "updated_utc": "2026-02-22T09:34:34Z",
+   "permalink": "https://github.com/rizinorg/rizin/issues/5509#issuecomment-3940583709",
+   "body_markdown": "> Я запустил их в своей ветке, но думаю, вы сможете найти их и в других архитектурах.\n> \n> `valgrind -s --track-origins=yes --leak-check=full --show-leak-kinds=all ./rizin -a c166 -qc 'pd' measure`\n\n"
+  }
+ ]
+}

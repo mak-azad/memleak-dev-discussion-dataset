@@ -1,0 +1,78 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/open-watcom/open-watcom-v2/issues/1557",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "malloc() corrupted topsize when trying to install current release",
+ "author_login": "angrypig555",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:14Z",
+ "final_url": "https://github.com/open-watcom/open-watcom-v2/issues/1557",
+ "repo": "open-watcom/open-watcom-v2",
+ "repo_language": "C",
+ "number": 1557,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-12-20T09:08:58Z",
+ "updated_at": "2025-12-20T11:40:38Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "installer"
+ ],
+ "comments_reported": 3,
+ "query_buckets": [
+  "HEAPCORRUPT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "angrypig555",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-12-20T09:08:58Z",
+   "updated_utc": "2025-12-20T11:40:38Z",
+   "permalink": "https://github.com/open-watcom/open-watcom-v2/issues/1557",
+   "body_markdown": "I made the  open-watcom-2_0-c-linux-x64  executable with chmod +x and when i try to run it i get this in the terminal:\n\n<img width=\"2092\" height=\"368\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/d3219ad4-b587-4645-b02b-1f7377c8ff1f\" />\n\nThis is inside the ubuntu WSL2 on windows 11"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3677638696,
+   "author_login": "angrypig555",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-12-20T09:13:11Z",
+   "updated_utc": "2025-12-20T09:13:11Z",
+   "permalink": "https://github.com/open-watcom/open-watcom-v2/issues/1557#issuecomment-3677638696",
+   "body_markdown": "Using the x86 installer, the installer starts but then theres an internal error and segmentation faults, then the random garbage appears in the terminal"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3677640684,
+   "author_login": "angrypig555",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-12-20T09:16:23Z",
+   "updated_utc": "2025-12-20T09:16:23Z",
+   "permalink": "https://github.com/open-watcom/open-watcom-v2/issues/1557#issuecomment-3677640684",
+   "body_markdown": "Running it in an external terminal (64 bit version) will cause it to reach the file copying part where it will crash due to segmentation fault error"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3677753649,
+   "author_login": "jmalak",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-12-20T11:39:43Z",
+   "updated_utc": "2025-12-20T11:40:38Z",
+   "permalink": "https://github.com/open-watcom/open-watcom-v2/issues/1557#issuecomment-3677753649",
+   "body_markdown": "It is known problem (not fixed yet), as workaround you can use Linux 32-bit installer which has same functionality as 64-bit installer."
+  }
+ ]
+}

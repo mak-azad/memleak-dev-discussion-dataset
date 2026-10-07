@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/electronicarts/EASTL/issues/550",
+ "passes": [
+  "main"
+ ],
+ "title": "Mismatched free() / delete / delete [] when using EAWebKit",
+ "author_login": "TornadoCookie",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:04Z",
+ "final_url": "https://github.com/electronicarts/EASTL/issues/550",
+ "repo": "electronicarts/EASTL",
+ "repo_language": "C++",
+ "number": 550,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-01-03T21:50:31Z",
+ "updated_at": "2025-01-07T05:08:58Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "762"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "TornadoCookie",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-01-03T21:50:31Z",
+   "updated_utc": "2025-01-07T05:08:58Z",
+   "permalink": "https://github.com/electronicarts/EASTL/issues/550",
+   "body_markdown": "\r\nAllocating a string uses the EAWebKit allocator, but deallocating it uses the system allocator. This seems to mess up the stack.\r\nVersion: EASTL 3.16.05 (EAWebKit 16.4.2.0.0)\r\n\r\nSection of valgrind log:\r\n==689759== Mismatched free() / delete / delete []\r\n==689759==    at 0x484BFA4: operator delete[](void*) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==689759==    by 0x6A86EEF: deallocate (allocator.h:292)\r\n==689759==    by 0x6A86EEF: DoFree (string.h:3281)\r\n==689759==    by 0x6A86EEF: eastl::basic_string<char, eastl::allocator>::DeallocateSelf() (string.h:3349)\r\n==689759==    by 0x6DA2030: ~basic_string (string.h:995)\r\n==689759==    by 0x6DA2030: EA::WebKit::DebugLogCallback(eastl::basic_string<char, eastl::allocator> const&, bool) (EAWebKit.cpp:632)\r\n==689759==    by 0x6DA3D29: EA::WebKit::DebugLogCallbackInternal(bool, char const*, __va_list_tag*) (EAWebKit.cpp:638)\r\n==689759==    by 0x74C14DB: vprintf_stderr_common (Assertions.cpp:152)\r\n==689759==    by 0x74C1834: printf_stderr_common (Assertions.cpp:235)\r\n==689759==    by 0x74C18D4: WTFReportAssertionFailure (Assertions.cpp:267)\r\n==689759==    by 0x6DA4C52: EA::WebKit::GetAllocator() (EAWebKitAllocator.cpp:353)\r\n==689759==    by 0x6DA1A6B: EA::WebKit::Init(EA::WebKit::AppCallbacks*, EA::WebKit::AppSystems*) (EAWebKit.cpp:676)\r\n==689759==    by 0x6DA1C1E: EA::WebKit::EAWebKitLib::Init(EA::WebKit::AppCallbacks*, EA::WebKit::AppSystems*) (EAWebKit.cpp:196)\r\n==689759==    by 0x10A49F: main (main.cpp:98)\r\n==689759==  Address 0x9598910 is 0 bytes inside a block of size 52 alloc'd\r\n==689759==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\r\n==689759==    by 0x6DA557D: EA::WebKit::DefaultAllocator::Malloc(unsigned long, int, char const*) (EAWebKitAllocator.cpp:98)\r\n==689759==    by 0x6DB40EA: operator new[](unsigned long, char const*, int, unsigned int, char const*, int) (EAWebKitNewDelete.cpp:173)\r\n==689759==    by 0x63F4F81: eastl::allocator::allocate(unsigned long, int) (allocator.h:245)\r\n==689759==    by 0x6DA431B: DoAllocate (string.h:3273)\r\n==689759==    by 0x6DA431B: eastl::basic_string<char, eastl::allocator>::append(char const*, char const*) (string.h:1720)\r\n==689759==    by 0x6DA440F: eastl::basic_string<char, eastl::allocator>::append(eastl::basic_string<char, eastl::allocator> const&) (string.h:1612)\r\n==689759==    by 0x6DA1F8A: operator+= (string.h:1590)\r\n==689759==    by 0x6DA1F8A: EA::WebKit::DebugLogCallback(eastl::basic_string<char, eastl::allocator> const&, bool) (EAWebKit.cpp:608)\r\n==689759==    by 0x6DA3D29: EA::WebKit::DebugLogCallbackInternal(bool, char const*, __va_list_tag*) (EAWebKit.cpp:638)\r\n==689759==    by 0x74C14DB: vprintf_stderr_common (Assertions.cpp:152)\r\n==689759==    by 0x74C1834: printf_stderr_common (Assertions.cpp:235)\r\n==689759==    by 0x74C18D4: WTFReportAssertionFailure (Assertions.cpp:267)\r\n==689759==    by 0x6DA4C52: EA::WebKit::GetAllocator() (EAWebKitAllocator.cpp:353)\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 2574403980,
+   "author_login": "TornadoCookie",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-01-07T05:08:58Z",
+   "updated_utc": "2025-01-07T05:08:58Z",
+   "permalink": "https://github.com/electronicarts/EASTL/issues/550#issuecomment-2574403980",
+   "body_markdown": "Upon further investigation it does not mess up the stack, but it is still odd that it is present."
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Multy-io/Multy-Android/issues/95",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "JNI local reference leak in makeTransaction nested loops",
+ "author_login": "QiuYucheng2003",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:53Z",
+ "final_url": "https://github.com/Multy-io/Multy-Android/issues/95",
+ "repo": "Multy-io/Multy-Android",
+ "repo_language": "Java",
+ "number": 95,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-21T12:07:51Z",
+ "updated_at": "2026-09-21T12:07:51Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "QiuYucheng2003",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-21T12:07:51Z",
+   "updated_utc": "2026-09-21T12:07:51Z",
+   "permalink": "https://github.com/Multy-io/Multy-Android/issues/95",
+   "body_markdown": "## Summary\n\n`makeTransaction` in `app/src/main/cpp/scratch.cpp` creates JNI local references inside nested loops and never calls `DeleteLocalRef`. A Bitcoin send with many addresses / UTXOs can overflow the JNI local reference table (~512 slots) and abort the process (`JNI ERROR: local reference table overflow`).\n\nCalled from `NativeDataHelper.makeTransaction` and `estimateTransactionFee`.\n\n## Code\n\nOuter loop (per address) — four array refs per iteration, overwritten without delete:\n\n```cpp\nfor (int i = 0; i < length; i++) {\n    env->CallVoidMethod(jObjectTransaction, jMidSetup, addressId);\n    jintArray outIds = (jintArray) env->CallObjectMethod(jObjectTransaction, jMidIds);\n    jobjectArray hashes = (jobjectArray) env->CallObjectMethod(jObjectTransaction, jMidHashes);\n    jobjectArray keys = (jobjectArray) env->CallObjectMethod(jObjectTransaction, jMidKeys);\n    jobjectArray amounts = (jobjectArray) env->CallObjectMethod(jObjectTransaction, jMidAmounts);\n\nInner loop (per UTXO) — three jstring refs per iteration:\n\nfor (int k = 0; k < stringCount; k++) {\n    jstring jHash = (jstring) env->GetObjectArrayElement(hashes, k);\n    jstring jKey = (jstring) env->GetObjectArrayElement(keys, k);\n    jstring jAmount = (jstring) env->GetObjectArrayElement(amounts, k);\n    JniString hashString(env, jHash);\n    // ...\n}\n\nJniString only calls ReleaseStringUTFChars; it does not DeleteLocalRef the jstring. Peak usage is about length × (4 + 3 × UTXOs per address) until the JNI method returns.\n\nHow to trigger\n1. Enable CheckJNI: adb shell setprop debug.checkjni 1, then restart the app.\n2. Build a send (or fee estimate) that uses many UTXOs, enough that addresses × UTXOs pushes local refs past ~512 (e.g. tens of addresses with many small outputs).\n3. Watch logcat during makeTransaction / estimateTransactionFee.\n\nExpected\nDelete each local ref after use (or wrap the loops with PushLocalFrame / PopLocalFrame).\n\nSuggested fix\n// inner loop, after JniString / use\nenv->DeleteLocalRef(jHash);\nenv->DeleteLocalRef(jKey);\nenv->DeleteLocalRef(jAmount);\n\n// outer loop, after ReleaseIntArrayElements\nenv->DeleteLocalRef(outIds);\nenv->DeleteLocalRef(hashes);\nenv->DeleteLocalRef(keys);\nenv->DeleteLocalRef(amounts);\n\nAlso delete jTransaction, jObjectTransaction, and addrIds before returning.\n\n"
+  }
+ ]
+}

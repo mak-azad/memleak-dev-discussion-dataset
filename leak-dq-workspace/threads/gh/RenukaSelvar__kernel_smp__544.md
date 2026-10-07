@@ -1,0 +1,87 @@
+# CVE-2021-45095 (Medium) detected in linuxlinux-4.19.313
+
+- URL: https://github.com/RenukaSelvar/kernel_smp/issues/544
+- Repo: RenukaSelvar/kernel_smp (language: C)
+- State: open; created 2024-05-16T00:47:52Z; status ok; passes offcwe
+
+## Issue body
+
+reporter (NONE) · mend-bolt-for-github[bot] · 2024-05-16T00:47:52Z · https://github.com/RenukaSelvar/kernel_smp/issues/544
+
+## CVE-2021-45095 - Medium Severity Vulnerability
+<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Library - <b>linuxlinux-4.19.313</b></summary>
+<p>
+
+<p>The Linux Kernel</p>
+<p>Library home page: <a href=https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/?wsslib=linux>https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/?wsslib=linux</a></p>
+
+<p>Found in base branch: <b>master</b></p></p>
+</details>
+</p></p>
+<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/vulnerability_details.png' width=19 height=20> Vulnerable Source Files (1)</summary>
+<p></p>
+<p>
+
+  <img src='https://s3.amazonaws.com/wss-public/bitbucketImages/xRedImage.png' width=19 height=20> <b>/net/phonet/pep.c</b>
+</p>
+</details>
+<p></p>
+</p>
+</details>
+<p></p>
+<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/medium_vul.png?' width=19 height=20> Vulnerability Details</summary>
+<p>  
+  
+pep_sock_accept in net/phonet/pep.c in the Linux kernel through 5.15.8 has a refcount leak.
+
+<p>Publish Date: 2021-12-16
+<p>URL: <a href=https://www.mend.io/vulnerability-database/CVE-2021-45095>CVE-2021-45095</a></p>
+</p>
+</details>
+<p></p>
+<details><summary><img src='https://whitesource-resources.whitesourcesoftware.com/cvss3.png' width=19 height=20> CVSS 3 Score Details (<b>5.5</b>)</summary>
+<p>
+
+Base Score Metrics:
+- Exploitability Metrics:
+  - Attack Vector: Local
+  - Attack Complexity: Low
+  - Privileges Required: Low
+  - User Interaction: None
+  - Scope: Unchanged
+- Impact Metrics:
+  - Confidentiality Impact: High
+  - Integrity Impact: None
+  - Availability Impact: None
+</p>
+For more information on CVSS3 Scores, click <a href="https://www.first.org/cvss/calculator/3.0">here</a>.
+</p>
+</details>
+<p></p>
+
+***
+Step up your Open Source Security Game with Mend [here](https://www.whitesourcesoftware.com/full_solution_bolt_github)
+
+## Comment 3938339841
+
+reporter (NONE) · mend-bolt-for-github[bot] · 2026-02-21T07:13:24Z · https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-3938339841
+
+:heavy_check_mark: This issue was automatically closed by Mend because the vulnerable library in the specific branch(es) was either marked as ignored or it is no longer part of the Mend inventory.
+
+## Comment 4324619994
+
+reporter (NONE) · mend-bolt-for-github[bot] · 2026-04-27T06:23:35Z · https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-4324619994
+
+:information_source: This issue was automatically re-opened by Mend because the vulnerable library in the specific branch(es) has been detected in the Mend inventory.
+
+## Comment 4427878750
+
+reporter (NONE) · mend-bolt-for-github[bot] · 2026-05-12T06:25:40Z · https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-4427878750
+
+:heavy_check_mark: This issue was automatically closed by Mend because the vulnerable library in the specific branch(es) was either marked as ignored or it is no longer part of the Mend inventory.
+
+## Comment 5590616224
+
+reporter (NONE) · mend-bolt-for-github[bot] · 2026-09-08T19:25:59Z · https://github.com/RenukaSelvar/kernel_smp/issues/544#issuecomment-5590616224
+
+:information_source: This issue was automatically re-opened by Mend because the vulnerable library in the specific branch(es) has been detected in the Mend inventory.

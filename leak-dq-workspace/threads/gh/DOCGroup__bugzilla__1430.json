@@ -1,0 +1,104 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/DOCGroup/bugzilla/issues/1430",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[BZ-1430] Handle Leak",
+ "author_login": "jwillemsen",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:12Z",
+ "final_url": "https://github.com/DOCGroup/bugzilla/issues/1430",
+ "repo": "DOCGroup/bugzilla",
+ "repo_language": "C++",
+ "number": 1430,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-03-27T23:04:08Z",
+ "updated_at": "2026-03-27T23:04:36Z",
+ "closed_at": null,
+ "labels": [
+  "product:TAO",
+  "component:ORB",
+  "severity:normal",
+  "priority:P3"
+ ],
+ "comments_reported": 5,
+ "query_buckets": [
+  "RES-handle"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "jwillemsen",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-27T23:04:08Z",
+   "updated_utc": "2026-03-27T23:04:36Z",
+   "permalink": "https://github.com/DOCGroup/bugzilla/issues/1430",
+   "body_markdown": "<!-- Migrated from Bugzilla -->\n\n| Field | Value |\n| --- | --- |\n| **Bugzilla ID** | [1430](http://bugzilla.dre.vanderbilt.edu/show_bug.cgi?id=1430) |\n| **Reporter** | Lukas Gruetzmacher |\n| **Assigned to** | DOC Center Support List (internal) |\n| **Product** | TAO |\n| **Component** | ORB |\n| **Version** | 1.3 |\n| **Platform / OS** | x86 / Windows 2000 |\n| **Priority** | P3 |\n| **Severity** | normal |\n| **Status** | NEW |\n| **Resolution** |  |\n| **Created** | 2003-01-22 10:54:58 -0600 |\n\n---\n\n_Originally posted by Lukas Gruetzmacher on 2003-01-22 10:54:58 -0600_\n\n---\n\nAs already described in Bug 1200 there is a handle leak during high trafic on \nthe server.\n\nReproducable on Win2k with the sample from Bug 1200.\nStart the Server.\nStart about 10 Clients.\n\nThis scenario cause the following behavoir:\nTime    Server Handles Threads     Clients Handles Threads\n10:33          339     22                  125-136 4-6\n11:19          378     22                  125-136 4-6\n15:41          415     22                  125-151 4-9"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4145824827,
+   "author_login": "jwillemsen",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-27T23:04:13Z",
+   "updated_utc": "2026-03-27T23:04:13Z",
+   "permalink": "https://github.com/DOCGroup/bugzilla/issues/1430#issuecomment-4145824827",
+   "body_markdown": "_Originally posted by Nanbor Wang on 2003-02-02 08:21:13 -0600_ ([Bugzilla comment 1](http://bugzilla.dre.vanderbilt.edu/show_bug.cgi?id=1430#c1))\n\n---\n\nAssign the bug to me"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4145825083,
+   "author_login": "jwillemsen",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-27T23:04:19Z",
+   "updated_utc": "2026-03-27T23:04:19Z",
+   "permalink": "https://github.com/DOCGroup/bugzilla/issues/1430#issuecomment-4145825083",
+   "body_markdown": "_Originally posted by Nanbor Wang on 2003-02-02 08:21:27 -0600_ ([Bugzilla comment 2](http://bugzilla.dre.vanderbilt.edu/show_bug.cgi?id=1430#c2))\n\n---\n\nAccept the bug"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4145825387,
+   "author_login": "jwillemsen",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-27T23:04:25Z",
+   "updated_utc": "2026-03-27T23:04:25Z",
+   "permalink": "https://github.com/DOCGroup/bugzilla/issues/1430#issuecomment-4145825387",
+   "body_markdown": "_Originally posted by Lukas Gruetzmacher on 2003-03-25 10:26:36 -0600_ ([Bugzilla comment 3](http://bugzilla.dre.vanderbilt.edu/show_bug.cgi?id=1430#c3))\n\n---\n\nHi Bala,\n\nHow about the status of this issue.\nThe leak seams to become critical for us. Are you able to reproduce the \nbehavior ?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4145825671,
+   "author_login": "jwillemsen",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-27T23:04:30Z",
+   "updated_utc": "2026-03-27T23:04:30Z",
+   "permalink": "https://github.com/DOCGroup/bugzilla/issues/1430#issuecomment-4145825671",
+   "body_markdown": "_Originally posted by Nanbor Wang on 2003-03-25 10:47:03 -0600_ ([Bugzilla comment 4](http://bugzilla.dre.vanderbilt.edu/show_bug.cgi?id=1430#c4))\n\n---\n\nLukas,\nIts in my \"todo\" list. We are swamped on different projects that we are\ncommitted to deliver for our sponsors. We will get to this whenever we get time.\nIt would be difficult for us to give you an ETA. If you would like to sponsor\nthis effort please let us know. Or if you have time to track this down please\nlet us know your solution and we will integrate your patch happily!\n\nThanks"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4145825936,
+   "author_login": "jwillemsen",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-03-27T23:04:36Z",
+   "updated_utc": "2026-03-27T23:04:36Z",
+   "permalink": "https://github.com/DOCGroup/bugzilla/issues/1430#issuecomment-4145825936",
+   "body_markdown": "_Originally posted by @jwillemsen on 2007-09-20 03:09:00 -0500_ ([Bugzilla comment 5](http://bugzilla.dre.vanderbilt.edu/show_bug.cgi?id=1430#c5))\n\n---\n\nto pool"
+  }
+ ]
+}

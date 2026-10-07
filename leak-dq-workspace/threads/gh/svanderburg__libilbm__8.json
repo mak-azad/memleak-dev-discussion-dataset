@@ -1,0 +1,109 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/svanderburg/libilbm/issues/8",
+ "passes": [
+  "main"
+ ],
+ "title": "New vulnerability",
+ "author_login": "zdi-disclosures",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:38Z",
+ "final_url": "https://github.com/svanderburg/libilbm/issues/8",
+ "repo": "svanderburg/libilbm",
+ "repo_language": "C",
+ "number": 8,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-09-24T03:21:10Z",
+ "updated_at": "2026-09-03T14:34:54Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 6,
+ "query_buckets": [],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "zdi-disclosures",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-09-24T03:21:10Z",
+   "updated_utc": "2026-09-03T14:34:54Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8",
+   "body_markdown": "Hello,\n\nTrend Micro's Zero Day Initiative is a security/vulnerability research organization. We have discovered a vulnerability in  libilbm dependency   and we would like to disclose it responsibly to you. Thank you and best regards,\n\n\nKholoud Altookhy\nProgram Manager, Zero Day Initiative\nTrend Micro\n[ZDI-DISCLOSURES@trendmicro.com](mailto:ZDI-DISCLOSURES@trendmicro.com)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3824318117,
+   "author_login": "mcatanzaro",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-30T15:28:18Z",
+   "updated_utc": "2026-01-30T15:28:18Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8#issuecomment-3824318117",
+   "body_markdown": "Details here: https://gitlab.gnome.org/GNOME/gimp/-/issues/14817"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3842434603,
+   "author_login": "zdi-disclosures",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-02-03T16:46:30Z",
+   "updated_utc": "2026-02-03T16:46:30Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8#issuecomment-3842434603",
+   "body_markdown": "> Details here: https://gitlab.gnome.org/GNOME/gimp/-/issues/14817\n\nAccess Denied: error code 178ada60f4be0254."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3842572737,
+   "author_login": "mcatanzaro",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-03T17:11:53Z",
+   "updated_utc": "2026-02-03T17:11:53Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8#issuecomment-3842572737",
+   "body_markdown": "I see you've managed to get past Anubis now, but I've forwarded this to our sysadmins anyway since they like to investigate when it blocks humans."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5525082070,
+   "author_login": "PypeBros",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-09-03T11:34:01Z",
+   "updated_utc": "2026-09-03T11:34:01Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8#issuecomment-5525082070",
+   "body_markdown": "> When decompressing an IFF/ILBM image file, the function [ILBM_unpackByteRun libilbm/src/libilbm/byterun.c] contains a Heap-based Buffer vulnerability that can lead to remote code execution.\n\n```C\n/* Allocate decompressed chunk attributes */\n\n        IFF_Long chunkSize = ILBM_calculateRowSize(image) * image->bitMapHeader->h * image->bitMapHeader->nPlanes;\n        IFF_UByte *decompressedChunkData = (IFF_UByte*)malloc(chunkSize * sizeof(IFF_UByte)); \n        // ===  [memory allocation is attacker controlled] ===^^\n\n        /* Perform RLE decompression */\n\n        while(readBytes < body->chunkSize)\n        {\n             // ...\n[1]                    decompressedChunkData[count] = body->chunkData[readBytes]; \n                       // =============================^^ \n                      // [There is no check for the [count] variable against the max buffer\n                      // length, So this inner loop can write out of bound]\n                    readBytes++;\n             // ...\n    for(i = 0; i < -byte + 1; i++)\n                {\n                    decompressedChunkData[count] = ubyte;  // << ============ [Same as above]\n                    count++;\n                }\n          }\n```\n\n> on line [1], it doesn't check count is outside of buffer decompressedChunkData or not and keep write to this buffer. This is a heap based buffer overflow."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5525095681,
+   "author_login": "PypeBros",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-09-03T11:35:10Z",
+   "updated_utc": "2026-09-03T11:35:10Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8#issuecomment-5525095681",
+   "body_markdown": "possibly related: (https://www.cve.org/CVERecord?id=CVE-2026-82324)\n\n> A flaw was found in the file-iff (IFF/ILBM) plugin in GIMP. When processing a specially crafted IFF/ILBM image file, the plugin does not properly validate the HAM row size and improperly handles cases where the number of color planes (nPlanes) is zero. This causes a row size mismatch that bypasses memory bounds checking, resulting in heap out-of-bounds reads. This issue can result in an application crash, leading to a denial of service or a limited information disclosure of heap memory contents."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5527365637,
+   "author_login": "mcatanzaro",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-09-03T14:34:54Z",
+   "updated_utc": "2026-09-03T14:34:54Z",
+   "permalink": "https://github.com/svanderburg/libilbm/issues/8#issuecomment-5527365637",
+   "body_markdown": "[CVE-2026-82324](https://gitlab.gnome.org/GNOME/gimp/-/work_items/16584) is unrelated.\n\nThis issue report corresponds to [CVE-2025-10935](https://gitlab.gnome.org/GNOME/gimp/-/issues/14817)."
+  }
+ ]
+}

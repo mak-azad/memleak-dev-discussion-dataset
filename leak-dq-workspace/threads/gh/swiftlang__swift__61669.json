@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/swiftlang/swift/issues/61669",
+ "passes": [
+  "main"
+ ],
+ "title": "Crash: static-stdlib and static variable initialisation ",
+ "author_login": "patrick-zippenfenig",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:33Z",
+ "final_url": "https://github.com/swiftlang/swift/issues/61669",
+ "repo": "swiftlang/swift",
+ "repo_language": "Swift",
+ "number": 61669,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2022-10-21T16:56:59Z",
+ "updated_at": "2022-10-21T16:56:59Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "patrick-zippenfenig",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2022-10-21T16:56:59Z",
+   "updated_utc": "2022-10-21T16:56:59Z",
+   "permalink": "https://github.com/swiftlang/swift/issues/61669",
+   "body_markdown": "**Describe the bug**\r\nUsing `static-stdlib` and static variable initialisation that calls `swift_once` causes bad-frees. A simple reproducible test just reads `CommandLine.arguments` with `-sanitize=address` enabled.\r\n\r\n**Steps To Reproduce**\r\nRun on docker swift:5.7.0-jammy plattform linux/amd64\r\n\r\n```\r\necho \"print(CommandLine.arguments)\" > test.swift\r\nswiftc -static-stdlib -sanitize=address test.swift\r\n./test\r\n==5796==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x558d119001e0 ...\r\n```\r\n\r\n```\r\nlldb test\r\nTraceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\nModuleNotFoundError: No module named 'lldb'\r\n(lldb) target create \"test\"\r\nCurrent executable set to '/app/SwiftOnceTest/test' (x86_64).\r\n(lldb) run\r\nProcess 5792 launched: '/app/SwiftOnceTest/test' (x86_64)\r\n=================================================================\r\n==5792==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x55555656f240 in thread T0\r\n    #0 0x555555629fd2  (/app/SwiftOnceTest/test+0xd5fd2)\r\n    #1 0x5555559b3ecf  (/app/SwiftOnceTest/test+0x45fecf)\r\n    #2 0x55555582797c  (/app/SwiftOnceTest/test+0x2d397c)\r\n    #3 0x7ffff7af5f67  (/lib/x86_64-linux-gnu/libc.so.6+0x99f67)\r\n    #4 0x55555596e0ab  (/app/SwiftOnceTest/test+0x41a0ab)\r\n    #5 0x555555827a48  (/app/SwiftOnceTest/test+0x2d3a48)\r\n    #6 0x7ffff7af5f67  (/lib/x86_64-linux-gnu/libc.so.6+0x99f67)\r\n    #7 0x55555596e0ab  (/app/SwiftOnceTest/test+0x41a0ab)\r\n    #8 0x555555827ac3  (/app/SwiftOnceTest/test+0x2d3ac3)\r\n\r\nAddress 0x55555656f240 is a wild pointer inside of access range of size 0x000000000001.\r\nSUMMARY: AddressSanitizer: bad-free (/app/SwiftOnceTest/test+0xd5fd2)\r\n==5792==ABORTING\r\n(lldb) AddressSanitizer report breakpoint hit. Use 'thread info -s' to get extended information about the report.\r\nProcess 5792 stopped\r\n* thread #1, name = 'test', stop reason = Deallocation of non-allocated memory\r\n    frame #0: 0x00005555556338b0 test`::AsanDie() at asan_rtl.cpp:45:7\r\nTarget 0: (test) stopped.\r\n(lldb) bt\r\n* thread #1, name = 'test', stop reason = Deallocation of non-allocated memory\r\n  * frame #0: 0x00005555556338b0 test`::AsanDie() at asan_rtl.cpp:45:7\r\n    frame #1: 0x000055555564aa2c test`__sanitizer::Die() at sanitizer_termination.cpp:55:7\r\n    frame #2: 0x0000555555631e97 test`::~ScopedInErrorReport() at asan_report.cpp:190:7\r\n    frame #3: 0x000055555562e51c test`::ReportFreeNotMalloced() at asan_report.cpp:239:1\r\n    frame #4: 0x000055555562a036 test`::__interceptor_free() at asan_malloc_linux.cpp:112:3\r\n    frame #5: 0x00005555559b3ed0 test`_swift_stdlib_getUnsafeArgvArgc + 400\r\n    frame #6: 0x000055555582797d test`one-time initialization function for _unsafeArgv + 13\r\n    frame #7: 0x00007ffff7af5f68 libc.so.6`___lldb_unnamed_symbol3495 + 232\r\n    frame #8: 0x000055555596e0ac test`swift_once + 92\r\n    frame #9: 0x0000555555827a49 test`one-time initialization function for arguments + 25\r\n    frame #10: 0x00007ffff7af5f68 libc.so.6`___lldb_unnamed_symbol3495 + 232\r\n    frame #11: 0x000055555596e0ac test`swift_once + 92\r\n    frame #12: 0x0000555555827ac4 test`static Swift.CommandLine.arguments.getter : Swift.Array<Swift.String> + 20\r\n    frame #13: 0x000055555566136f test`main + 31\r\n    frame #14: 0x00007ffff7a85d90 libc.so.6`___lldb_unnamed_symbol3139 + 128\r\n    frame #15: 0x00007ffff7a85e40 libc.so.6`__libc_start_main + 128\r\n    frame #16: 0x00005555555a96c5 test`_start + 37\r\n\r\n```\r\n\r\n**Expected behavior**\r\nNot crashing\r\n\r\n**Environment (please fill out the following information)**\r\n - docker swift:5.7.0-jammy plattform linux/amd64\r\n - docker swift:5.60-jammy plattform linux/amd64\r\n\r\n\r\n**Additional context**\r\nThe error was initially discovered with the help of @Lukasa in https://github.com/swift-server/async-http-client/issues/642 and lead to random crashes in trivial code that accesses a static variable.\r\n"
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/pgmoneta/pgmoneta/issues/1299",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "heap-use-after-free when a server with backups is followed by a server without",
+ "author_login": "LoayTarek5",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:03Z",
+ "final_url": "https://github.com/pgmoneta/pgmoneta/issues/1299",
+ "repo": "pgmoneta/pgmoneta",
+ "repo_language": "C",
+ "number": 1299,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-11T17:32:06Z",
+ "updated_at": "2026-09-11T17:32:06Z",
+ "closed_at": null,
+ "labels": [
+  "bug"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "UAF"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "LoayTarek5",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-11T17:32:06Z",
+   "updated_utc": "2026-09-11T17:32:06Z",
+   "permalink": "https://github.com/pgmoneta/pgmoneta/issues/1299",
+   "body_markdown": "**Describe the bug**\n\nI noticed that `pgmoneta-cli status details` reads freed memory when a server with at least one backup is followed by a server with no backups.\n \ni tried to investigate, i see that `status.c` always emits the `Backups` key, but for a server with no backups the object is still `JSONUnknown` (it renders as `Backups: {}`), and `pgmoneta_json_iterator_create()` rejects that object in `json.c` file and returns `1` without assigning `*iter`. also in `translate_json_object()` the return value is unchecked in `cli.c` file, and `backup_it` is declared outside the server loop in `cli.c`, so i think it still points at the iterator destroyed in cli.c at around 3349 line for the previous server, then dereferences it.\n \nso i think, if i understand it correctly that reversing the server order avoids it, since `backup_it` is still `NULL` at that point.\n \n\n**To Reproduce**\n\nOne PostgreSQL cluster is enough, the second server never needs to be reachable.\n \n1-Configure two servers in this order: a working one, and a throwaway one on a port where nothing listens (see Configuration). The throwaway section still needs a `wal_slot`\n2-ofcourse start pgmoneta.\n3-`pgmoneta-cli -c pgmoneta_cli.conf backup primary`\n4-`pgmoneta-cli -c pgmoneta_cli.conf status details`\n\nbut the step 4 reads freed memory, also before step 3, with both servers at zero backups, it completes normally.\n\n\n**Version**\n\n0.22.0, main\n\n**PostgreSQL**\n\n17.11\n\n**libev**\n\n1:4.33-2.1build1\n\n**OpenSSL**\n\n3.0.13\n\n**OS**\n\nPop!_OS 24.04 LTS\n\n**Configuration**\n \n* pgmoneta.conf\n```\n[pgmoneta]\nhost = localhost\nmetrics = 0\n \nbase_dir = /path/to/backup\n \ncompression = zstd\nretention = 7\n \nlog_type = file\nlog_level = info\nlog_path = /path/to/pgmoneta.log\n \nunix_socket_dir = /path/to/sock/\n \n[primary]\nhost = localhost\nport = 5432\nuser = repl\nwal_slot = repl\ncreate_slot = yes\n \n[foo]\nhost = localhost\nport = 5999\nuser = repl\nwal_slot = foo\n```\n \n**Debug logs**\n \nThe fault is in `pgmoneta-cli` after the response is received, so the server side logs nothing unusual. AddressSanitizer report from step 4:\n \n```\n==10405==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000001ae0\nREAD of size 8 at 0x503000001ae0 thread T0\n    #0 pgmoneta_json_iterator_next  src/libpgmoneta/json.c:577:30\n    #1 translate_json_object        src/cli.c:3344:26\n    #2 process_result               src/cli.c:2056:7\n    #3 details                      src/cli.c:1581:8\n    #4 main                         src/cli.c:984:19\n \n0x503000001ae0 is located 0 bytes inside of 32-byte region [0x503000001ae0,0x503000001b00)\n \nfreed by thread T0 here:\n    #0 free\n    #1 pgmoneta_json_iterator_destroy  src/libpgmoneta/json.c:570:4\n    #2 translate_json_object           src/cli.c:3349:19\n    #3 process_result                  src/cli.c:2056:7\n    #4 details                         src/cli.c:1581:8\n    #5 main                            src/cli.c:984:19\n \npreviously allocated by thread T0 here:\n    #0 malloc\n    #1 pgmoneta_json_iterator_create  src/libpgmoneta/json.c:540:8\n    #2 translate_json_object          src/cli.c:3343:19\n    #3 process_result                 src/cli.c:2056:7\n    #4 details                        src/cli.c:1581:8\n    #5 main                           src/cli.c:984:19\n \nSUMMARY: AddressSanitizer: heap-use-after-free src/libpgmoneta/json.c:577:30 in pgmoneta_json_iterator_next\n```\n \nalso libc frames and shadow bytes trimmed, full report available if useful.\n\nI can work on it, if it is ok"
+  }
+ ]
+}

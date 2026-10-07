@@ -1,0 +1,175 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/Almamu/linux-wallpaperengine/issues/423",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "OpenGL error when reading texture 1282",
+ "author_login": "spoiledhangover",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:33Z",
+ "final_url": "https://github.com/Almamu/linux-wallpaperengine/issues/423",
+ "repo": "Almamu/linux-wallpaperengine",
+ "repo_language": "C++",
+ "number": 423,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-11-29T16:51:30Z",
+ "updated_at": "2026-05-11T17:07:19Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "high priority",
+  "particles"
+ ],
+ "comments_reported": 11,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "spoiledhangover",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-11-29T16:51:30Z",
+   "updated_utc": "2026-05-11T17:07:19Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423",
+   "body_markdown": "### What are you trying to do, and what's the problem?\n\nabove is the error i've been getting whenever i try to apply a wallpaper. i have tried dozens of wallpapers and none have worked. despite some hours of troubleshooting it still wont work so im not sure what i have to do\n\n### What have you tried so far?\n\ntry the nvidia fix listed on the home page, dozens of different wallpapers, reinstalling dependencies and installing compatibility software\n\n### Errors or Log Output\n\n<img width=\"650\" height=\"150\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/9795e044-71e6-4695-9062-9e5dfd50a4f0\" />\n\n### OS, Desktop Environment, X11/Wayland\n\nlinux mint 22 cinnamon\n\n### Installation Method (e.g., AUR, Flatpak, build from source)\n\nbuild from source"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3615451446,
+   "author_login": "AuroraCrimsonRose",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-12-05T06:09:22Z",
+   "updated_utc": "2025-12-05T06:09:56Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3615451446",
+   "body_markdown": "Same issue even when running Open GL Thread Optimizations -Linux Mint 22 Cinnamon -Built from Source\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3642406237,
+   "author_login": "little-sheepycn",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-12-11T15:15:51Z",
+   "updated_utc": "2025-12-11T15:17:23Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3642406237",
+   "body_markdown": "same issue on opensuse tumbleweed x11 nvidia-open driver\n```\n/home/ycn/文档/linux-wallpaperengine/build/output/linux-wallpaperengine  --scaling fill --screen-root DP-0 --bg 3540131827\nRunning with: /home/ycn/文档/linux-wallpaperengine/build/output/linux-wallpaperengine --scaling fill --screen-root DP-0 --bg 3540131827 \nUnknown object type found: {\"id\":164,\"name\":\"脚本\",\"origin\":\"960.00000 540.00000 0.00000\",\"visible\":{\"script\":\"'use strict';\\n\\nexport function init() {\\n\\tconst skeleton1=thisScene.getLayer(\\\"希罗头发-后\\\");\\n\\tconst skeleton2=thisScene.getLayer(\\\"裙子\\\");\\n\\tconst skeleton3=thisScene.getLayer(\\\"艾玛头发2\\\");\\n\\tconst skeleton4=thisScene.getLayer(\\\"艾玛头发1\\\");\\n\\tconst skeleton5=thisScene.getLayer(\\\"希罗头发\\\");\\n\\tconst skeleton6=thisScene.getLayer(\\\"希罗头发1\\\");\\n\\tconst skeleton7=thisScene.getLayer(\\\"帽子\\\");\\n\\tconst skeleton8=thisScene.getLayer(\\\"叶片\\\");\\n\\n\\tskeleton1.currentFrame=0;\\n\\tskeleton2.currentFrame=0;\\n\\tskeleton3.currentFrame=0;\\n\\tskeleton4.currentFrame=0;\\n\\tskeleton5.currentFrame=0;\\n\\tskeleton6.currentFrame=0;\\n\\tskeleton7.currentFrame=0;\\n\\tskeleton8.currentFrame=0;\\n}\\n\",\"value\":true}}\nFound requested screen: DP-0 -> 0x0:2560x1440\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nParticle '光粒' max particles: 500 (maxCount=500 * countMultiplier=1)\nParticle '光粒' texture: particle/光点 | cols=0 rows=0 frames=0 duration=0\nOpenGL error when reading texture 1282\nOpenGL error when reading texture 1282\n```\n```/home/ycn/文档/linux-wallpaperengine/build/output/linux-wallpaperengine  3540131827\nRunning with: /home/ycn/文档/linux-wallpaperengine/build/output/linux-wallpaperengine 3540131827 \nUnknown object type found: {\"id\":164,\"name\":\"脚本\",\"origin\":\"960.00000 540.00000 0.00000\",\"visible\":{\"script\":\"'use strict';\\n\\nexport function init() {\\n\\tconst skeleton1=thisScene.getLayer(\\\"希罗头发-后\\\");\\n\\tconst skeleton2=thisScene.getLayer(\\\"裙子\\\");\\n\\tconst skeleton3=thisScene.getLayer(\\\"艾玛头发2\\\");\\n\\tconst skeleton4=thisScene.getLayer(\\\"艾玛头发1\\\");\\n\\tconst skeleton5=thisScene.getLayer(\\\"希罗头发\\\");\\n\\tconst skeleton6=thisScene.getLayer(\\\"希罗头发1\\\");\\n\\tconst skeleton7=thisScene.getLayer(\\\"帽子\\\");\\n\\tconst skeleton8=thisScene.getLayer(\\\"叶片\\\");\\n\\n\\tskeleton1.currentFrame=0;\\n\\tskeleton2.currentFrame=0;\\n\\tskeleton3.currentFrame=0;\\n\\tskeleton4.currentFrame=0;\\n\\tskeleton5.currentFrame=0;\\n\\tskeleton6.currentFrame=0;\\n\\tskeleton7.currentFrame=0;\\n\\tskeleton8.currentFrame=0;\\n}\\n\",\"value\":true}}\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nParticle '光粒' max particles: 500 (maxCount=500 * countMultiplier=1)\nParticle '光粒' texture: particle/光点 | cols=0 rows=0 frames=0 duration=0\nStop requested by driver\nStopping\nINFO: Leaked thread (0x6ff8aa0)\n```\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3648267832,
+   "author_login": "beyluta",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-12-12T21:53:58Z",
+   "updated_utc": "2025-12-13T12:48:28Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3648267832",
+   "body_markdown": "Same issue on a fresh, bare-metal installation of:\n\nMint 22 Cinnamon (x11)\nMint 22 KDE Plasma (x11)"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3650029396,
+   "author_login": "kamythol",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-12-14T01:31:32Z",
+   "updated_utc": "2025-12-14T01:31:32Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3650029396",
+   "body_markdown": "It's an issue with particles, running with `--disable-particles` works fine since the latest commit"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3652079792,
+   "author_login": "Almamu",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2025-12-14T20:50:36Z",
+   "updated_utc": "2025-12-14T20:50:36Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3652079792",
+   "body_markdown": "I've pushed a few changes to include more info on GL errors, can you run the last commit with debug info and see what it shows on the console?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3675580387,
+   "author_login": "little-sheepycn",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2025-12-19T15:55:26Z",
+   "updated_utc": "2025-12-19T15:55:26Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3675580387",
+   "body_markdown": "```\n~/文档/linux-wallpaperengine/build/output> /home/ycn/文档/linux-wallpaperengine/build/output/linux-wallpaperengine  --scaling fill --screen-root DP-0 --bg 3540131827\nRunning with: /home/ycn/文档/linux-wallpaperengine/build/output/linux-wallpaperengine --scaling fill --screen-root DP-0 --bg 3540131827 \nUnknown object type found: {\"id\":164,\"name\":\"脚本\",\"origin\":\"960.00000 540.00000 0.00000\",\"visible\":{\"script\":\"'use strict';\\n\\nexport function init() {\\n\\tconst skeleton1=thisScene.getLayer(\\\"希罗头发-后\\\");\\n\\tconst skeleton2=thisScene.getLayer(\\\"裙子\\\");\\n\\tconst skeleton3=thisScene.getLayer(\\\"艾玛头发2\\\");\\n\\tconst skeleton4=thisScene.getLayer(\\\"艾玛头发1\\\");\\n\\tconst skeleton5=thisScene.getLayer(\\\"希罗头发\\\");\\n\\tconst skeleton6=thisScene.getLayer(\\\"希罗头发1\\\");\\n\\tconst skeleton7=thisScene.getLayer(\\\"帽子\\\");\\n\\tconst skeleton8=thisScene.getLayer(\\\"叶片\\\");\\n\\n\\tskeleton1.currentFrame=0;\\n\\tskeleton2.currentFrame=0;\\n\\tskeleton3.currentFrame=0;\\n\\tskeleton4.currentFrame=0;\\n\\tskeleton5.currentFrame=0;\\n\\tskeleton6.currentFrame=0;\\n\\tskeleton7.currentFrame=0;\\n\\tskeleton8.currentFrame=0;\\n}\\n\",\"value\":true}}\nFound requested screen: DP-0 -> 0x0:2560x1440\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nShader has a require block #require LightingV1\nParticle '光粒' max particles: 500 (maxCount=500 * countMultiplier=1)\nParticle '光粒' texture: particle/光点 | cols=0 rows=0 frames=0 duration=0\nOpenGL error when reading texture 1282\nOpenGL error when reading texture 1282\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3774064370,
+   "author_login": "arnt0r",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-20T17:21:21Z",
+   "updated_utc": "2026-01-20T17:23:56Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3774064370",
+   "body_markdown": "I'm on fedora 43, KDE Plasma, X11. I get this error aswell, and when running \" ./linux-wallpaperengine --disable-particles --screen-root DP4 --bg 1831214647 \" the program just hangs on \"Found requested screen: DP-4 -> 2560x0:2560x1440\". My background doesn't change.\n\nEdit: when just running ./linux-wallpaperengine --disable-particles 1831214647 the program doesn't hang but it just opens a new window with the animated picture. Not sure if this is the intended result but it seems pretty weird.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3808671819,
+   "author_login": "Xiron2Bar",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-01-28T02:57:08Z",
+   "updated_utc": "2026-01-28T02:58:56Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3808671819",
+   "body_markdown": "I'm encountering the same error. I run Mint 22.3, with Cinnamon 6.6.6, X11. When running without the --screen-root argument it just opens a new window with the background running as normal, but when --screen-root is included it throws the OpenGL error when reading texture 1282."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 3907727030,
+   "author_login": "sgtaziz",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-02-16T10:40:44Z",
+   "updated_utc": "2026-02-16T10:40:44Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-3907727030",
+   "body_markdown": "The new commits pushed have fixed this issue on my side. Can anyone confirm?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4422982480,
+   "author_login": "Gaiser147",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-05-11T17:06:05Z",
+   "updated_utc": "2026-05-11T17:06:05Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-4422982480",
+   "body_markdown": "Had the same issue. \nI fixed it together with some other issues in #561 \nThough I'm not sure if it works for you (i tested on fedora 43)\n\n@coderabbitai maybe you can confirm if PR #561 does fix this issue"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4422992748,
+   "author_login": "coderabbitai[bot]",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-05-11T17:07:19Z",
+   "updated_utc": "2026-05-11T17:07:19Z",
+   "permalink": "https://github.com/Almamu/linux-wallpaperengine/issues/423#issuecomment-4422992748",
+   "body_markdown": "<!-- This is an auto-generated reply by CodeRabbit -->\n<details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Get PR `#561` details\ngh pr view 561 --repo Almamu/linux-wallpaperengine --json title,body,files,state,commits\n\n# Get the list of files changed\ngh pr view 561 --repo Almamu/linux-wallpaperengine --json files | jq '.files[].path'\n```\n\nLength of output: 8361\n\n---\n\nLet me look at the specific particle and texture-related changes in the PR.\n\n---\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Fetch the diff for relevant files in PR `#561`\ngh api repos/Almamu/linux-wallpaperengine/pulls/561/files --paginate | \\\n  jq '.[] | select(.filename == \"src/WallpaperEngine/Render/Objects/CParticle.cpp\") | .patch'\n\necho \"=== TextureCache.cpp diff ===\"\ngh api repos/Almamu/linux-wallpaperengine/pulls/561/files --paginate | \\\n  jq '.[] | select(.filename == \"src/WallpaperEngine/Render/TextureCache.cpp\") | .patch'\n\necho \"=== CFBO.cpp diff ===\"\ngh api repos/Almamu/linux-wallpaperengine/pulls/561/files --paginate | \\\n  jq '.[] | select(.filename == \"src/WallpaperEngine/Render/CFBO.cpp\") | .patch'\n```\n\nLength of output: 18887\n\n---\n\n\n\n</details>\n\n`@Gaiser147`, I reviewed the diffs in PR `#561` against the symptoms reported in this issue. Here's my assessment:\n\n**The specific `OpenGL error when reading texture 1282` (GL_INVALID_OPERATION) from issue `#423` does not appear to be directly addressed by PR `#561`.**\n\nHere's what the relevant changed files actually do:\n\n| File | Changes in PR `#561` | Relevant to `#423`? |\n|---|---|---|\n| `CParticle.cpp` | Refactors `updateMatrices()` into `applyParallaxToModelMatrix()`, `updateParticleViewProjection()`, `updateParticleRenderVars()`; adds parallax support for particles | ❌ No — parallax/matrix math, not texture loading |\n| `TextureCache.cpp` | Adds `$mediaThumbnail` / `$mediaPreviousThumbnail` support via `playerctl`, file URI parsing, and STB image loading | ❌ No — media thumbnail feature, unrelated to particle textures |\n| `CFBO.cpp` | Fixes framebuffer clearing to use transparent `(0,0,0,0)` instead of the scene clear color | 🟡 Tangential rendering fix, not the texture read error |\n\nThe error in `#423` occurs specifically after:\n```\nParticle '光粒' texture: particle/光点 | cols=0 rows=0 frames=0 duration=0\nOpenGL error when reading texture 1282\n```\n\nThis GL_INVALID_OPERATION during texture read (likely in `glGetTexImage` or equivalent) with `cols=0 rows=0 frames=0` suggests invalid texture state at upload/bind time — none of the PR `#561` particle changes touch that path.\n\nIt's also worth noting that `@sgtaziz`'s comment (\"The new commits pushed have fixed this issue on my side\") appears to reference commits pushed directly to `main` by `@Almamu`, independent of PR `#561`.\n\n**Recommendation:** PR `#561` is a valuable broad compatibility improvement, but users affected by the GL 1282 particle texture error from this issue should check if the fix is already present in the latest `main` branch commits from `@Almamu`.\n\n\n<!-- <agentComponentType>chat-answer</agentComponentType> -->\n\n<!-- <rawResChunk><answer><details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Get PR `#561` details\ngh pr view 561 --repo Almamu/linux-wallpaperengine --json title,body,files,state,commits\n\n# Get the list of files changed\ngh pr view 561 --repo Almamu/linux-wallpaperengine --json files | jq '.files[].path'\n```\n\nLength of output: 8361\n\n---\n\nLet me look at the specific particle and texture-related changes in the PR.\n\n---\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Fetch the diff for relevant files in PR `#561`\ngh api repos/Almamu/linux-wallpaperengine/pulls/561/files --paginate | \\\n  jq '.[] | select(.filename == \"src/WallpaperEngine/Render/Objects/CParticle.cpp\") | .patch'\n\necho \"=== TextureCache.cpp diff ===\"\ngh api repos/Almamu/linux-wallpaperengine/pulls/561/files --paginate | \\\n  jq '.[] | select(.filename == \"src/WallpaperEngine/Render/TextureCache.cpp\") | .patch'\n\necho \"=== CFBO.cpp diff ===\"\ngh api repos/Almamu/linux-wallpaperengine/pulls/561/files --paginate | \\\n  jq '.[] | select(.filename == \"src/WallpaperEngine/Render/CFBO.cpp\") | .patch'\n```\n\nLength of output: 18887\n\n---\n\n\n\n</details>\n\n`@Gaiser147`, I reviewed the diffs in PR `#561` against the symptoms reported in this issue. Here's my assessment:\n\n**The specific `OpenGL error when reading texture 1282` (GL_INVALID_OPERATION) from issue `#423` does not appear to be directly addressed by PR `#561`.**\n\nHere's what the relevant changed files actually do:\n\n| File | Changes in PR `#561` | Relevant to `#423`? |\n|---|---|---|\n| `CParticle.cpp` | Refactors `updateMatrices()` into `applyParallaxToModelMatrix()`, `updateParticleViewProjection()`, `updateParticleRenderVars()`; adds parallax support for particles | ❌ No — parallax/matrix math, not texture loading |\n| `TextureCache.cpp` | Adds `$mediaThumbnail` / `$mediaPreviousThumbnail` support via `playerctl`, file URI parsing, and STB image loading | ❌ No — media thumbnail feature, unrelated to particle textures |\n| `CFBO.cpp` | Fixes framebuffer clearing to use transparent `(0,0,0,0)` instead of the scene clear color | 🟡 Tangential rendering fix, not the texture read error |\n\nThe error in `#423` occurs specifically after:\n```\nParticle '光粒' texture: particle/光点 | cols=0 rows=0 frames=0 duration=0\nOpenGL error when reading texture 1282\n```\n\nThis GL_INVALID_OPERATION during texture read (likely in `glGetTexImage` or equivalent) with `cols=0 rows=0 frames=0` suggests invalid texture state at upload/bind time — none of the PR `#561` particle changes touch that path.\n\nIt's also worth noting that `@sgtaziz`'s comment (\"The new commits pushed have fixed this issue on my side\") appears to reference commits pushed directly to `main` by `@Almamu`, independent of PR `#561`.\n\n**Recommendation:** PR `#561` is a valuable broad compatibility improvement, but users affected by the GL 1282 particle texture error from this issue should check if the fix is already present in the latest `main` branch commits from `@Almamu`.</answer></rawResChunk> -->"
+  }
+ ]
+}

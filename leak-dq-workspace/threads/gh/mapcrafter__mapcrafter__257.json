@@ -1,0 +1,161 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/mapcrafter/mapcrafter/issues/257",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Memory usage seems to be directly proportional to map size",
+ "author_login": "spekdrum",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:25Z",
+ "final_url": "https://github.com/mapcrafter/mapcrafter/issues/257",
+ "repo": "mapcrafter/mapcrafter",
+ "repo_language": "C++",
+ "number": 257,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2017-07-02T13:12:46Z",
+ "updated_at": "2021-10-31T17:46:09Z",
+ "closed_at": null,
+ "labels": [
+  "Performance"
+ ],
+ "comments_reported": 10,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "spekdrum",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-07-02T13:12:46Z",
+   "updated_utc": "2021-10-31T17:46:09Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257",
+   "body_markdown": "Hi,\r\nLove mapcrafter!\r\nOnce my map got bigger (now is about 5.4 Gb) Mapcrafter stopped working. Process gets killed instantly passed 15 minutes more or less. I saw in server logs process got killed by the system due to high ram usage (swap too). Tried to render with the simplest options (top view, no shaders) and lasts a bit more but finally it gets killed either way. Maybe I'm doing something wrong... but memory usage shouldn't be directly proportional to map size, isn't it? \r\n\r\nSystem specs: \r\nDebian\r\nAMD dual core 1.3 Ghz\r\n1GB RAM\r\n\r\nJust compiled last version: e05dd4a0c4dd62928fa473e74444e00d92388a10\r\nSame behaviour"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 312910978,
+   "author_login": "m0r13",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2017-07-04T16:00:22Z",
+   "updated_utc": "2017-07-04T16:00:32Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-312910978",
+   "body_markdown": "You are right, usually this shouldn't happen. Which version did you use before you compiled that latest version? How many threads are you running? Can you observe how much memory is exactly used before Mapcrafter is killed? A gigabyte of memory might be used up quickly if you are running multiple threads (> 4)."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 312914767,
+   "author_login": "spekdrum",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-07-04T16:24:12Z",
+   "updated_utc": "2017-07-04T16:24:12Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-312914767",
+   "body_markdown": "Sorry but I can't remember which version was... I thinks it was on May but last version behaves the same way.\r\nI'm running just one thread. Memory used is almost the entire RAM and SWAP (2GB of swap space).  I'm preparing a little video showing exactly what happens to help you find the problem, monitoring with htop."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 312919204,
+   "author_login": "spekdrum",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2017-07-04T16:54:52Z",
+   "updated_utc": "2017-07-04T16:54:52Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-312919204",
+   "body_markdown": "I found the first version I tried: 5d63220817fa19c31788366d9827afb68fb7495d\r\nWith last version (e05dd4a), just tried again to record the video and now (for the first time) is not reporting \"process killed\" but this:\r\n```\r\nterminate called after throwing an instance of 'std::bad_alloc'75/25550 16.53/s ETA 16m 30s\r\n  what():  std::bad_alloc\r\n```\r\nI uploaded this video (hidden):\r\nhttps://youtu.be/wouhOAJ06G8"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 313882535,
+   "author_login": "Bjarno",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2017-07-08T21:38:04Z",
+   "updated_utc": "2017-07-08T22:36:17Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-313882535",
+   "body_markdown": "I added support for new blocks in Minecraft 1.11 and Minecraft 1.12 (the only change between the version you reported to be working, and the current version). I had to rewrite some parts of the application. I expect, but am not entirely sure, that I might have added a memory leak (easily to miss). I'll try to replicate this problem on a smaller virtual machine (I have 4GB on my server, and a smaller world, so I did not run into problems).\r\n\r\nI'll check if my changes might result in memory leak, just to be sure."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 530934500,
+   "author_login": "DaMatrix",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2019-09-12T17:51:38Z",
+   "updated_utc": "2019-09-12T17:51:38Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-530934500",
+   "body_markdown": "this is still an issue. i'm attempting to render a 100kx100k world, and left my computer running overnight only to find that my 12GB of RAM was full, along with most of my 1TB swap partition (yes, i'm aware that that's a rediculous size for swap, it's left over from an older project, cut me some slack :P). i've been able to render 20kx20k maps without this kind of usage in the past, using identical config."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 955762012,
+   "author_login": "alvarlagerlof",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-10-31T17:34:57Z",
+   "updated_utc": "2021-10-31T17:34:57Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955762012",
+   "body_markdown": "I'm attempting to run this now on a small map in docker and the memory usage just keeps on growing until it gets killed."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 955762864,
+   "author_login": "miclav",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-10-31T17:40:32Z",
+   "updated_utc": "2021-10-31T17:40:32Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955762864",
+   "body_markdown": "Hi\nIndeed, the block map is huge and the memory allocation keeps growing\nduring map rendering.\nI currently have a local branch, not submitted yet, that includes block map\noptimisation, lower memory usage and other features.\nHoping it will allow small configs to work properly.\nI’m planning to have that ready before end of year.\n\n\nOn Sun, Oct 31, 2021 at 13:35 Alvar Lagerlöf ***@***.***>\nwrote:\n\n> I'm attempting to run this now on a small map in docker and the memory\n> usage just keeps on growing until it gets killed.\n>\n> —\n> You are receiving this because you are subscribed to this thread.\n> Reply to this email directly, view it on GitHub\n> <https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955762012>,\n> or unsubscribe\n> <https://github.com/notifications/unsubscribe-auth/AC2XGQQVIGLRSPBVR6SA2ZLUJV445ANCNFSM4DROKJ6Q>\n> .\n> Triage notifications on the go with GitHub Mobile for iOS\n> <https://apps.apple.com/app/apple-store/id1477376905?ct=notification-email&mt=8&pt=524675>\n> or Android\n> <https://play.google.com/store/apps/details?id=com.github.android&referrer=utm_campaign%3Dnotification-email%26utm_medium%3Demail%26utm_source%3Dgithub>.\n>\n>\n-- \nMichael\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 955763220,
+   "author_login": "alvarlagerlof",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-10-31T17:43:02Z",
+   "updated_utc": "2021-10-31T17:43:02Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955763220",
+   "body_markdown": "> I currently have a local branch, not submitted yet, that includes block map\r\n\r\nThat's built on your world117 right?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 955763355,
+   "author_login": "miclav",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-10-31T17:44:04Z",
+   "updated_utc": "2021-10-31T17:44:04Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955763355",
+   "body_markdown": "Right\n\nOn Sun, Oct 31, 2021 at 13:43 Alvar Lagerlöf ***@***.***>\nwrote:\n\n> I currently have a local branch, not submitted yet, that includes block map\n>\n> That's built on your world117 right?\n>\n> —\n> You are receiving this because you commented.\n>\n>\n> Reply to this email directly, view it on GitHub\n> <https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955763220>,\n> or unsubscribe\n> <https://github.com/notifications/unsubscribe-auth/AC2XGQT4YKMMFOZVUYP4R73UJV53FANCNFSM4DROKJ6Q>\n> .\n> Triage notifications on the go with GitHub Mobile for iOS\n> <https://apps.apple.com/app/apple-store/id1477376905?ct=notification-email&mt=8&pt=524675>\n> or Android\n> <https://play.google.com/store/apps/details?id=com.github.android&referrer=utm_campaign%3Dnotification-email%26utm_medium%3Demail%26utm_source%3Dgithub>.\n>\n>\n-- \nMichael\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 955763637,
+   "author_login": "alvarlagerlof",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-10-31T17:46:09Z",
+   "updated_utc": "2021-10-31T17:46:09Z",
+   "permalink": "https://github.com/mapcrafter/mapcrafter/issues/257#issuecomment-955763637",
+   "body_markdown": "Good to hear! Looking forwards to it."
+  }
+ ]
+}

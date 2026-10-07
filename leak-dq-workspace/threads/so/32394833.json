@@ -1,0 +1,66 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 32394833,
+ "url": "https://stackoverflow.com/questions/32394833/cppcheck-thinks-there-is-a-mismatch-in-alloc-and-dealloc",
+ "title": "cppcheck thinks there is a mismatch in alloc and dealloc",
+ "tags": [
+  "c++",
+  "cppcheck"
+ ],
+ "score": 6,
+ "view_count": 12236,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 32395049,
+ "created_utc": "2015-09-04T09:41:40Z",
+ "last_activity_utc": "2015-09-04T09:53:54Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1287864,
+ "author_display_name": "S.Spieker",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/32394833/cppcheck-thinks-there-is-a-mismatch-in-alloc-and-dealloc",
+ "body_html": "<p>The cpp-check error is: <code>error   mismatchAllocDealloc    false   Mismatching allocation and deallocation: val2</code></p>\n\n<p>What should I do to fix this error?</p>\n\n<pre><code>void MainWindow::ParseDemo(char *pBuf)\n{\n  char* val2 = new char[256];\n  for (int i = 0; i &lt; 254; i++)\n  {\n     val2[i] = pBuf[i+305];\n  }\n  val2[254] = 0; // 0-Termination\n  QString sunit(val2);\n  DoStuff(sunit);\n  delete val2;\n  // ... \n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 52658591,
+   "parent_id": 32394833,
+   "parent_type": "question",
+   "author_user_id": 404970,
+   "author_display_name": "molbdnilo",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/32394833/#comment52658591_32394833",
+   "score": 1,
+   "created_utc": "2015-09-04T09:51:36Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "It does not say that there&#39;s a leak, it says that there&#39;s a <i>mismatch</i>. It would probably also say that if you wrote <code>free(val2);</code>."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 32395049,
+   "parent_id": 32394833,
+   "author_user_id": 1413395,
+   "author_display_name": "πάντα ῥεῖ",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/32395049",
+   "score": 12,
+   "created_utc": "2015-09-04T09:51:39Z",
+   "last_edit_utc": "2015-09-04T09:53:54Z",
+   "last_activity_utc": "2015-09-04T09:53:54Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<blockquote>\n<pre><code>error mismatchAllocDealloc false Mismatching allocation and deallocation: val2\n</code></pre>\n</blockquote>\n\n<p><code>new</code> and <code>new []</code> need to be used in a consistent manner with <code>delete</code> and <code>delete []</code>, that's why cppcheck complains.</p>\n\n<blockquote>\n  <p>What should I do to fix this error?</p>\n</blockquote>\n\n<p>Write <code>delete [] val2;</code>, that should fix it.</p>\n\n<p>BTW, that's not indicating a memory leak directly, but it could become one easily, because it's basically undefined behavior.</p>\n"
+  }
+ ]
+}

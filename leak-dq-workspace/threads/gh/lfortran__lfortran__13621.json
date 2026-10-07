@@ -1,0 +1,44 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lfortran/lfortran/issues/13621",
+ "passes": [
+  "main"
+ ],
+ "title": "reshape of a class(t) array: the 16-byte result temporary is overflowed by memmove (class LHS) and is never freed",
+ "author_login": "certik",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:17:20Z",
+ "final_url": "https://github.com/lfortran/lfortran/issues/13621",
+ "repo": "lfortran/lfortran",
+ "repo_language": "C++",
+ "number": 13621,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-27T01:24:57Z",
+ "updated_at": "2026-09-27T01:40:40Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "arrays",
+  "memory",
+  "OOP"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "certik",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-27T01:24:57Z",
+   "updated_utc": "2026-09-27T01:40:40Z",
+   "permalink": "https://github.com/lfortran/lfortran/issues/13621",
+   "body_markdown": "`reshape` of a polymorphic `class(w), allocatable` array allocates a 16-byte heap block for its result. When the result is assigned to another `class(w)` array, `main` copies the whole array data into that block with `memmove` and writes past its end. In every case, including when the result is passed to a `type(w)` dummy, the block is never freed. The overflow happens even when the destination is already allocated and the only component is a scalar `integer`.\n\n## Heap overflow (class to class)\n\n```fortran\nprogram w08\nimplicit none\ntype :: w\n  integer :: c\nend type\nclass(w), allocatable :: a(:), b(:)\nallocate(a(4), b(4))\na%c = [1,2,3,4]\nb = reshape(a, [4])\nprint *, b%c\nif (any(b%c /= [1,2,3,4])) error stop 1\nend program\n```\n\n```console\n$ lfortran w08.f90 -o w08.out && valgrind ./w08.out\n==17641== Invalid write of size 8\n==17641==    at 0x4852E1B: memmove (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)\n==17641==    by 0x109AC2: main (in w08.out)\n==17641==  Address 0x4d00110 is 0 bytes after a block of size 16 alloc'd\n==17641==    at 0x4846828: malloc (...)\n==17641==    by 0x486F383: default_alloc (lfortran_intrinsics.c:300)\n==17641==    by 0x4881252: _lfortran_malloc_alloc (lfortran_intrinsics.c:5580)\n==17641==    by 0x109737: main (in w08.out)\n... (4 invalid 8-byte writes in total)\n1 2 3 4\n==17641== ERROR SUMMARY: 6 errors from 4 contexts\n==17641==    definitely lost: 16 bytes in 1 blocks\n```\n\nWith larger components the overflow shows up without valgrind. For `character(len=2) :: c` and `b` unallocated, compiled with `--realloc-lhs-arrays`:\n\n```console\nzz\nfree(): invalid next size (fast)\n```\n\nWith `character(len=2) :: c(3)`, the program prints the wrong value (`ab`) and stops with `ERROR STOP 1`. gfortran runs all of these variants correctly with no valgrind errors.\n\n## Leak (class to a type(w) dummy)\n\n```fortran\nprogram y2\nimplicit none\ntype :: w\n  integer :: c\nend type\nclass(w), allocatable :: a(:)\nallocate(a(4))\na%c = [1,2,3,4]\ncall s(reshape(a, [2,2]))\ncontains\nsubroutine s(x)\n  type(w), intent(in) :: x(:,:)\n  print *, x%c\n  if (x(2,2)%c /= 4) error stop 1\nend subroutine\nend program\n```\n\n```console\n$ lfortran y2.f90 -o y2.out && valgrind --leak-check=full ./y2.out\n1 2 3 4\n==26361== 16 bytes in 1 blocks are definitely lost in loss record 1 of 1\n==26361==    at 0x4846828: malloc (...)\n==26361==    by 0x486F383: default_alloc (lfortran_intrinsics.c:300)\n==26361==    by 0x4881252: _lfortran_malloc_alloc (lfortran_intrinsics.c:5580)\n==26361==    by 0x109AFE: main (in y2.out)\n```\n\nThe values are right here, but the 16-byte block leaks on every `reshape` call.\n\nA copy `b = a` without `reshape` is valgrind-clean, so the problem is specific to the class-array `reshape` result. The wrong values in #13592 (`reshape` of a class array assigned to a `type(w)` array) may come from the same temporary.\n\nReproduces on main (e9affe9b).\n\nFound while working on lfortran/lfortran#13570"
+  }
+ ]
+}

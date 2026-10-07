@@ -1,0 +1,82 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 34887157,
+ "url": "https://stackoverflow.com/questions/34887157/c-error-munmap-chunk-invalid-pointer",
+ "title": "C error: munmap_chunk(): invalid pointer",
+ "tags": [
+  "c"
+ ],
+ "score": 1,
+ "view_count": 10540,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 34887537,
+ "created_utc": "2016-01-19T21:22:27Z",
+ "last_activity_utc": "2016-01-19T21:45:27Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 1943863,
+ "author_display_name": "Valeriy",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/34887157/c-error-munmap-chunk-invalid-pointer",
+ "body_html": "<p>I wrote linked list on C.</p>\n<pre><code>#define MAX_TOKEN_LENGTH 256\n\nstruct node {\n    char *value;\n    struct node *next;\n};\n\nstruct node *new_list() {\n    struct node *head = (struct node*) malloc(sizeof(struct node));\n    head-&gt;value = (char*) malloc(MAX_TOKEN_LENGTH * sizeof(char));\n    head-&gt;next = NULL;\n    return head;\n}\n\nvoid add_node(struct node *head, char *value) {\n    struct node *next;\n    struct node *curr = head;\n    struct node *new_node;\n\n    while(curr-&gt;next != 0) {\n        curr = curr-&gt;next;\n    }\n\n    new_node = (struct node*) malloc(sizeof(struct node));\n    new_node-&gt;value = value;\n    new_node-&gt;next = NULL;\n    curr-&gt;next = new_node;\n}\n\nvoid delete_list(struct node* list) {\n    struct node *curr = list;\n    \n    while (curr) {\n        struct node* next = curr-&gt;next;\n        free(curr-&gt;value);\n        free(curr);\n        curr = next;\n    }\n}\n\nstruct node *list = new_list();\nadd_node(list, &quot;hello&quot;);\ndelete_list(list);\n</code></pre>\n<p>Compiler: GCC. Line <code>curr-&gt;next = new_node;</code> in <code>add_node</code> function causes an runtime error. Which leads to this error? How to fix it?</p>\n<blockquote>\n<p>Error in `./a.out': munmap_chunk(): invalid pointer: 0x0000000000400864</p>\n<p>Aborted (core dumped)</p>\n</blockquote>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 57512886,
+   "parent_id": 34887157,
+   "parent_type": "question",
+   "author_user_id": 5636775,
+   "author_display_name": "Ctx",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/34887157/#comment57512886_34887157",
+   "score": 1,
+   "created_utc": "2016-01-19T21:30:50Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "The error is trying to free the string-constant &quot;hello&quot;. You could for example do <code>new_node-&gt;value = strdup (value);</code> in add_node."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 57513259,
+   "parent_id": 34887157,
+   "parent_type": "question",
+   "author_user_id": 2191105,
+   "author_display_name": "David Hoelzer",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/34887157/#comment57513259_34887157",
+   "score": 2,
+   "created_utc": "2016-01-19T21:41:19Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "It&#39;s also bad practice to compare a pointer to zero rather than null.  Null may very well be defined as zero, but using null is typical, semantically clear in addition to the defined mechanism."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 34887537,
+   "parent_id": 34887157,
+   "author_user_id": 106104,
+   "author_display_name": "Stack Exchange Broke The Law",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/34887537",
+   "score": 3,
+   "created_utc": "2016-01-19T21:45:27Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2016-01-19T21:45:27Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>You can only <code>free</code> a pointer that was returned by <code>malloc</code>.</p>\n\n<p>You are doing</p>\n\n<pre><code>free(curr-&gt;value);\n</code></pre>\n\n<p>when <code>curr-&gt;value</code> happens to point to the string literal <code>\"hello\"</code>, which was not allocated by <code>malloc</code>.</p>\n\n<p>You could fix it by either:</p>\n\n<ul>\n<li>Allocating the value with <code>malloc</code> (or another function that uses <code>malloc</code>, such as <code>strdup</code>)</li>\n<li>Not <code>free</code>ing the value. (But if you have some values that need to be <code>free</code>d and some that don't, your program needs to remember which ones to <code>free</code>)</li>\n</ul>\n"
+  }
+ ]
+}

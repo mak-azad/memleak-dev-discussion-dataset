@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/openbmc/linux/issues/188",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "kmemleak detected in ftgmac100",
+ "author_login": "shenki",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:37Z",
+ "final_url": "https://github.com/openbmc/linux/issues/188",
+ "repo": "openbmc/linux",
+ "repo_language": "C",
+ "number": 188,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-04-07T22:24:08Z",
+ "updated_at": "2020-04-07T22:24:08Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "KERNEL"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "shenki",
+   "author_association": "MEMBER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-04-07T22:24:08Z",
+   "updated_utc": "2020-04-07T22:24:08Z",
+   "permalink": "https://github.com/openbmc/linux/issues/188",
+   "body_markdown": "Running 5.4.28-00243-g757f8a4d828d on tacoma (ast2600)\r\n```\r\nunreferenced object 0xb5971f00 (size 176):\r\n  comm \"softirq\", pid 0, jiffies 874518 (age 39797.180s)\r\n  hex dump (first 32 bytes):\r\n    00 00 00 00 00 00 00 00 00 d8 79 b4 00 00 00 00  ..........y.....\r\n    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n  backtrace:\r\n    [<db841d9f>] kmem_cache_alloc+0xe0/0x1f4\r\n    [<a2e2b9fa>] __build_skb+0x2c/0x60\r\n    [<c13a28b3>] __netdev_alloc_skb+0xd8/0x178\r\n    [<49de749a>] ftgmac100_alloc_rx_buf.constprop.0+0x38/0x210\r\n    [<1e72cf85>] ftgmac100_poll+0x344/0x4f4\r\n    [<77fd780e>] net_rx_action+0x1b8/0x4e4\r\n    [<bb56e53c>] __do_softirq+0xf0/0x374\r\n    [<832558e1>] irq_exit+0xb0/0xe8\r\n    [<f86f4ac3>] __handle_domain_irq+0x68/0xc4\r\n    [<86a329c8>] gic_handle_irq+0x4c/0x94\r\n    [<3533b6ec>] __irq_svc+0x6c/0x90\r\n    [<8a922a87>] arch_cpu_idle+0x40/0x4c\r\n    [<d35f6761>] default_idle_call+0x30/0x3c\r\n    [<8756439b>] do_idle+0xd8/0x16c\r\n    [<0a49cfa9>] cpu_startup_entry+0x28/0x2c\r\n    [<2e04b462>] rest_init+0x9c/0xbc\r\nunreferenced object 0xb5a12300 (size 176):\r\n  comm \"softirq\", pid 0, jiffies 3256144 (age 15980.920s)\r\n  hex dump (first 32 bytes):\r\n    00 00 00 00 00 00 00 00 00 d8 79 b4 00 00 00 00  ..........y.....\r\n    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\r\n  backtrace:\r\n    [<db841d9f>] kmem_cache_alloc+0xe0/0x1f4\r\n    [<a2e2b9fa>] __build_skb+0x2c/0x60\r\n    [<c13a28b3>] __netdev_alloc_skb+0xd8/0x178\r\n    [<49de749a>] ftgmac100_alloc_rx_buf.constprop.0+0x38/0x210\r\n    [<1e72cf85>] ftgmac100_poll+0x344/0x4f4\r\n    [<77fd780e>] net_rx_action+0x1b8/0x4e4\r\n    [<bb56e53c>] __do_softirq+0xf0/0x374\r\n    [<832558e1>] irq_exit+0xb0/0xe8\r\n    [<f86f4ac3>] __handle_domain_irq+0x68/0xc4\r\n    [<86a329c8>] gic_handle_irq+0x4c/0x94\r\n    [<3533b6ec>] __irq_svc+0x6c/0x90\r\n    [<8a922a87>] arch_cpu_idle+0x40/0x4c\r\n    [<d35f6761>] default_idle_call+0x30/0x3c\r\n    [<8756439b>] do_idle+0xd8/0x16c\r\n    [<0a49cfa9>] cpu_startup_entry+0x28/0x2c\r\n    [<2e04b462>] rest_init+0x9c/0xbc\r\n```"
+  }
+ ]
+}

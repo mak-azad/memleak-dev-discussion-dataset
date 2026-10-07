@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/lericson/pylibmc/issues/311",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "temporary-object leaks in `_make_excs()` (non-stealing appends/set-attr)",
+ "author_login": "K-ANOY",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:49Z",
+ "final_url": "https://github.com/lericson/pylibmc/issues/311",
+ "repo": "lericson/pylibmc",
+ "repo_language": "C",
+ "number": 311,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-08-02T13:02:30Z",
+ "updated_at": "2026-08-02T13:02:30Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "K-ANOY",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-08-02T13:02:30Z",
+   "updated_utc": "2026-08-02T13:02:30Z",
+   "permalink": "https://github.com/lericson/pylibmc/issues/311",
+   "body_markdown": "I found possible reference leaks in `_make_excs()`. New references from `Py_BuildValue()` and `PyLong_FromLong()` are passed to `PyList_Append()` and `PyObject_SetAttrString()`, which do not steal, and are never released.\n\nFile: `src/_pylibmcmodule.c`\n\nFunction: `_make_excs`\n\nRelevant code:\n\n```c\nPyList_Append(exc_objs,\n              Py_BuildValue(\"sO\", \"Error\", (PyObject *)PylibMCExc_Error));\nPyList_Append(exc_objs,\n              Py_BuildValue(\"sO\", \"CacheMiss\", (PyObject *)PylibMCExc_CacheMiss));\n\nfor (err = PylibMCExc_mc_errs; err->name != NULL; err++) {\n    ...\n    PyObject_SetAttrString(err->exc, \"retcode\", PyLong_FromLong(err->rc));\n    ...\n    PyList_Append(exc_objs,\n                  Py_BuildValue(\"sO\", err->name, (PyObject *)err->exc));\n}\n```\n\n`Py_BuildValue()` and `PyLong_FromLong()` each return a new reference. `PyList_Append()` and `PyObject_SetAttrString()` create their own references and do not steal the caller's, so every one of these temporaries is leaked (the per-error ones inside the loop leak once per registered error code).\n\nThis runs once at import, so the practical impact is a small, one-time leak per process, but the missing `Py_DECREF()`s are unambiguous.\n\nSuggested fix: store each temporary in a local, check it, append/set, then decref:\n\n```c\nPyObject *item = Py_BuildValue(\"sO\", \"Error\", (PyObject *)PylibMCExc_Error);\nif (item != NULL) {\n    PyList_Append(exc_objs, item);\n    Py_DECREF(item);\n}\n...\nPyObject *rc_obj = PyLong_FromLong(err->rc);\nif (rc_obj != NULL) {\n    PyObject_SetAttrString(err->exc, \"retcode\", rc_obj);\n    Py_DECREF(rc_obj);\n}\n```\n"
+  }
+ ]
+}

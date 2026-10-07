@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/CatIsApple/debugging_lab_docker/issues/23",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[WEEK5] 구현 - 18_cleanup_double_free",
+ "author_login": "CatIsApple",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:09Z",
+ "final_url": "https://github.com/CatIsApple/debugging_lab_docker/issues/23",
+ "repo": "CatIsApple/debugging_lab_docker",
+ "repo_language": "C",
+ "number": 23,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-28T19:03:39Z",
+ "updated_at": "2026-09-28T19:03:39Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "DOUBLEFREE"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "CatIsApple",
+   "author_association": "OWNER",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-28T19:03:39Z",
+   "updated_utc": "2026-09-28T19:03:39Z",
+   "permalink": "https://github.com/CatIsApple/debugging_lab_docker/issues/23",
+   "body_markdown": ""
+  }
+ ]
+}

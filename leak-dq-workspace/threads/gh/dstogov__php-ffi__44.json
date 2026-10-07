@@ -1,0 +1,147 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/dstogov/php-ffi/issues/44",
+ "passes": [
+  "main"
+ ],
+ "title": "free(): invalid pointer",
+ "author_login": "Maxsh",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:38Z",
+ "final_url": "https://github.com/dstogov/php-ffi/issues/44",
+ "repo": "dstogov/php-ffi",
+ "repo_language": "C",
+ "number": 44,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2021-10-22T16:02:40Z",
+ "updated_at": "2021-11-01T06:49:35Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 9,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "Maxsh",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-22T16:02:40Z",
+   "updated_utc": "2021-11-01T06:49:35Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44",
+   "body_markdown": "I have successfully integrated [Salience](https://salience-docs.lexalytics.com/docs/getting-started) vendor shared library for analyzing text version 6.1. Due to deprecation the version, I'm trying to upgrade up to the latest version, but got an error for `FFI::load` the header of this library and immidiately abort\r\n```\r\nfree(): invalid pointer\r\n```\r\n\r\nMeanwhile the latest version of the library successfully work with C written scripts, SDK Python and Java wrappers.\r\nI suspect the issue is caused by FFI during the loading library. I've glanced a source code of php-ffi, but didn't see a way to grab some logs or additional infomation. Not sure I can find a way to debug the issue.\r\n\r\nAlso have tried to write a simple wrapper as a shared library as well, but got an error, that function from the original library cannot be loaded due to not loaded original shared library.\r\n\r\nCan you please suggest a way to get more information about issue and the possible way to get around the issue?\r\nUnforuneatelly support doesn't support any other excepting C,Python,Java.\r\n\r\nPHP versions: 7.4.24, 8.0.12"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 950712843,
+   "author_login": "dstogov",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2021-10-25T09:22:59Z",
+   "updated_utc": "2021-10-25T09:22:59Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-950712843",
+   "body_markdown": "I hope, you use ext/ffi bundled into PHP-7.4/8.0. (this branch is not supported any more).\r\nTo debug the problem, try to run php under debugger and then check the gdb crash backtrace. It's better to use the DEBUG PHP build."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 951100200,
+   "author_login": "Maxsh",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-25T16:31:39Z",
+   "updated_utc": "2021-10-25T16:32:15Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-951100200",
+   "body_markdown": "Hey @dstogov \r\n\r\nThanks for your suggestion.\r\n\r\nI can't find a core file in the system with that error.\r\n\r\nI've build a docker image with enabled debug flag, based on [Generating a gdb backtrace](https://bugs.php.net/bugs-generating-backtrace.php)\r\nAdded for `root` to entrypoint \r\n```\r\necho '/tmp/core.%h.%e.%t' > /proc/sys/kernel/core_pattern\r\nulimit -c unlimited\r\n```\r\nand run via docker-compose with `privileged: true`\r\n\r\nBut, when I trigger the above issue again, `/tmp` directory doesn't have a core file.\r\n\r\nProbably, I've missed something. Is it possible the core file isn't created because this isn't a segmentation fault?\r\n\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 951124699,
+   "author_login": "dstogov",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2021-10-25T17:03:48Z",
+   "updated_utc": "2021-10-25T17:03:48Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-951124699",
+   "body_markdown": "Everything is possible....\r\nI would suggest to run PHP under gdb\r\n```\r\n$ gdb --args php your_script.php\r\n\r\n(gdb) r\r\n; in case of crash\r\n(gdb) bt\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 951645164,
+   "author_login": "Maxsh",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-26T07:37:40Z",
+   "updated_utc": "2021-10-26T07:50:16Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-951645164",
+   "body_markdown": "Hi Dmitry,\r\n\r\nThanks for the above. I've got a backtrace of the entire stack.\r\n\r\n```bash\r\nReading symbols from php...\r\n(No debugging symbols found in php)\r\n(gdb) r\r\nStarting program: /usr/local/bin/php src/Salience/test.php\r\n[Thread debugging using libthread_db enabled]\r\nUsing host libthread_db library \"/lib/x86_64-linux-gnu/libthread_db.so.1\".\r\nfree(): invalid pointer\r\n\r\nProgram received signal SIGABRT, Aborted.\r\n__GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50\r\n50      ../sysdeps/unix/sysv/linux/raise.c: No such file or directory.\r\n(gdb) bt\r\n#0  __GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50\r\n#1  0x00007ffff749a537 in __GI_abort () at abort.c:79\r\n#2  0x00007ffff74f3768 in __libc_message (action=action@entry=do_abort, fmt=fmt@entry=0x7ffff7601e2d \"%s\\n\") at ../sysdeps/posix/libc_fatal.c:155\r\n#3  0x00007ffff74faa5a in malloc_printerr (str=str@entry=0x7ffff760005a \"free(): invalid pointer\") at malloc.c:5347\r\n#4  0x00007ffff74fbc14 in _int_free (av=<optimized out>, p=<optimized out>, have_lock=0) at malloc.c:4173\r\n#5  0x00007ffff20e8a82 in std::locale::_Impl::_M_install_facet(std::locale::id const*, std::locale::facet const*) () from /usr/lib/libSalience6.so\r\n#6  0x00007ffff20dfb13 in std::locale::_Impl::_Impl(unsigned long) () from /usr/lib/libSalience6.so\r\n#7  0x00007ffff20e0a85 in std::locale::_S_initialize_once() () from /usr/lib/libSalience6.so\r\n#8  0x00007ffff746434f in __pthread_once_slow (once_control=0x7ffff3dfdf58 <std::locale::_S_once>, init_routine=0x7ffff20e0a70 <std::locale::_S_initialize_once()>) at pthread_once.c:116\r\n#9  0x00007ffff20e0ad1 in std::locale::_S_initialize() () from /usr/lib/libSalience6.so\r\n#10 0x00007ffff20e0b13 in std::locale::locale() () from /usr/lib/libSalience6.so\r\n#11 0x00007ffff20e268c in std::ios_base::Init::Init() () from /usr/lib/libSalience6.so\r\n#12 0x00007ffff1629000 in _GLOBAL__sub_I_json_spirit_reader.cpp () from /usr/lib/libSalience6.so\r\n#13 0x00007ffff7fe1fe2 in call_init (l=<optimized out>, argc=argc@entry=2, argv=argv@entry=0x7fffffffe7b8, env=env@entry=0x555556a59e50) at dl-init.c:72\r\n#14 0x00007ffff7fe20e9 in call_init (env=0x555556a59e50, argv=0x7fffffffe7b8, argc=2, l=<optimized out>) at dl-init.c:30\r\n#15 _dl_init (main_map=0x555556c8afa0, argc=2, argv=0x7fffffffe7b8, env=0x555556a59e50) at dl-init.c:119\r\n#16 0x00007ffff75ad2bd in __GI__dl_catch_exception (exception=<optimized out>, operate=<optimized out>, args=<optimized out>) at dl-error-skeleton.c:182\r\n#17 0x00007ffff7fe6364 in dl_open_worker (a=a@entry=0x7fffffffa4c0) at dl-open.c:758\r\n#18 0x00007ffff75ad260 in __GI__dl_catch_exception (exception=0x7fffffffa4a0, operate=0x7ffff7fe5ca0 <dl_open_worker>, args=0x7fffffffa4c0) at dl-error-skeleton.c:208\r\n#19 0x00007ffff7fe58fa in _dl_open (file=0x7ffff4874511 \"libSalience6.so\", mode=-2147483383, caller_dlopen=0x7ffff4a3b9e7, nsid=-2, argc=2, argv=0x7fffffffa4a0, env=0x555556a59e50) at dl-open.c:837\r\n#20 0x00007ffff7e02258 in dlopen_doit (a=a@entry=0x7fffffffa6e0) at dlopen.c:66\r\n#21 0x00007ffff75ad260 in __GI__dl_catch_exception (exception=exception@entry=0x7fffffffa680, operate=0x7ffff7e02200 <dlopen_doit>, args=0x7fffffffa6e0) at dl-error-skeleton.c:208\r\n#22 0x00007ffff75ad31f in __GI__dl_catch_error (objname=0x555556a6cc90, errstring=0x555556a6cc98, mallocedp=0x555556a6cc88, operate=<optimized out>, args=<optimized out>) at dl-error-skeleton.c:227\r\n#23 0x00007ffff7e02a65 in _dlerror_run (operate=operate@entry=0x7ffff7e02200 <dlopen_doit>, args=args@entry=0x7fffffffa6e0) at dlerror.c:170\r\n#24 0x00007ffff7e022e4 in __dlopen (file=<optimized out>, mode=<optimized out>) at dlopen.c:87\r\n#25 0x00007ffff4a3b9e7 in ?? () from /usr/local/lib/php/extensions/debug-non-zts-20190902/ffi.so\r\n#26 0x00007ffff4a3cacf in zim_FFI_load () from /usr/local/lib/php/extensions/debug-non-zts-20190902/ffi.so\r\n#27 0x0000555555b7f9ae in execute_internal ()\r\n#28 0x00007ffff46b9dcd in xdebug_execute_internal (current_execute_data=0x7ffff48141e0, return_value=0x7ffff48141b0) at /tmp/pear/temp/xdebug/src/base/base.c:897\r\n#29 0x0000555555b862d6 in ?? ()\r\n#30 0x0000555555beff6b in execute_ex ()\r\n#31 0x00007ffff46b9973 in xdebug_execute_ex (execute_data=0x7ffff4814120) at /tmp/pear/temp/xdebug/src/base/base.c:779\r\n#32 0x0000555555b85d4e in ?? ()\r\n#33 0x0000555555beff5b in execute_ex ()\r\n#34 0x00007ffff46b9973 in xdebug_execute_ex (execute_data=0x7ffff4814020) at /tmp/pear/temp/xdebug/src/base/base.c:779\r\n#35 0x0000555555bf404a in zend_execute ()\r\n#36 0x0000555555b11d85 in zend_execute_scripts ()\r\n#37 0x0000555555a70dc9 in php_execute_script ()\r\n#38 0x0000555555bf6c68 in ?? ()\r\n#39 0x0000555555bf7e30 in ?? ()\r\n#40 0x00007ffff749bd0a in __libc_start_main (main=0x555555bf75e0, argc=2, argv=0x7fffffffe7b8, init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, stack_end=0x7fffffffe7a8) at ../csu/libc-start.c:308\r\n#41 0x000055555560494a in _start ()\r\n```\r\n\r\nNot sure what the reason, but it looks like it crashes when locale is trying been initialized\r\nDocker image is based on Debian\r\n```bash\r\nroot@3659adf77d8a:/var/www# uname -a\r\nLinux 3659adf77d8a 5.11.0-38-generic #42~20.04.1-Ubuntu SMP Tue Sep 28 20:41:07 UTC 2021 x86_64 GNU/Linux\r\n```\r\n\r\nLocale is set \r\n```bash\r\nroot@3659adf77d8a:/var/www# locale\r\nLANG=en_US.UTF-8\r\nLANGUAGE=en_US.UTF-8\r\nLC_CTYPE=\"en_US.UTF-8\"\r\nLC_NUMERIC=\"en_US.UTF-8\"\r\nLC_TIME=\"en_US.UTF-8\"\r\nLC_COLLATE=\"en_US.UTF-8\"\r\nLC_MONETARY=\"en_US.UTF-8\"\r\nLC_MESSAGES=\"en_US.UTF-8\"\r\nLC_PAPER=\"en_US.UTF-8\"\r\nLC_NAME=\"en_US.UTF-8\"\r\nLC_ADDRESS=\"en_US.UTF-8\"\r\nLC_TELEPHONE=\"en_US.UTF-8\"\r\nLC_MEASUREMENT=\"en_US.UTF-8\"\r\nLC_IDENTIFICATION=\"en_US.UTF-8\"\r\nLC_ALL=en_US.UTF-8\r\n```\r\n\r\nI really appreciate you are looking at the issue. It might probably the reason of the issue rises from the vendor library. I'll post also the above trace to their support.\r\n\r\nThanks."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 953767255,
+   "author_login": "dstogov",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2021-10-28T11:45:53Z",
+   "updated_utc": "2021-10-28T11:45:53Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-953767255",
+   "body_markdown": "According to backtrace, there where some error in __dlopen().\r\nMay be loader can't find some dependent shared libraries. Try to run ``ldd your_lib.so``, check if all libraries are resolved.\r\nIn any case this is not an ext/ffi bug."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 953796060,
+   "author_login": "Maxsh",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-28T12:26:39Z",
+   "updated_utc": "2021-10-28T12:26:39Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-953796060",
+   "body_markdown": "It doens't seem there are missing libraries:\r\n\r\n```\r\ndev@aa87ca38102d:/var/www$ ldd -r /usr/lib/libSalience6.so \r\n        linux-vdso.so.1 (0x00007fff607ef000)\r\n        libzmq.so.5 => /usr/lib/libzmq.so.5 (0x00007fcbf01f2000)\r\n        librt.so.1 => /lib/x86_64-linux-gnu/librt.so.1 (0x00007fcbf01e7000)\r\n        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fcbf01e1000)\r\n        libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fcbf01bf000)\r\n        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fcbf007b000)\r\n        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fcbefeb6000)\r\n        /lib64/ld-linux-x86-64.so.2 (0x00007fcbf2e53000)\r\n        libstdc++.so.6 => /usr/lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007fcbefce7000)\r\n        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fcbefccd000)\r\n```\r\n\r\nAnyway, thank you for your efforts.\r\nProbs makes sens to redevelop that integation using Python SDK"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 954496578,
+   "author_login": "dstogov",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2021-10-29T07:29:12Z",
+   "updated_utc": "2021-10-29T07:29:52Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-954496578",
+   "body_markdown": "It's possible to investigate the failure a bit deeper. In gdb, you may try to go ``down`` to frame ``#22`` and ``print errstring``. \r\n\r\n```\r\n...\r\n#21 0x00007ffff75ad260 in __GI__dl_catch_exception (exception=exception@entry=0x7fffffffa680, operate=0x7ffff7e02200 <dlopen_doit>, args=0x7fffffffa6e0) at dl-error-skeleton.c:208\r\n#22 0x00007ffff75ad31f in __GI__dl_catch_error (objname=0x555556a6cc90, errstring=0x555556a6cc98, mallocedp=0x555556a6cc88, operate=<optimized out>, args=<optimized out>) at dl-error-skeleton.c:227\r\n#23 0x00007ffff7e02a65 in _dlerror_run (operate=operate@entry=0x7ffff7e02200 <dlopen_doit>, args=args@entry=0x7fffffffa6e0) at dlerror.c:170\r\n#24 0x00007ffff7e022e4 in __dlopen (file=<optimized out>, mode=<optimized out>) at dlopen.c:87\r\n```"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 954873539,
+   "author_login": "Maxsh",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2021-10-29T16:16:47Z",
+   "updated_utc": "2021-10-29T16:16:47Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-954873539",
+   "body_markdown": "Thanks for the above\r\n```\r\n(gdb) b __GI__dl_catch_error\r\nFunction \"__GI__dl_catch_error\" not defined.\r\nMake breakpoint pending on future shared library load? (y or [n]) y\r\nBreakpoint 1 (__GI__dl_catch_error) pending.\r\n(gdb) r\r\nStarting program: /usr/local/bin/php src/Salience/test.php\r\n[Thread debugging using libthread_db enabled]\r\nUsing host libthread_db library \"/lib/x86_64-linux-gnu/libthread_db.so.1\".\r\n\r\nBreakpoint 1, __GI__dl_catch_error (objname=0x555556667c00, errstring=0x555556667c08, mallocedp=0x555556667bf8, operate=0x7ffff7e02200 <dlopen_doit>, args=0x7fffffffd090) at dl-error-skeleton.c:225\r\n225     dl-error-skeleton.c: No such file or directory.\r\n(gdb) print errstring\r\n$1 = (const char **) 0x555556667c08\r\n(gdb) x /s 0x555556667c08\r\n0x555556667c08: \"\"\r\n```\r\nIt looks like the string is empty. \r\nAlso, have tried to get exception struct details, but nothing useful\r\n```\r\n(gdb) print *exception\r\n$3 = {objname = 0x0, errstring = 0x7ffff74ffed1 <__libc_calloc+129> \"I\\211\\300H\\205\\300t\\fH\\213@\\370\\250\\002\\017\\204\", <incomplete sequence \\333>, \r\n  message_buffer = 0xd0 <error: Cannot access memory at address 0xd0>}\r\n```\r\n\r\nI got a vendor support answer and it sounds promising:\r\n> It appears that PHP is pulling in one version of the C++ standard library, and a third party library we use (JSON spirit) is pulling in a different one. We have had other issues with JSON spirit, so it's already scheduled for removal from Salience."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 955976511,
+   "author_login": "dstogov",
+   "author_association": "OWNER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2021-11-01T06:49:35Z",
+   "updated_utc": "2021-11-01T06:49:35Z",
+   "permalink": "https://github.com/dstogov/php-ffi/issues/44#issuecomment-955976511",
+   "body_markdown": "```\r\nprint *errstring\r\n```\r\n\r\nPHP doesn't use C++ standard library itself. Only sone extensions e.g. ext/intl You may try to rebuild PHP without ext/intl"
+  }
+ ]
+}

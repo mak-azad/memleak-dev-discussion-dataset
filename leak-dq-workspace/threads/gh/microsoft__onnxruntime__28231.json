@@ -1,0 +1,138 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/microsoft/onnxruntime/issues/28231",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[Performance] [CPU EP][Apple Silicon][MLAS/KleidiAI] Process phys_footprint grows continuously with fresh changing inputs on M5 Pro",
+ "author_login": "hiugiak",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:28Z",
+ "final_url": "https://github.com/microsoft/onnxruntime/issues/28231",
+ "repo": "microsoft/onnxruntime",
+ "repo_language": "C++",
+ "number": 28231,
+ "state": "closed",
+ "state_reason": "completed",
+ "created_at": "2026-04-26T05:50:38Z",
+ "updated_at": "2026-05-11T18:13:36Z",
+ "closed_at": "2026-05-11T18:13:36Z",
+ "labels": [
+  "performance",
+  "ep:CoreML"
+ ],
+ "comments_reported": 8,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "hiugiak",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-04-26T05:50:38Z",
+   "updated_utc": "2026-05-11T18:13:36Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231",
+   "body_markdown": "### Describe the issue\n\nHi, I observed sustained RSS / dirty memory growth on Apple Silicon when repeatedly running an object detection model with the CPU Execution Provider.\n\nI am not familiar with ONNX Runtime internals, MLAS, or KleidiAI. I am only reporting what I observed while using ONNX Runtime to run a model.\n\nThe issue reproduces on:\n\n- Apple M5 Pro\n- 48 GB memory\n- macOS Tahoe 26.4.1\n\nI did **not** observe the same issue on another machine:\n\n- Apple M1 Pro\n- 16 GB memory\n- macOS Tahoe 26.4.1\n\n### To reproduce\n\nMinimal Rust repro: https://github.com/hiugiak/ort-cpu-ep-memory-repro\n\n```sh\ngit clone https://github.com/hiugiak/ort-cpu-ep-memory-repro.git\ncd ort-cpu-ep-memory-repro\n./scripts/download-yolov8n.sh\n\ncargo run --release -- \\\n  /path/to/libonnxruntime.dylib \\\n  models/yolov8n.onnx \\\n  1 \\\n  20\n```\n\nArguments:\n\n```sh\nort-cpu-ep-memory-repro <libonnxruntime.dylib> <model.onnx> [intra_threads] [print_every]\n```\n\nThe repro is intentionally minimal:\n\n- load ONNX Runtime dynamically\n- register CPU Execution Provider\n- load a public YOLOv8n ONNX model\n- generate a fresh random `[1, 3, 640, 640]` `f32` input tensor every iteration\n- call `Session::run` repeatedly\n- extract the first output tensor\n- print RSS periodically\n\nWith fresh changing inputs, RSS / dirty memory keeps growing on the M5 Pro machine. In Instruments, the growing allocations appear under the CPU EP / MLAS / KleidiAI convolution path.\n\nIn my original application, switching to CoreML Execution Provider first, with CPU as fallback, stopped the memory growth.\n\nI am not sure whether this is a leak, an unbounded cache, or expected MLAS/KleidiAI workspace behavior, but I would not expect memory to keep growing because only input tensor values change while the model shape remains fixed.\n\n### Urgency\n\nNot blocking production because I can work around it by using CoreML Execution Provider first on Apple Silicon, with CPU as fallback.\n\nHowever, I would like to understand whether the CPU EP behavior is expected, a known cache behavior, or a bug.\n\n### Platform\n\nMac\n\n### OS Version\n\nmacOS Tahoe 26.4.1\n\n### ONNX Runtime Installation\n\nReleased Package\n\n### ONNX Runtime Version or Commit ID\n\n1.24.4\n\n### ONNX Runtime API\n\nOther / Unknown\n\n### Architecture\n\nARM64\n\n### Execution Provider\n\nDefault CPU\n\n### Execution Provider Library Version\n\n_No response_\n\n### Model File\n\nPublic YOLOv8n ONNX model.\n\nThe repro script downloads:\n\n```sh\nhttps://huggingface.co/webml/yolov8n/resolve/main/onnx/yolov8n.onnx\n```\n\n### Is this a quantized model?\n\nNo"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4347942731,
+   "author_login": "hariharans29",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-04-29T22:19:22Z",
+   "updated_utc": "2026-04-29T22:22:40Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4347942731",
+   "body_markdown": "Do you see the same behavior with previous versions of ORT ? KleidiAI is a newer component, so it'd help if you could please try 1.22-1.25 (also worth trying the latest 1.25 release, I see that you're on 1.24.4) to narrow it down to KleidiAI.\n\nAlternatively, we have an option for the user to opt out of using KleidiAI with a simple session option (`mlas.disable_kleidiai`). Please see https://github.com/microsoft/onnxruntime/pull/27136. if you see the behavior going away with that, it is tied to KleidiAI\n\nI ll pass this information along to the KleidiAI team just in case. CC: @damdoo01-arm @Colm-in-Arm\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4356497756,
+   "author_login": "Colm-in-Arm",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-04-30T22:07:39Z",
+   "updated_utc": "2026-04-30T22:07:39Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4356497756",
+   "body_markdown": "Hello @hiugiak\n\nI didn't try your reproducer yet but I did a quick run using onnxruntime_perf_test on an M4. Initially up to 1000 iterations I could see a gentle increase in RSS memory usage. However, at that point it started to plateau. Continuing up to 10,000 iterations there were more increases in usage but I didn't detect a strong correlation to the number of inferences being executed.\n\nIf you could try @hariharans29 suggestion of using a session parameter to disable KleidiAI and trying again.\n\nColm."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4379723551,
+   "author_login": "JonathanC-ARM",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-05-05T13:30:45Z",
+   "updated_utc": "2026-05-05T13:30:45Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4379723551",
+   "body_markdown": "Hi @hiugiak,\n\nI was able to reproduce behavior similar to what you described above. I tracked it down to an issue in how we were caching LHS values, and I’ve opened PR #28363 to address it:\n\n\nCould you try the proposed fix from the PR and let me know whether it resolves the issue on your end?\n\nBest regards,\nJonathan"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4387473521,
+   "author_login": "hiugiak",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-06T11:24:53Z",
+   "updated_utc": "2026-05-06T11:24:53Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4387473521",
+   "body_markdown": "Hi @JonathanC-ARM,\n\n I'd like to help, but I don’t know how to try the proposed fix. Compile the dynamic library by myself?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4387636320,
+   "author_login": "hiugiak",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-06T11:51:50Z",
+   "updated_utc": "2026-05-06T11:51:50Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4387636320",
+   "body_markdown": "Hi @hariharans29 @Colm-in-Arm , sorry for missing your replies. \n\nIn my original description I said that RSS keeps growing continuously. After adding an additional macOS memory metric to the repro, I need to correct that wording.\n\nThe repro now prints both:\n\n- `rss`: `mach_task_basic_info.resident_size`\n- `footprint`: `proc_pid_rusage(..., RUSAGE_INFO_V4, ...).ri_phys_footprint`\n\nWith the same CPU EP repro, `rss` grows rapidly at first, but later starts to plateau. However, `phys_footprint` continues to grow almost linearly and matches what Activity Monitor shows in the \"Memory\" column.\n\nExample:\n\n```text\niter=1200, rss=23174.1 MB, footprint=22832.6 MB\niter=1300, rss=24087.0 MB, footprint=24747.1 MB\niter=1400, rss=22747.2 MB, footprint=26664.8 MB\niter=1800, rss=18824.3 MB, footprint=34346.2 MB\niter=2200, rss=14394.1 MB, footprint=41694.7 MB\niter=2600, rss=10424.6 MB, footprint=49367.9 MB\n...\n```\n\nI also tried the latest release, and the issue still reproduces."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4395604001,
+   "author_login": "JonathanC-ARM",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-05-07T08:49:35Z",
+   "updated_utc": "2026-05-07T08:49:35Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4395604001",
+   "body_markdown": "> Hi [@JonathanC-ARM](https://github.com/JonathanC-ARM),\n> \n> I'd like to help, but I don’t know how to try the proposed fix. Compile the dynamic library by myself?\n\nHi @hiugiak,\n\nUnfortunately the only way to test this would be to compile the dylib locally and test with your script that is until this is merged and makes it into a release.\n\nTo compile the lib on MacOS the following command would do, that should create a build folder at the root of the onnxruntime repo under which there will be a .dylib for the that particular version of onnxruntime, latest that I checked this morning shows up as `libonnxruntime.1.27.0.dylib`. \n`./build.sh --config Release --build_shared_lib --parallel --skip_tests`\n\nIn terms of getting the code to test you would need to clone my fork of the repo and checkout to this branch, or add my fork as an additional remote in your git config within an onnxruntime repo https://github.com/JonathanC-ARM/onnxruntime/tree/jonclo01/gh_issue_28231_repro or of course manually copy over the changes from the PR specifically the convolve_kleidiai.cpp changes\n\nHowever saying that I've tested this issue locally using both my own method and your reproduction repo\nThis was the observed behavior before the fix with your reproduction repo\n```\nort_library=../libonnxruntime.1.27.0.dylib\nmodel=models/yolov8n.onnx\ninput=noise: fresh random tensor per iteration\nintra_threads=1\nprint_every=100\nrss_start_mb=40.2\nfootprint_start_mb=23.7\niter=100, elapsed=4.1s, rss=2217.5 MB, footprint=1701.8 MB\niter=200, elapsed=8.2s, rss=2522.1 MB, footprint=3879.9 MB\niter=300, elapsed=12.1s, rss=2933.2 MB, footprint=6017.3 MB\niter=400, elapsed=16.2s, rss=3382.0 MB, footprint=7975.9 MB\niter=500, elapsed=20.0s, rss=5310.0 MB, footprint=9915.3 MB\niter=600, elapsed=24.0s, rss=5272.7 MB, footprint=11868.3 MB\n```\nThis is the behavior after the fix\n\n```\nort_library=../libonnxruntime.1.27.0.dylib\nmodel=models/yolov8n.onnx\ninput=noise: fresh random tensor per iteration\nintra_threads=1\nprint_every=100\nrss_start_mb=40.4\nfootprint_start_mb=23.8\niter=100, elapsed=5.1s, rss=380.9 MB, footprint=52.9 MB\niter=200, elapsed=10.2s, rss=380.9 MB, footprint=52.9 MB\niter=300, elapsed=15.3s, rss=380.9 MB, footprint=52.9 MB\niter=400, elapsed=20.4s, rss=380.9 MB, footprint=52.9 MB\niter=500, elapsed=25.5s, rss=380.9 MB, footprint=52.9 MB\niter=600, elapsed=30.5s, rss=380.9 MB, footprint=52.9 MB\niter=700, elapsed=35.5s, rss=380.9 MB, footprint=52.9 MB\niter=800, elapsed=40.4s, rss=380.9 MB, footprint=52.9 MB\niter=900, elapsed=45.5s, rss=380.9 MB, footprint=52.9 MB\niter=1000, elapsed=50.7s, rss=380.9 MB, footprint=52.9 MB\niter=1100, elapsed=55.7s, rss=380.9 MB, footprint=52.9 MB\niter=1200, elapsed=60.8s, rss=380.9 MB, footprint=52.9 MB\niter=1300, elapsed=66.0s, rss=381.8 MB, footprint=53.8 MB\niter=1400, elapsed=70.8s, rss=381.8 MB, footprint=53.8 MB\niter=1500, elapsed=75.2s, rss=381.8 MB, footprint=53.8 MB\niter=1600, elapsed=79.4s, rss=381.8 MB, footprint=53.8 MB\n```\n\nSo it does look like this fix indeed addresses the issue in question.\n\nBest Regards,\nJonathan"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4395661495,
+   "author_login": "hiugiak",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-05-07T08:58:05Z",
+   "updated_utc": "2026-05-07T08:58:05Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4395661495",
+   "body_markdown": "@JonathanC-ARM that looks good. Then I guess I don't need to test."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4423501175,
+   "author_login": "hariharans29",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2026-05-11T18:13:36Z",
+   "updated_utc": "2026-05-11T18:13:36Z",
+   "permalink": "https://github.com/microsoft/onnxruntime/issues/28231#issuecomment-4423501175",
+   "body_markdown": "Closing this as fix https://github.com/microsoft/onnxruntime/pull/28363 is merged. Please re-open in case the issue is unresolved."
+  }
+ ]
+}

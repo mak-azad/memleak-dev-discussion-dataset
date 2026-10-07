@@ -1,0 +1,68 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 42470350,
+ "url": "https://stackoverflow.com/questions/42470350/signal-returned-from-sigchld-appears-to-be-wrong",
+ "title": "Signal returned from SIGCHLD appears to be wrong",
+ "tags": [
+  "c",
+  "unix",
+  "signals",
+  "child-process"
+ ],
+ "score": 1,
+ "view_count": 474,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 42470869,
+ "created_utc": "2017-02-26T15:24:17Z",
+ "last_activity_utc": "2017-02-26T16:11:46Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 4272549,
+ "author_display_name": "123",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/42470350/signal-returned-from-sigchld-appears-to-be-wrong",
+ "body_html": "<p>I've written a basic shell in C, and I'm trying to catch a <code>SIGTSTP</code> signal from a child process.  To do this, I've set up a handler for <code>SIGCHLD</code>, but the signal number being returned is <code>20</code>, when it should be <code>24</code>.</p>\n\n<p>I have my <code>SIGCHLD</code> handler:</p>\n\n<pre><code>signal(SIGCHLD, trapChld);\n\nvoid trapChld(int signo) {\n    printf(\"%d\", signo);\n}\n</code></pre>\n\n<p>This prints signal <code>20</code> when <code>kill -SIGTSTP child_pid</code> is run.  Why might this be happening?</p>\n\n<p>Here's my full code:</p>\n\n<pre><code>#include &lt;stdlib.h&gt;\n#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n#include &lt;sys/stat.h&gt;\n#include &lt;sys/wait.h&gt;\n#include &lt;sys/types.h&gt;\n#include &lt;unistd.h&gt;\n#include &lt;signal.h&gt;\n#include &lt;fcntl.h&gt;\n\nint statusCode;\nint foregroundMode = 0;\nint bg = 0;\nint bgPsArray[20];\nint bgPsCount = 0;\nint i;\nchar line[256];\n\npid_t popBgProcess() {\n    int size = sizeof(bgPsArray)/sizeof(bgPsArray[0]);\n    if (size &gt; 0) {\n      return bgPsArray[size+1];\n    } else {\n        return 0;\n    }\n}\n\nvoid trapInterrupt(int _) {\n    int childStatus;\n    pid_t child;\n    while ((child = popBgProcess())) {\n        if(child != getpid()) {\n            kill(child, SIGKILL);\n            waitpid(child, &amp;childStatus, 0);\n        }\n    }\n}\n\nvoid trapChld(int signo) {\n    printf(\"%d\", signo);\n    if(signo == 24) {\n        if(foregroundMode == 0) {\n            write(1, \"Entering foreground-only mode (&amp; is now ignored)\\n\", 49);\n            write(1, \": \", 2);\n            fflush(stdout);\n            foregroundMode = 1;\n        } else {\n            write(1, \"Exiting foreground-only mode\\n\", 29);\n            write(1, \": \", 2);\n            fflush(stdout);\n            foregroundMode = 0;\n        }\n    }\n}\n\nint getCommand() {\n    printf(\": \");\n    fflush(stdout);\n    if(fgets(line, sizeof(line), stdin) != NULL) {\n        char *position = strchr(line, '\\n');\n    *position = '\\0'; // Replace '\\n' with '\\0'\n        if(foregroundMode == 1) { // Foreground mode on\n            if((position = strchr(line, '&amp;')) != NULL) {\n                *position = '\\0'; // Replace '&amp;' with '\\0'\n            }\n            bg = 0; // Ignore '&amp;' so do not create background process\n        } else { // Foreground mode off\n            if((position = strchr(line, '&amp;')) != NULL) {\n                *position = '\\0'; // Replace '&amp;' with '\\0'\n                bg = 1; // Is a background process\n            } else {\n                bg = 0;\n            }\n        }\n  } else { // If input is null\n        return 0;\n  }\n    return 1;\n}\n\nvoid checkProcessCompletion() {\n    int status;\n    for(i=0; i&lt;bgPsCount; i++) {\n        if(waitpid(bgPsArray[i], &amp;status, WNOHANG) &gt; 0) {\n            if(WIFEXITED(status)) { // If exit\n                printf(\"Background PID %d is done: exit value %d\\n\", bgPsArray[i], WEXITSTATUS(status));\n                fflush(stdout);\n            } else if(WIFSIGNALED(status)) { // If signal\n                printf(\"Background PID %d is done: terminated by signal %d\\n\", bgPsArray[i], WTERMSIG(status));\n                fflush(stdout);\n            }\n        }\n    }\n}\n\nint runCommand(int cmd) {\n    if(cmd == 0) { // Return if there was no command\n        return 0;\n    } else if(strcmp(line, \"exit\") == 0) {\n        exit(0);\n    } else if(strstr(line, \"#\")) { // Comment input (do nothing)\n    } else if(strcmp(line, \"status\") == 0) {\n        printf(\"exit value %d\\n\", statusCode);\n        fflush(stdout);\n    }\n    else if(strncmp(\"cd\", line, strlen(\"cd\")) == 0) {\n        if(line[2] == ' ') { // If space after 'cd' expect directory\n            char cwd[1024];\n            getcwd(cwd, sizeof(cwd));\n            char *path = strstr(line, \" \");\n            if(path) {\n                path += 1;\n                char *value;\n                value = malloc(strlen(path));\n                memcpy(value, path, strlen(path));\n                *(value + strlen(path)) = 0;\n                sprintf(cwd, \"%s/%s\", cwd, value); // Directory to change to\n                free(value);\n            }\n            chdir(cwd); // cd to new directory\n        } else { // cd with no argument\n            char *home = getenv(\"HOME\");\n            chdir(home); // cd to HOME directory\n        }\n    }\n    else { // System commands\n        pid_t pid, ppid;\n        int status;\n        char *command;\n        char *args[256];\n        int argCount;\n        command = strtok(line, \" \");\n\n        // Create args array for execvp\n        args[0] = command;\n        argCount = 1;\n        args[argCount] = strtok(NULL, \" \");\n        while(args[argCount] != NULL) { // Add arguments to array\n            argCount++;\n            args[argCount] = strtok(NULL, \" \");\n        }\n        if((pid = fork()) &lt; 0) { // Fork fails\n            perror(\"fork\");\n            fflush(stdout);\n            exit(1);\n        }\n        if(pid == 0) { // Child process\n            for(i=0; i&lt;argCount; i++) {\n                if(strcmp(args[i], \"&lt;\") == 0) { // Redirecting input\n                    if(access(args[i+1], R_OK) == -1) { // File is unreadable\n                        perror(\"access\");\n                        fflush(stdout);\n                    } else { // File is readable\n                        int file = open(args[i+1], O_RDONLY, 0);\n                        dup2(file, STDIN_FILENO);\n                        close(file);\n                        execvp(command, &amp;command);\n                    }\n                }\n                else if(strcmp(args[i], \"&gt;\") == 0) { // Redirecting output\n                    int file = creat(args[i+1], 7777);\n                    dup2(file, STDOUT_FILENO);\n                    close(file);\n                    execvp(command, args);\n                } else { // No redirection\n                    execvp(command, args);\n                }\n            }\n            perror(\"execvp\"); // Error for execvp\n            exit(1);\n        } else { // Parent process\n            if (bg == 1) { // Background process\n                int status;\n                int process;\n                printf(\"Background PID: %d\\n\", pid);\n                fflush(stdout);\n                bgPsArray[bgPsCount] = pid; // Add process to background process array\n                bgPsCount++;\n                process = waitpid(pid, &amp;status, WNOHANG);\n            } else { // Foreground process\n                int status;\n                waitpid(pid, &amp;status, 0); // Wait on the process\n                if(WIFEXITED(status)) {\n                    statusCode = WEXITSTATUS(status);\n                }\n            }\n        }\n    }\n    return 1;\n}\n\nint main(int argc, char *argv[], char *envp[]) {\n    // Creating 'junk' manually is necessary because output redirection is broken,\n    // and a large portion of the grading script is depedent upon it's existence.\n    FILE *fp = fopen(\"junk\", \"ab+\");\n    const char *text;\n    fprintf(fp, \"Junk in junkfile\\n\");\n    fclose(fp);\n    signal(SIGINT, trapInterrupt);\n    signal(SIGCHLD, trapChld);\n    while(1) {\n        checkProcessCompletion(); //Check the processes\n        int cmd = getCommand(); // Get command from user\n        int result = runCommand(cmd);\n        if (result == 0) {\n            break;\n        }\n    }\n    return 0;\n}\n</code></pre>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 42470869,
+   "parent_id": 42470350,
+   "author_user_id": 3361587,
+   "author_display_name": "Michael Wojcik",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/42470869",
+   "score": 1,
+   "created_utc": "2017-02-26T16:11:46Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2017-02-26T16:11:46Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>You haven't told us what platform you're running on, so this is just a guess, but perhaps it's because that platform defines SIGTSTP as 20?</p>\n\n<p>Linux does, for example:</p>\n\n<pre><code>$ grep SIGTSTP /usr/include/asm/signal.h\n#define SIGTSTP         20\n</code></pre>\n\n<p>A better question is why do you think it should be 24? On AIX it's 18. On HP-UX it's 25. Various Cygwin headers define it as 8, 18, or 24 (because the Cygwin headers come from glib and are full of platform-specific conditional-compilation shenanigans); 18 is the actual value used at runtime.</p>\n\n<p>On Solaris, now, it happens to be 24. I believe Solaris 2 inherited that from SVR4, and subsequent Solaris releases kept it. But the signal numbers are not standardized by any of the applicable specifications (SUS and its ancestors, such as POSIX and XPG3).</p>\n\n<p>Don't assume the signal values are fixed. That's why you have signal.h.</p>\n\n<p>Oh, and sigaction(2) is preferable to signal(2) on platforms that support it, which is most of them.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 72082580,
+   "parent_id": 42470350,
+   "parent_type": "question",
+   "author_user_id": 694576,
+   "author_display_name": "alk",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/42470350/#comment72082580_42470350",
+   "score": 0,
+   "created_utc": "2017-02-26T16:27:46Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "What is <code>SIGCHLD</code> for the platform in use? Probably <code>20</code> I assume."
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/GaijinEntertainment/DagorEngine/issues/210",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "Android os_shell_execute leaks JNI local references on attached native threads",
+ "author_login": "QiuYucheng2003",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:58Z",
+ "final_url": "https://github.com/GaijinEntertainment/DagorEngine/issues/210",
+ "repo": "GaijinEntertainment/DagorEngine",
+ "repo_language": "C++",
+ "number": 210,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-15T11:09:56Z",
+ "updated_at": "2026-09-15T11:09:56Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "REFCOUNT"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "QiuYucheng2003",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-15T11:09:56Z",
+   "updated_utc": "2026-09-15T11:09:56Z",
+   "permalink": "https://github.com/GaijinEntertainment/DagorEngine/issues/210",
+   "body_markdown": "## Summary\n\nAndroid `os_shell_execute` attaches the current thread to the JavaVM, creates several JNI local references, then returns without `DeleteLocalRef` or `DetachCurrentThread`.\n\n## Location\n\n[`prog/engine/osApiWrappers/shellExecute.cpp`](https://github.com/GaijinEntertainment/DagorEngine/blob/75723669297e48e200a0dc67b18c1629e0975daf/prog/engine/osApiWrappers/shellExecute.cpp) (`_TARGET_ANDROID`)\n\n```cpp\njint result = android::attach_current_thread(javaVM, &jniEnv, NULL);\njclass jcls_Activity = jniEnv->FindClass(\"android/app/Activity\");\njclass jcls_Intent = jniEnv->FindClass(\"android/content/Intent\");\njclass jcls_Uri = jniEnv->FindClass(\"android/net/Uri\");\njstring jstr = jniEnv->NewStringUTF(file);\njobject uriObj = jniEnv->CallStaticObjectMethod(/* Uri.parse */, jstr);\njobject intentObj = jniEnv->NewObject(/* Intent(String) */,\n    jniEnv->NewStringUTF(\"android.intent.action.VIEW\"));\njniEnv->CallObjectMethod(intentObj, /* setData */, uriObj); // return value discarded\njniEnv->CallVoidMethod(/* activity */, /* startActivity */, intentObj);\n// no DeleteLocalRef, no DetachCurrentThread\n\n\nWhy this leaks\nThis is a C++ engine API, not a JNI native method. Returning from C++ does not free JNI local references.\n\nandroid::attach_current_thread leaves the thread attached. Game / android_main threads typically stay attached for the process lifetime, so these refs remain until the thread detaches or dies.\n\nEach call leaves about 8–9 local refs:\n\n· 3× FindClass (Activity, Intent, Uri)\n· NewStringUTF(file)\n· Uri.parse result\n· temporary NewStringUTF(\"android.intent.action.VIEW\")\n· NewObject Intent\n· unused Intent.setData return value\n\nRepeated os_shell_execute on the same thread (open URL / store / etc.) accumulates entries in that thread’s local reference table (Android default ~512) and can lead to JNI ERROR: local reference table overflow (max=512).\n\nSuggested fix\nWrap the JNI block in PushLocalFrame / PopLocalFrame, or DeleteLocalRef each temporary after use. Cache jclass / jmethodID as global refs if this path is hot.\n\nDo not rely on C++ function return to recycle these refs while the thread stays attached."
+  }
+ ]
+}

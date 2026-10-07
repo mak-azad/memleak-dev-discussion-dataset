@@ -1,0 +1,40 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/juce-framework/JUCE/issues/1565",
+ "passes": [
+  "main"
+ ],
+ "title": "[Bug]: Shared emptyString object prevents transferring juce::String across binary boundaries",
+ "author_login": "kevin--",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:49Z",
+ "final_url": "https://github.com/juce-framework/JUCE/issues/1565",
+ "repo": "juce-framework/JUCE",
+ "repo_language": "C++",
+ "number": 1565,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2025-08-20T00:22:53Z",
+ "updated_at": "2025-08-20T00:22:53Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590",
+  "761"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "kevin--",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2025-08-20T00:22:53Z",
+   "updated_utc": "2025-08-20T00:22:53Z",
+   "permalink": "https://github.com/juce-framework/JUCE/issues/1565",
+   "body_markdown": "### Detailed steps on how to reproduce the bug\n\nThis is a bit of an esoteric use case admittedly, but this one is a particular head scratcher.\n\nWe have a Host and a Plugin built against the same JUCE version. The Host loads the Plugin via VST3, then we use the custom interface API to establish a \"rich API\" between the host and plugin.\n\nAt this point, there are a couple deep seated API's that return `const juce::String&`. In a handful of cases these are occasionally empty.\n\nWhat then happens is that when `String::~String` is invoked, the empty string in question fails the `isEmptyString` check because the \"empty string\" it is pointing to is DIFFERENT than the empty string known to exist by the current binary\n```\n    static bool isEmptyString (StringHolder* other)\n    {\n        return other == &emptyString;\n    }\n```\nThe code then tries to deallocate the OTHER binary's `emptyString` resulting in a segfault because we are deleting something of the data page that was not malloc'ed.\n\n```\n==56507==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x000108496a60 in thread T0\n    #0 0x1249d83d0 in _ZdaPv+0x74 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x643d0)\n    #1 0x41c8a27cc in juce::StringHolderUtils::release(juce::StringHolder*)+0x60 (REDACTED.vst3/Contents/MacOS/REDACTED:arm64+0x6367cc)\n    #2 0x41c78aa88 in juce::StringHolderUtils::release(juce::CharPointer_UTF8)+0x1b4 (REDACTED.vst3/Contents/MacOS/REDACTED:arm64+0x51ea88)\n    #3 0x41c78a83c in juce::String::~String()+0x160 (REDACTED.vst3/Contents/MacOS/REDACTED:arm64+0x51e83c)\n    #4 0x41c6f3934 in juce::String::~String()+0x18 (REDACTED.vst3/Contents/MacOS/REDACTED:arm64+0x487934)\n```\n\n```\n0x000108496a60 is located 0 bytes inside of global variable 'juce::emptyString' defined in 'juce_core/juce_core.mm' (0x108496a60) of size 24\nSUMMARY: AddressSanitizer: bad-free (REDACTED.app/Contents/Frameworks/libclang_rt.asan_osx_dynamic.dylib:arm64e+0x643d0) in _ZdaPv+0x74\n==56507==ABORTING\n```\n\nWe previously did not experience this, as we were on JUCE 6.1.4. Now we have upgraded to 8.0.6\n\n\nI tried to force the string to be replaced by the \"correct\" `emptyString` but to no avail - it just causes the crash to happen sooner.\n```\nstatic juce::String kEmptyString;\njuce::String forceRecreateString(const juce::String& r)\n{\n    if(r.length() == 0) {\n        return kEmptyString;\n    }\n    return std::string(r.toUTF8()).c_str();\n}\n```\n\nThoughts?\n\n### What is the expected behaviour?\n\nIdeally we could have an option to link dynamiclly against the JUCE library instead of having to hide symbols between every target.\n\nBarring that, a way to transfer data across binary boundaries would be great.\n\nReally just looking for ideas here. I suppose I can always add a new plain \"extern C\" API to prevent this\n\n### Operating systems\n\nmacOS, Windows\n\n### What versions of the operating systems?\n\nmacOS 11.6+, Windows 10+\n\n### Architectures\n\nArm64/aarch64, x86_64\n\n### Stacktrace\n\n```shell\n\n```\n\n### Plug-in formats (if applicable)\n\nVST3\n\n### Plug-in host applications (DAWs) (if applicable)\n\nOur own JUCE Host\n\n### Testing on the `develop` branch\n\nThe bug is present on the `develop` branch\n\n### Code of Conduct\n\n- [x] I agree to follow the Code of Conduct"
+  }
+ ]
+}

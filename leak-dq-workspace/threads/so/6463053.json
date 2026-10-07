@@ -1,0 +1,50 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 6463053,
+ "url": "https://stackoverflow.com/questions/6463053/setpwent-shows-memory-leak-in-valgrind",
+ "title": "setpwent shows memory leak in valgrind",
+ "tags": [
+  "c",
+  "memory-leaks",
+  "valgrind"
+ ],
+ "score": 2,
+ "view_count": 567,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 6463130,
+ "created_utc": "2011-06-24T03:34:03Z",
+ "last_activity_utc": "2011-06-24T04:29:11Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 805896,
+ "author_display_name": "rahman",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/6463053/setpwent-shows-memory-leak-in-valgrind",
+ "body_html": "<p>I am checking my program against memory leaks and corruptions and\nI have a problem using setpwent.\nconsider the simple program as:</p>\n\n<pre><code>#include&lt;stdio.h&gt;\n#include&lt;stdlib.h&gt;\n\nmain()\n{\n    struct passwd *ent=NULL;\n    setpwent();\n        while ((ent = getpwent()) != NULL) { }\n    endpwent();\n}\n</code></pre>\n\n<p>when I run this piece of code in valgrind, I get this:</p>\n\n<pre><code>&gt; valgrind  --track-origins=yes\n&gt; --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./a.out . . . 160 (40 direct, 120 indirect) bytes in 1\n&gt; blocks are definitely lost in loss\n&gt; record 11 of 11\n&gt; ==6471==    at 0x4025BD3: malloc (vg_replace_malloc.c:236)\n&gt; ==6471==    by 0x411CA9C: nss_parse_service_list\n&gt; (nsswitch.c:622)\n&gt; ==6471==    by 0x411D216: __nss_database_lookup (nsswitch.c:164)\n&gt; ==6471==    by 0x459BEAB: ???\n&gt; ==6471==    by 0x459C1EC: ???\n&gt; ==6471==    by 0x411D864: __nss_setent (getnssent_r.c:84)\n&gt; ==6471==    by 0x40D304F: setpwent (getXXent_r.c:127)\n&gt; ==6471==    by 0x8048469: main (in /root/workspace/cdk-examples/MMC-0.64/a.out)\n&gt; ==6471== \n&gt; ==6471== LEAK SUMMARY:\n&gt; ==6471==    definitely lost: 40 bytes in 1 blocks\n&gt; ==6471==    indirectly lost: 120 bytes in 10 blocks\n&gt; ==6471==      possibly lost: 0 bytes in 0 blocks\n&gt; ==6471==    still reachable: 0 bytes in 0 blocks\n&gt; ==6471==         suppressed: 0 bytes in 0 blocks\n</code></pre>\n\n<p>should I worry about it?\nhow can I remove this problem?</p>\n\n<p><strong>Second question:</strong>\nDo I need to free the password entry as:</p>\n\n<pre><code>main()\n{\n    struct passwd *ent=NULL;\n    setpwent();\n        while ((ent = getpwent()) != NULL) {\n            free(ent);\n        }\n        endpwent();\n}\n</code></pre>\n\n<p>thank you for helping me.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 6463130,
+   "parent_id": 6463053,
+   "author_user_id": 14860,
+   "author_display_name": "paxdiablo",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/6463130",
+   "score": 3,
+   "created_utc": "2011-06-24T03:51:29Z",
+   "last_edit_utc": "2011-06-24T04:21:34Z",
+   "last_activity_utc": "2011-06-24T04:21:34Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>For the first question. I don't think you need to call <code>setpwent</code> anyway. It's the first call to <code>getpwent</code> (after process start or after <code>endpwent</code>) which goes back to the start.</p>\n\n<p>You only need <code>setpwent</code> if you want to rewind <em>after</em> calling <code>getpwent</code> but without calling <code>endpwent</code>.</p>\n\n<p>A single <code>set</code> is probably faster than an <code>end/get</code> pair, especially if, as I suspect, the whole (or a sizable proportion of the) file may be cached in memory <sup>(a)</sup>.</p>\n\n<hr>\n\n<p>For the second question, no, you don't free it. See <a href=\"http://www.kernel.org/doc/man-pages/online/pages/man3/getpwent.3.html\" rel=\"nofollow\">here</a>. It will most likely use a static buffer (for single-threading) or thread-local storage (for multi-threading).</p>\n\n<p>In both cases, it's the calls themselves that manage the buffer, not your code <sup>(a)</sup>.</p>\n\n<hr>\n\n<p><sup>(a)</sup> Interestingly, the values of <code>ent</code> passed back are different on each iteration which certainly <em>looks</em> like separate allocations.</p>\n\n<p>However, since the addresses are only 32 bytes apart and the size of a <code>struct pwd</code> is 32 bytes, that leaves no room for intervening <code>malloc</code> housekeeping information.</p>\n\n<p>So, either the housekeeping information is not inline (unlikely) or you're actually working with an array of structures rather than individual allocations.</p>\n\n<p>The following program shows this in action:</p>\n\n<pre><code>#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;pwd.h&gt;\n\nint main (void) {\n    struct passwd *ent = NULL;\n    printf (\"ent struct is %d bytes\\n\", sizeof(*ent));\n    while ((ent = getpwent()) != NULL) {\n        printf (\"pointer is %p, user is %s\\n\", ent, ent-&gt;pw_name);\n        // free (ent);\n    }\n    endpwent();\n    return 0;\n}\n</code></pre>\n\n<p>It outputs:</p>\n\n<pre><code>ent struct is 32 bytes\npointer is 0x4708d0, user is alan\npointer is 0x4708f0, user is bill\npointer is 0x470910, user is carl\npointer is 0x470930, user is dawn\npointer is 0x470950, user is ella\npointer is 0x470970, user is fran\n</code></pre>\n\n<p>which is what leads me to the conclusions above. In any case, the instant I uncomment that <code>free</code> line in my code, I get a core dump, giving more support to my theory.</p>\n\n<p>Now I suppose I <em>could</em> have just gone and had a look at the <code>getpwent</code> source code but I love a good puzzle :-)</p>\n"
+  }
+ ]
+}

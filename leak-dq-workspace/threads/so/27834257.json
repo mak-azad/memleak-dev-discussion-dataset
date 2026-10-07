@@ -1,0 +1,52 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 27834257,
+ "url": "https://stackoverflow.com/questions/27834257/memory-leak-when-using-garbage-collection-with-glib",
+ "title": "Memory leak when using garbage collection with glib",
+ "tags": [
+  "c",
+  "memory-leaks",
+  "garbage-collection",
+  "glib",
+  "boehm-gc"
+ ],
+ "score": 5,
+ "view_count": 674,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 46540503,
+ "created_utc": "2015-01-08T06:33:09Z",
+ "last_activity_utc": "2017-10-03T08:42:07Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 1602188,
+ "author_display_name": "marshallm",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/27834257/memory-leak-when-using-garbage-collection-with-glib",
+ "body_html": "<p>I'm trying to integrate the Boehm garbage collector with GLib in Linux, but in one case I have found that it is not freeing the memory: when I call g_strsplit many times, it will run out of memory and segfault. The README for the garbage collector warned that it may have trouble finding pointers inside of dynamic libraries, and may require the use of GC_add_roots.</p>\n\n<p>To test this, I copied all the relevant code from GLib into my source file, not linking against libglib-2.0.so at all. This eliminated the segfaults, which tells me this is indeed the problem. However, there is no documentation on how to use GC_add_roots to resolve this. Can someone help me?</p>\n\n<p>Here is the code that causes the memory leak:</p>\n\n<pre><code>#include &lt;glib.h&gt;\n#include &lt;gc.h&gt;\n\nvoid no_free(void *mem) {}\n\nint main() {\n    g_mem_gc_friendly = TRUE;\n\n    GMemVTable memvtable = {\n        .malloc      = GC_malloc,\n        .realloc     = GC_realloc,\n        .free        = no_free,\n        .calloc      = NULL,\n        .try_malloc  = NULL,\n        .try_realloc = NULL\n    };\n\n    g_mem_set_vtable(&amp;memvtable);\n\n    for (int i = 0; i &lt; 10000; i++) {\n        char **argv = g_strsplit(\"blah\", \" \", 0);\n        argv[0][0] = 'a'; // avoid unused variable warning\n    }\n\n    return 0;\n}\n</code></pre>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 46540503,
+   "parent_id": 27834257,
+   "author_user_id": 2931197,
+   "author_display_name": "Philip Withnall",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/46540503",
+   "score": 1,
+   "created_utc": "2017-10-03T08:42:07Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2017-10-03T08:42:07Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Since GLib 2.46, <a href=\"https://developer.gnome.org/glib/stable/glib-Memory-Allocation.html#g-mem-set-vtable\" rel=\"nofollow noreferrer\"><code>g_mem_set_vtable()</code> does nothing</a>, so there is no way to get this working at the GLib level using a modern GLib. GLib now unconditionally uses the allocator from libc when you call <code>g_malloc()</code>, <code>g_new()</code>, etc. It does still use its own <code>GSLice</code> allocator when you explicitly use <code>g_slice_*()</code>, but that requests its block allocations from the libc allocator too.</p>\n\n<p>I suggest you try to integrate the garbage collector at the libc level instead. There’s <a href=\"http://www.linuxjournal.com/article/6679?page=0,1\" rel=\"nofollow noreferrer\">an old article</a> about implementing that using <a href=\"https://www.gnu.org/software/libc/manual/html_node/Hooks-for-Malloc.html\" rel=\"nofollow noreferrer\">glibc’s malloc hooks</a>, which are essentially the same as <code>GMemVTable</code>, but at the glibc level instead of the GLib level. I haven’t tried this, so I don’t know how well it works in practice.</p>\n"
+  }
+ ]
+}

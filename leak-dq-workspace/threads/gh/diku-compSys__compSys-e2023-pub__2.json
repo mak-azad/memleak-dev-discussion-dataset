@@ -1,0 +1,41 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/diku-compSys/compSys-e2023-pub/issues/2",
+ "passes": [
+  "main"
+ ],
+ "title": "Calc reference solution: Bad free() practice?",
+ "author_login": "CausesHavok",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:36Z",
+ "final_url": "https://github.com/diku-compSys/compSys-e2023-pub/issues/2",
+ "repo": "diku-compSys/compSys-e2023-pub",
+ "repo_language": "C",
+ "number": 2,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-10-19T10:47:28Z",
+ "updated_at": "2023-10-19T10:47:28Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "590",
+  "459",
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "CausesHavok",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-10-19T10:47:28Z",
+   "updated_utc": "2023-10-19T10:47:28Z",
+   "permalink": "https://github.com/diku-compSys/compSys-e2023-pub/issues/2",
+   "body_markdown": "I was working on an old exercise \"calc\" (from \"c dynamic memory\"). \r\nThe reference solution has a single line to free the stack. However, we could end up with orphaned stack nodes and no reference to them. Causing memory leaks, right? I can understand that the actual implementation of calc might never get into this situation, but is it not better to (like in list.c) run through your stack and making sure that everything is freed? From the point of view of the stack implementer we dont know that the stack WILL be empty before we are asked to \"drop\" it.\r\n\r\nhttps://github.com/diku-compSys/compSys-e2023-pub/blob/989d28437ee62c823baf64801e1b830f16df1dab/lectures/23-09-20_c_dynamic_memory/calc_solution/stack.c#L21C1-L23C2"
+  }
+ ]
+}

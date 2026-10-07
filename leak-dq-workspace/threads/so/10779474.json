@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 10779474,
+ "url": "https://stackoverflow.com/questions/10779474/surely-invalid-pointer-ranges",
+ "title": "surely invalid pointer ranges",
+ "tags": [
+  "c++",
+  "pointers",
+  "segmentation-fault"
+ ],
+ "score": 4,
+ "view_count": 244,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2012-05-28T04:47:55Z",
+ "last_activity_utc": "2012-05-28T05:46:40Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 391753,
+ "author_display_name": "Abhishek Anand",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/10779474/surely-invalid-pointer-ranges",
+ "body_html": "<p>I have seen some posts like <a href=\"http://boost.2283326.n4.nabble.com/shared-ptr-segfaults-on-64bit-AMD-td2560441.html\" rel=\"nofollow\">http://boost.2283326.n4.nabble.com/shared-ptr-segfaults-on-64bit-AMD-td2560441.html</a> where experts can look at a pointer address and immediately say that it is invalid. I guess these pointers lie in some known reserved locations of the processes' virtual memory. the example in the above link was 0x90. </p>\n\n<p><strong>Does someone here know about the surely invalid pointer ranges for gcc/g++ on linux?</strong><br>\n<strong>How about <code>0xd8</code>?</strong></p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 10779860,
+   "parent_id": 10779474,
+   "author_user_id": null,
+   "author_display_name": "user149341",
+   "author_id_missing": true,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/10779860",
+   "score": 3,
+   "created_utc": "2012-05-28T05:46:40Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2012-05-28T05:46:40Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>While you should not write code which depends on this, pointers under 0x1000 are almost always invalid. Familiarity with the default memory map of your operating system will explain why, as well as give you some more insight into what \"normal\" pointers look like.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 14019161,
+   "parent_id": 10779474,
+   "parent_type": "question",
+   "author_user_id": 440558,
+   "author_display_name": "Some programmer dude",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/10779474/#comment14019161_10779474",
+   "score": 0,
+   "created_utc": "2012-05-28T05:48:42Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "In general, it&#39;s very hard to say if a pointer is invalid or not, as e.g. <code>0xd8</code> is a valid address on some systems. The only invalid address you can be sure of is <code>NULL</code> (i.e. zero)."
+  }
+ ]
+}

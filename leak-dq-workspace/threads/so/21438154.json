@@ -1,0 +1,50 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 21438154,
+ "url": "https://stackoverflow.com/questions/21438154/what-does-fasttop-mean",
+ "title": "What does \"fasttop\" mean?",
+ "tags": [
+  "c",
+  "perl",
+  "glibc"
+ ],
+ "score": 13,
+ "view_count": 5119,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 21440147,
+ "created_utc": "2014-01-29T17:21:21Z",
+ "last_activity_utc": "2014-01-29T18:58:33Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 247696,
+ "author_display_name": "Flimm",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/21438154/what-does-fasttop-mean",
+ "body_html": "<p>I'm seeing this error:</p>\n\n<pre><code>*** glibc detected *** perl: double free or corruption (fasttop): 0x0000000003c1daa0 ***\n</code></pre>\n\n<p>The error is followed by a backtrace.</p>\n\n<p>I know what glibc is, I know what Perl is, I know what double-freeing is, but what does <strong>fasttop</strong> mean?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 21440147,
+   "parent_id": 21438154,
+   "author_user_id": 1468366,
+   "author_display_name": "MvG",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/21440147",
+   "score": 9,
+   "created_utc": "2014-01-29T18:58:33Z",
+   "last_edit_utc": "2017-05-23T12:10:03Z",
+   "last_activity_utc": "2014-01-29T18:58:33Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>Using <a href=\"https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=be472b2ba3885b194f55c29474c4ad5d6a61b729;hb=eefa3be8e4c2c721a9f277d8ea2e11180231829f#l3817\" rel=\"nofollow noreferrer\">the source</a>:</p>\n\n<blockquote>\n  <p>Another simple check: make sure the top of the bin is not the record we are going to add (i.e., double free).</p>\n</blockquote>\n\n<p>So this is one of several locations where double free situations are detected. It affects so-called <em>fastbin</em> chunks, which in turn depends on the size of the chunk you freed. In any case, the core of the statement is the “double free”, and the exact way this double free was diagnosed isn't of much importance to your application.</p>\n\n<p>Also see the question <a href=\"https://stackoverflow.com/q/2197547/1468366\">*** glibc detected *** double free or corruption (fasttop):</a> Answers there suggest using valgrind to locate the problem, which sounds reasonable, particularly if you can reproduce the issue reasonably well.</p>\n"
+  }
+ ]
+}

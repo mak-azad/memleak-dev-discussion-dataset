@@ -1,0 +1,75 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/mitsuba-renderer/mitsuba2/issues/294",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "[🐛 bug report] GPU memory leak issue",
+ "author_login": "diolatzis",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:22:23Z",
+ "final_url": "https://github.com/mitsuba-renderer/mitsuba2/issues/294",
+ "repo": "mitsuba-renderer/mitsuba2",
+ "repo_language": "C++",
+ "number": 294,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2020-10-16T12:12:35Z",
+ "updated_at": "2021-08-16T09:07:54Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 3,
+ "query_buckets": [
+  "GPU"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "diolatzis",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-10-16T12:12:35Z",
+   "updated_utc": "2021-08-16T09:07:54Z",
+   "permalink": "https://github.com/mitsuba-renderer/mitsuba2/issues/294",
+   "body_markdown": "Hey thanks for the great work on Mitsuba 2 so far!\r\n\r\n## Summary\r\n\r\nI have an issue of GPU memory leak when rendering using the \"gpu_rgb\" variant of mitsuba 2. \r\n\r\n## System configuration\r\n\r\nWindows 10\r\nVisual Studio 2019\r\nPython 3.7.9\r\ngpu_rgb variant \r\n\r\n## Description\r\n\r\nWhen rendering a scene (the cbox from the documentation) through python in a loop for dataset generation the GPU used memory is slowly increasing. Am I missing something or is there some GPU memory leak?\r\n\r\n## Steps to reproduce\r\n\r\nTo test this I changed the render_scene.py example script to render in a loop and the GPU memory usage is slowly increasing. \r\n\r\n```import os\r\nimport numpy as np\r\nimport mitsuba\r\n\r\n# Set the desired mitsuba variant\r\nmitsuba.set_variant('gpu_rgb')\r\n\r\nfrom mitsuba.core import Bitmap, Struct, Thread\r\nfrom mitsuba.core.xml import load_file\r\n\r\n# Absolute or relative path to the XML file\r\nfilename = 'cbox.xml'\r\n\r\n# Add the scene directory to the FileResolver's search path\r\nThread.thread().file_resolver().append(os.path.dirname(filename))\r\n\r\n# Load the actual scene\r\nscene = load_file(filename)\r\n\r\nwhile True:\r\n    # Call the scene's integrator to render the loaded scene\r\n    scene.integrator().render(scene, scene.sensors()[0])\r\n\r\n# After rendering, the rendered data is stored in the film\r\nfilm = scene.sensors()[0].film()\r\n\r\n# Write out rendering as high dynamic range OpenEXR file\r\nfilm.set_destination_file('output.exr')\r\nfilm.develop()\r\n\r\n# Write out a tonemapped JPG of the same rendering\r\nbmp = film.bitmap(raw=True)\r\nbmp.convert(Bitmap.PixelFormat.RGB, Struct.Type.UInt8, srgb_gamma=True).write('output.jpg')\r\n\r\n# Get linear pixel values as a numpy array for further processing\r\nbmp_linear_rgb = bmp.convert(Bitmap.PixelFormat.RGB, Struct.Type.Float32, srgb_gamma=False)\r\nimage_np = np.array(bmp_linear_rgb)\r\nprint(image_np.shape)\r\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 710016725,
+   "author_login": "wjakob",
+   "author_association": "MEMBER",
+   "role": "M",
+   "role_name": "maintainer",
+   "created_utc": "2020-10-16T12:31:47Z",
+   "updated_utc": "2020-10-16T12:31:47Z",
+   "permalink": "https://github.com/mitsuba-renderer/mitsuba2/issues/294#issuecomment-710016725",
+   "body_markdown": "Hi Stavros -- does the leak still happen when you add a `enoki.cuda_malloc_trim()` call to the loop?"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 710025677,
+   "author_login": "diolatzis",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2020-10-16T12:50:58Z",
+   "updated_utc": "2020-10-16T12:50:58Z",
+   "permalink": "https://github.com/mitsuba-renderer/mitsuba2/issues/294#issuecomment-710025677",
+   "body_markdown": "Hi Wenzel, adding this make the memory usage fluctuate much more but on average it is still increasing (albeit more slowly)."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 899350910,
+   "author_login": "f1shel",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2021-08-16T09:07:54Z",
+   "updated_utc": "2021-08-16T09:07:54Z",
+   "permalink": "https://github.com/mitsuba-renderer/mitsuba2/issues/294#issuecomment-899350910",
+   "body_markdown": "Same...I use `gpu_rgb` too. Following is my rendering loop:\r\n```\r\nfor asset in asset_list:\r\n    for envmap in envmap_list:\r\n        for envrot in range(0,360,10):\r\n            ek.cuda_malloc_trim()\r\n            scene = load_string(build_scene(...))\r\n            scene.integrator().render(scene, scene.sensors()[0])\r\n            film = scene.sensors()[0].film()\r\n            film.set_destination_file(...)\r\n            film.develop()\r\n```\r\nIt gives `cuda_check(): runtime API error = 0002 \"cudaErrorMemoryAllocation\" in ../ext/enoki/src/cuda/horiz.cu:59.`"
+  }
+ ]
+}

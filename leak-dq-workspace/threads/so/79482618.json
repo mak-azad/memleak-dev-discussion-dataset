@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 79482618,
+ "url": "https://stackoverflow.com/questions/79482618/valgrind-reports-error-in-error-summary-but-no-error-shown",
+ "title": "valgrind reports error in error summary, but no error shown",
+ "tags": [
+  "c",
+  "valgrind"
+ ],
+ "score": 4,
+ "view_count": 144,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 79635225,
+ "created_utc": "2025-03-04T03:39:25Z",
+ "last_activity_utc": "2025-05-23T09:23:31Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 6110631,
+ "author_display_name": "InterLinked",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/79482618/valgrind-reports-error-in-error-summary-but-no-error-shown",
+ "body_html": "<p>I have some CI tests that run some tests under valgrind, and fail if there are any errors (as reported in valgrind's <code>ERROR SUMMARY</code>).</p>\n<p>On certain Linux distros, I get that there was <code>1 error from 1 context</code>, but no error is shown anywhere. Further puzzling is that it says <code>suppressed: 3 from 3</code>, and I can't find in the documentation how that relates to the errors (how can 3 errors have been suppressed if there was only 1? Or does this mean 3 errors were suppressed, and 1 was not? In which case, what's the error that wasn't suppressed?).</p>\n<p>I've been using valgrind for many years, and I've never seen this before. Normally, valgrind is very verbose and will show any kind of error (with a few flags), but it doesn't seem to be in this case.</p>\n<p>Comparing with other builds that don't cause this, this seems like it might be specific to <em>newer</em> versions of valgrind, but I'm not positive about that.</p>\n<p>I'm currently calling valgrind as <code>valgrind --show-error-list=yes --keep-debuginfo=yes --leak-check=full --track-fds=yes --track-origins=yes --show-leak-kinds=all --suppressions=../valgrind.supp --log-file=LOGFILE --tool=memcheck</code></p>\n<p>I also tried adding the <code>-v</code> option, but that didn't add anything useful to the output, just a bunch of noise.</p>\n<p>Is there some way I can see what the 1 error is that it's warning about?</p>\n<pre><code>==2393== Memcheck, a memory error detector\n==2393== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.\n==2393== Using Valgrind-3.24.0 and LibVEX; rerun with -h for copyright info\n==2393== Command: REDACTED\n==2393== Parent PID: 2390\n==2393== \n==2393== \n==2393== FILE DESCRIPTORS: 3 open (2 std) at exit.\n==2393== Open file descriptor 4:\n==2393==    &lt;inherited from parent&gt;\n==2393== \n==2393== \n==2393== HEAP SUMMARY:\n==2393==     in use at exit: 483,343 bytes in 547 blocks\n==2393==   total heap usage: 249,108 allocs, 248,561 frees, 157,975,718 bytes allocated\n==2393== \n==2393== LEAK SUMMARY:\n==2393==    definitely lost: 0 bytes in 0 blocks\n==2393==    indirectly lost: 0 bytes in 0 blocks\n==2393==      possibly lost: 0 bytes in 0 blocks\n==2393==    still reachable: 0 bytes in 0 blocks\n==2393==         suppressed: 481,327 bytes in 526 blocks\n==2393== \n==2393== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 3 from 3)\n--2393-- \n--2393-- used_suppression:      3 BACKTRACE_libbfd_bfd_elf_find_nearest_line ../valgrind.supp:138 suppressed: 408,073 bytes in 5 blocks\n--2393-- used_suppression:     35 DLOPEN ../valgrind.supp:49 suppressed: 23,772 bytes in 35 blocks\n--2393-- used_suppression:    139 DLOPEN ../valgrind.supp:781 suppressed: 24,016 bytes in 152 blocks\n--2393-- used_suppression:    242 GMIME_INIT ../valgrind.supp:617 suppressed: 16,984 bytes in 242 blocks\n--2393-- used_suppression:      6 GOBJECT_init ../valgrind.supp:397 suppressed: 5,120 bytes in 6 blocks\n--2393-- used_suppression:      5 DLOPEN ../valgrind.supp:39 suppressed: 1,462 bytes in 19 blocks\n--2393-- used_suppression:      3 dtv-addr-init /usr/libexec/valgrind/default.supp:1575 suppressed: 308 bytes in 3 blocks\n--2393-- used_suppression:     29 GOBJECT_init ../valgrind.supp:357 suppressed: 616 bytes in 29 blocks\n--2393-- used_suppression:      2 DLCLOSE ../valgrind.supp:833 suppressed: 224 bytes in 6 blocks\n--2393-- used_suppression:     23 DLOPEN ../valgrind.supp:755 suppressed: 504 bytes in 23 blocks\n--2393-- used_suppression:      1 GLIB_GOBJECT ../valgrind.supp:287 suppressed: 56 bytes in 1 blocks\n--2393-- used_suppression:      4 GLIB ../valgrind.supp:277 suppressed: 152 bytes in 4 blocks\n--2393-- used_suppression:      1 GOBJECT ../valgrind.supp:200 suppressed: 40 bytes in 1 blocks\n==2393== \n==2393== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 3 from 3)\n</code></pre>\n",
+ "passes": [
+  "offcwe"
+ ],
+ "data_source": "so_offcwe (refetch with full paging)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 140176819,
+   "parent_id": 79482618,
+   "parent_type": "question",
+   "author_user_id": 2544218,
+   "author_display_name": "Speed8ump",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/79482618/#comment140176819_79482618",
+   "score": 0,
+   "created_utc": "2025-03-04T16:23:53Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Pure guess, but it seems likely valgrind is considering the unclosed file (descriptor 4) as an error."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 140178205,
+   "parent_id": 79482618,
+   "parent_type": "question",
+   "author_user_id": 6110631,
+   "author_display_name": "InterLinked",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/79482618/#comment140178205_79482618",
+   "score": 0,
+   "created_utc": "2025-03-04T23:09:54Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "@Speed8ump Yup, that was right! Guess it was so obvious I didn&#39;t think that could be it. It turned out that it wasn&#39;t even something the program did under valgrind, but a file descriptor that was dup2&#39;d prior to launch by the test program itself. If you want to make that an answer, I will accept"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 79635225,
+   "parent_id": 79482618,
+   "author_user_id": 6594576,
+   "author_display_name": "Paul Floyd",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/79635225",
+   "score": 1,
+   "created_utc": "2025-05-23T09:23:31Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2025-05-23T09:23:31Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>Valgrind versions 3.23 and earlier didn't treat file descriptor errors like other errors.</p>\n<p>Starting with Valgrind 3.24 file descriptor errors have been promoted to full class errors. That means that</p>\n<ul>\n<li><p>the suppression mechanism works with them</p>\n</li>\n<li><p>you can generate suppressions for them (--gen-suppressions=yes|all)</p>\n</li>\n<li><p>they get counted in the error summary</p>\n</li>\n</ul>\n<p>Valgrind 3.24 and 3.25 have had continued development of the fdleak feature. There is now the <code>--modify-fds</code> option. This can be used to make Valgrind change its behaviour when opening and closing file descriptors. That can help detect errors in code that unwittingly reads/writes the wrong file beacuse a file desciptor has been recycled thorugh a close and an open.</p>\n<p>Kudos to Sasha and Mark @RedHat for the work they've done on this feature.</p>\n"
+  }
+ ]
+}

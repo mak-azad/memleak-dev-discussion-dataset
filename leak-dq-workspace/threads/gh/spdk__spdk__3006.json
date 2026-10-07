@@ -1,0 +1,42 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/spdk/spdk/issues/3006",
+ "passes": [
+  "main"
+ ],
+ "title": "[lvol] questionable lvol_free() in lvol_close_blob_cb() error path",
+ "author_login": "mgerdts",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:20:08Z",
+ "final_url": "https://github.com/spdk/spdk/issues/3006",
+ "repo": "spdk/spdk",
+ "repo_language": "C",
+ "number": 3006,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2023-04-28T21:45:53Z",
+ "updated_at": "2023-05-02T15:03:35Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "Medium"
+ ],
+ "comments_reported": 0,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "mgerdts",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2023-04-28T21:45:53Z",
+   "updated_utc": "2023-05-02T15:03:35Z",
+   "permalink": "https://github.com/spdk/spdk/issues/3006",
+   "body_markdown": "# Sighting report\r\n\r\nWhile fixing #2998, I noticed a suspicious `lvol_free()` when `lvol_close_blob_cb()` is called with an error.   At this point, `lvol` is still in `lvol->lvol_store->lvols` (or one of the other tailqs declared nearby) and may be referenced by an `spdk_lvs_degraded_lvol_set`.  It is not safe to just free it.\r\n\r\n```c\r\nstatic void\r\nlvol_close_blob_cb(void *cb_arg, int lvolerrno)\r\n{\r\n        struct spdk_lvol_req *req = cb_arg;\r\n        struct spdk_lvol *lvol = req->lvol;\r\n\r\n        if (lvolerrno < 0) {\r\n                SPDK_ERRLOG(\"Could not close blob on lvol\\n\");\r\n                lvol_free(lvol);\r\n                goto end;\r\n        }\r\n ...\r\nend:\r\n        req->cb_fn(req->cb_arg, lvolerrno);\r\n        free(req);\r\n}\r\n```\r\n\r\nWhen fixing this, we should figure out what to do about `lvol->blob` (the fix for #2998 may be setting this to NULL).  In the error path, we have no information as to whether `blob->open_ref` is still incremented on behalf of this lvol.  It seem `spdk_blob_close()` needs to communicate this better.\r\n\r\n## Expected Behavior\r\n\r\nMemory with references that may be used must not be freed.\r\n\r\n## Current Behavior\r\n\r\nThe error path sets us up for a use after free bug later.\r\n\r\n## Context (Environment including OS version, SPDK version, etc.)\r\n\r\nObserved with spdk master at commit ca0c4dcde8dda4144b8b0fd30badd1b4ffae5bf3."
+  }
+ ]
+}

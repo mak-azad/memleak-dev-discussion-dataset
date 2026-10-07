@@ -1,0 +1,39 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/cyrusimap/cyrus-sasl/issues/900",
+ "passes": [
+  "main"
+ ],
+ "title": "Memory leak in sasl_server_new() and sasl_client_new() on error paths (missing destroy_conn call)",
+ "author_login": "nguyentruong190",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:16:57Z",
+ "final_url": "https://github.com/cyrusimap/cyrus-sasl/issues/900",
+ "repo": "cyrusimap/cyrus-sasl",
+ "repo_language": "C",
+ "number": 900,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-10-04T10:30:31Z",
+ "updated_at": "2026-10-04T10:30:31Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 0,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "nguyentruong190",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-10-04T10:30:31Z",
+   "updated_utc": "2026-10-04T10:30:31Z",
+   "permalink": "https://github.com/cyrusimap/cyrus-sasl/issues/900",
+   "body_markdown": "### Summary\n\nIn `sasl_server_new()` (`lib/server.c`) and `sasl_client_new()` (`lib/client.c`), the connection context (`*pconn`) and its connection parameters (`sparams` / `cparams`) are allocated up front. However, when an error occurs during initialization, the cleanup paths bypass `(*pconn)->destroy_conn(*pconn)`, leading to memory leaks on every failed call.\n\n### Root Cause Analysis\n\n#### 1. Server side (`lib/server.c:1047-1188`)\nIn `sasl_server_new()`:\n```c\n1042   *pconn = sasl_ALLOC(sizeof(sasl_server_conn_t));\n...\n1047   serverconn->sparams = sasl_ALLOC(sizeof(sasl_server_params_t));   /* 232 bytes */\n...\n1053   (*pconn)->destroy_conn = &server_dispose;\n1054   result = _sasl_conn_init(*pconn, service, flags, SASL_CONN_SERVER, ...);\n1059   if (result != SASL_OK)\n           goto done_error;\n```\nWhen an error occurs (such as invalid arguments, `_sasl_alloc_utils` failure, or `_sasl_conn_init` failure), control jumps to `done_error`:\n```c\n1182  done_error:\n1183    _sasl_conn_dispose(*pconn);\n1184    sasl_FREE(*pconn);\n1185    *pconn = NULL;\n1186    return result;\n```\n`_sasl_conn_dispose()` (`lib/common.c:922`) only cleans up the base connection buffers (`service`, `serverFQDN`, `error_buf`, etc.). It does **not** free `sparams`. The parameters block is only freed in `server_dispose()` (`lib/server.c:51`):\n```c\nstatic void server_dispose(sasl_conn_t *pconn)\n{\n    ...\n    if (s_conn->sparams) sasl_FREE(s_conn->sparams);\n    _sasl_conn_dispose(pconn);\n}\n```\nBecause `done_error` directly calls `_sasl_conn_dispose()` instead of `(*pconn)->destroy_conn()`, `sparams` is leaked on every failure after line 1047 (exactly 232 bytes per failed call).\n\n#### 2. Client side (`lib/client.c:446-549`)\nIn `sasl_client_new()`:\n- **Premature return without cleanup (line 455):**\n  ```c\n  result = _sasl_conn_init(*pconn, service, flags, SASL_CONN_CLIENT, ...);\n  if (result != SASL_OK) RETURN_VAL(*pconn, result);\n  ```\n  If `_sasl_conn_init()` returns an error, `RETURN_VAL` returns immediately without freeing `*pconn` or `conn->cparams`.\n- **Error tail skips `client_dispose` (lines 542-549):**\n  ```c\n  failed_client_new:\n    _sasl_conn_dispose(*pconn);\n    sasl_FREE(*pconn);\n    *pconn = NULL;\n    return result;\n  ```\n  `cparams` (and any per-connection `mech_list` allocated at line 493) is only freed inside `client_dispose()` (lines 363-382). Skipping `destroy_conn` leaks `cparams` and `conn->mech_list`.\n\n---\n\n### Minimal Reproduction (Server side)\n\nCalling `sasl_server_new` with a colon-formatted peer address (expecting semicolon format `host;port`):\n```c\nsasl_conn_t *conn = NULL;\nint rc = sasl_server_new(\"imap\", \"localhost\", NULL, NULL, \"192.0.2.2:52341\", NULL, 0, &conn);\n/* rc = -7 (SASL_BADPARAM), conn = NULL */\n```\n\nAddressSanitizer output:\n```\nDirect leak of 232 byte(s) in 1 object(s) allocated from:\n    #1 sasl_server_new lib/server.c:1047:23\nSUMMARY: AddressSanitizer: 232 byte(s) leaked in 1 allocation(s).\n```\n\nRunning $N$ failing calls leaks exactly $232 \\times N$ bytes.\n\n---\n\n### Proposed Fix\n\n#### `lib/server.c`:\n```diff\n--- a/lib/server.c\n+++ b/lib/server.c\n@@ -1182,7 +1182,10 @@ int sasl_server_new(const char *service,\n  done_error:\n-  _sasl_conn_dispose(*pconn);\n+  if ((*pconn)->destroy_conn)\n+      (*pconn)->destroy_conn(*pconn);\n+  else\n+      _sasl_conn_dispose(*pconn);\n   sasl_FREE(*pconn);\n   *pconn = NULL;\n   return result;\n```\n\n#### `lib/client.c`:\n```diff\n--- a/lib/client.c\n+++ b/lib/client.c\n@@ -455,1 +455,1 @@ int sasl_client_new(const char *service,\n-  if (result != SASL_OK) RETURN_VAL(*pconn, result);\n+  if (result != SASL_OK) goto failed_client_new;\n@@ -543,7 +543,10 @@ int sasl_client_new(const char *service,\n  failed_client_new:\n-  _sasl_conn_dispose(*pconn);\n+  if ((*pconn)->destroy_conn)\n+      (*pconn)->destroy_conn(*pconn);\n+  else\n+      _sasl_conn_dispose(*pconn);\n   sasl_FREE(*pconn);\n   *pconn = NULL;\n   return result;\n```\n\n*(Note: `server_dispose` and `client_dispose` both call `_sasl_conn_dispose()` internally, so using `else` ensures clean disposal without double-free).*\n\nI have verified the fix locally with ASan and existing regression tests. If this looks good to maintainers, I can submit a PR with this change.\n"
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/zowe/zowe-common-c/issues/718",
+ "passes": [
+  "main"
+ ],
+ "title": "TRACK_MEMORY in alloc.c cannot be switched on at run time, and stops recording silently",
+ "author_login": "JoeNemo",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:18:46Z",
+ "final_url": "https://github.com/zowe/zowe-common-c/issues/718",
+ "repo": "zowe/zowe-common-c",
+ "repo_language": "C",
+ "number": 718,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-22T20:01:56Z",
+ "updated_at": "2026-09-23T11:33:36Z",
+ "closed_at": null,
+ "labels": [
+  "bug",
+  "backlog",
+  "severity-low",
+  "priority-medium"
+ ],
+ "comments_reported": 1,
+ "query_buckets": [
+  "401"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "JoeNemo",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-22T20:01:56Z",
+   "updated_utc": "2026-09-23T11:33:36Z",
+   "permalink": "https://github.com/zowe/zowe-common-c/issues/718",
+   "body_markdown": "## Summary\n\nThe `TRACK_MEMORY` facility in `c/alloc.c` cannot be used for the job it exists\nto do. It is meant to let us analyse a leak on the binary a customer already\nhas, which means it has to be switchable at run time. Today it is switchable\nonly by rebuilding, the run-time dial that remains is unreachable, and even\nwhen it is compiled in it stops recording early and silently.\n\nThis came up while reviewing #712. The CSI leak fixes in that PR are a separate\nmatter; this issue is about the facility itself.\n\n## Why it matters\n\nMemory management is the layer everything else in this repo sits on. We should\nbe able to answer \"where is this leaking\" from a running system, without\nshipping a rebuilt module first. That is the only reason to have a tracker\nrather than just reading the code.\n\n## Blocking faults\n\nThese two make the tracker unusable regardless of how it is switched on.\n\n**1. It goes blind after 25000 cumulative allocations, not 25000 live ones.**\n`trackAllocation` returns silently once `allocationsTracked` reaches\n`ALLOCATIONS_TO_TRACK`. `trackFree` stamps the slot with `(char*)(-1)` but never\ndecrements the counter and never reuses the slot, so the table fills with\ncorpses. A server that allocates per request exhausts it in minutes, after\nwhich nothing is recorded and nothing is reported about having stopped.\n\n**2. No serialization.** `allocationsTracked++` and the three array stores are\nunprotected. ZSS dispatches services into subtasks and ZIS is cross-memory.\nConcurrent use yields a wrong ledger, not merely a partial one.\n\n## Defects\n\n**3. The wrong-size-free detector only fires for two magic lengths.** In\n`trackFree`:\n\n```c\nif ((length != allocationLengths[i]) &&\n    ((272 == length) || (296 == length)))\n```\n\nThe comparison of the freed length against the recorded length is exactly the\ncheck that catches `safeFree(p, sizeof(pointer))`, which is #711 and part of\n#712. It is gated behind two constants from somebody's one-off investigation,\nwith the crash line commented out below it. Generalising the condition is a\nfew lines in a debug path and would have caught both of those years ago. This\nis the highest value item here.\n\n**4. `showOutstanding()` has no prototype in any header.** `c/stcbase.c:137`\ncalls it bare. `jwt/tests/jwt-test.c:825` carries a hand-written\n`int showOutstanding(void);` inside a function body, with a comment explaining\nthe `-DTRACK_MEMORY` requirement. The workaround has been copied rather than\nthe header fixed.\n\n**5. `%x` used to print pointers**, twice in `showOutstanding`. Truncates on\n64-bit and is undefined behaviour. `%p` is correct.\n\n**6. Guard mismatch between definitions and call sites.** The definitions are\nbehind `#if ((!METTLE || WRITSTAT) && TRACK_MEMORY)` while the call sites are\nbehind `#ifdef TRACK_MEMORY`. On a METTLE build without WRITSTAT, which is ZIS,\ndefining `TRACK_MEMORY` compiles the calls and omits the functions.\n\n## Coverage holes\n\n**7. Key-8 storage is invisible.** `safeMalloc31Key8` and `safeFree31Key8`\nmaintain `k8Bytes` but never call `trackAllocation` or `trackFree`.\n\n**8. `allocationNames` stores the caller's pointer, not a copy.** Correct for\nthe string literals that callers normally pass, dangling for anything\nconstructed.\n\n## Dead weight\n\n**9.** The lazy-init loop in `trackAllocation` is redundant. The arrays are\n`static` and therefore already zero, and the loop runs only when the counter is\nzero so it can never re-initialise.\n\n**10.** `trackFree` has no `break` after a match, so it always walks the whole\ntable.\n\n## Verified sound, so nobody re-audits these\n\n`safeMalloc64`, `safeFree64` and the `ByToken` variants all delegate to the\ntracking internals. `safeRealloc` routes through `safeMalloc` and `safeFree`,\nso the ledger stays balanced. `safeFree` is literally `safeFree31`, so there is\nno allocator mismatch in any of the paired calls.\n\n## Proposed direction\n\nRoughly sixty lines in one file, keeping the existing design rather than\nreplacing it:\n\n- reuse slots so capacity tracks live allocations instead of cumulative ones\n- serialize the ledger\n- move the level test ahead of `trackAllocation` and `trackFree` rather than\n  ahead of the `printf`, so a tracking-capable build costs one predictable\n  branch when the level is zero\n- declare `showOutstanding()` and a level setter and getter in `h/alloc.h`\n- generalise the wrong-size-free check from item 3\n\nThat combination lets us ship the facility compiled in and dormant, and turn it\non where the problem is. Item 3 stands alone and could go first.\n\n## Scope\n\nAfter the 3.6 release. This is the allocator that everything depends on, so the\nchange wants a quiet window and a small, reviewable diff rather than a large\none landed near a freeze.\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5794065727,
+   "author_login": "ChongZhou-Broadcom",
+   "author_association": "CONTRIBUTOR",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-09-23T11:33:36Z",
+   "updated_utc": "2026-09-23T11:33:36Z",
+   "permalink": "https://github.com/zowe/zowe-common-c/issues/718#issuecomment-5794065727",
+   "body_markdown": "I noticed that you self-assigned this issue, so I will not fix all of the mentioned problems in my PR.\n\nBut I would like to put here an AI-generated to-do list, hoping it could be helpful to the one who will be working on this in the future.\n\nThe list is based on the whole description of this issue. _(because not all mentioned problems are found in the \"Proposed direction\" section.)_\n\n---\n\n1. trackAllocation/trackFree count cumulative allocations, not live ones — table fills with dead (char*)(-1) slots and goes blind after 25000 total allocs, silently.\n2. No locking around allocationsTracked++ and the three array writes — unsafe under ZSS subtask dispatch / ZIS cross-memory concurrency.\n3. Wrong-size-free detector in trackFree only fires for two hardcoded lengths (272/296) instead of a general length != allocationLengths[i] check — it was said to be the highest-value single fix, and it should be generalized to catch arbitrary incorrect lengths.\n4. showOutstanding() has no header prototype anywhere — called bare in c/stcbase.c:137, and re-declared locally as a workaround in jwt/tests/jwt-test.c:825.\n5. showOutstanding uses %x to print pointers (twice) — truncates on 64-bit, undefined behavior; should be %p.\n6. Guard mismatch: definitions are gated by #if ((!METTLE || WRITSTAT) && TRACK_MEMORY) but call sites by #ifdef TRACK_MEMORY — on METTLE without WRITSTAT (i.e. ZIS), defining TRACK_MEMORY compiles calls to functions that don't exist.\n7. safeMalloc31Key8/safeFree31Key8 never call trackAllocation/trackFree — Key-8 storage is invisible to the tracker.\n8. allocationNames stores the caller's raw pointer instead of copying the string — fine for literals, dangles for constructed strings.\n9. Lazy-init loop in trackAllocation is redundant — arrays are static (already zero) and the loop only runs when the counter is zero, so it can never re-init anything.\n10. trackFree never breaks after finding a match — always walks the entire table.\n"
+  }
+ ]
+}

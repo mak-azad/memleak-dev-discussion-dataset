@@ -1,0 +1,49 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 75603229,
+ "url": "https://stackoverflow.com/questions/75603229/memory-management-with-nested-pointers-in-c-programming",
+ "title": "Memory Management with Nested Pointers in C Programming",
+ "tags": [
+  "c",
+  "pointers"
+ ],
+ "score": -1,
+ "view_count": 28,
+ "answer_count": 1,
+ "is_answered": false,
+ "accepted_answer_id": null,
+ "created_utc": "2023-03-01T11:41:12Z",
+ "last_activity_utc": "2023-03-03T14:44:11Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 20423423,
+ "author_display_name": "bryson",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/75603229/memory-management-with-nested-pointers-in-c-programming",
+ "body_html": "<p>Assuming you have allocated memory for a struct pointer using malloc() and assigned values to its members, how would you free the memory while ensuring that no memory leaks occur if one of the members of the struct is also a pointer to another dynamically allocated memory block?</p>\n<p>hint use nested calls to <code>free()</code> to release all dynamically allocated memory blocks in the correct order to prevent memory leaks.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 75622467,
+   "parent_id": 75603229,
+   "author_user_id": 8409679,
+   "author_display_name": "Noam Bechhofer",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/75622467",
+   "score": 0,
+   "created_utc": "2023-03-03T01:43:06Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2023-03-03T01:43:06Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p>You'll need to first free all the pointers within the struct and then free the struct itself.</p>\n<pre class=\"lang-c prettyprint-override\"><code>void free_myStruct(struct myStruct *struct_ptr) {\n    if (struct_ptr-&gt;ptr) free(struct_ptr-&gt;ptr);\n    free(struct_ptr);\n}\n</code></pre>\n<p>Unless you're given/asked to write a specialized <code>free()</code> that returns some value, you won't be able to write a nested <code>free()</code> because <code>free()</code> has a <code>void</code> return but a <code>void *</code> argument.</p>\n"
+  }
+ ]
+}

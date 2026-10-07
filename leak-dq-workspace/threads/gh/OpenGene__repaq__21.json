@@ -1,0 +1,51 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/OpenGene/repaq/issues/21",
+ "passes": [
+  "main"
+ ],
+ "title": "munmap_chunk(): invalid pointer",
+ "author_login": "krejciadam",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:19:48Z",
+ "final_url": "https://github.com/OpenGene/repaq/issues/21",
+ "repo": "OpenGene/repaq",
+ "repo_language": "C",
+ "number": 21,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2024-08-02T11:21:54Z",
+ "updated_at": "2026-04-14T15:03:00Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 1,
+ "query_buckets": [
+  "763"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "krejciadam",
+   "author_association": "NONE",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2024-08-02T11:21:54Z",
+   "updated_utc": "2026-04-14T15:03:00Z",
+   "permalink": "https://github.com/OpenGene/repaq/issues/21",
+   "body_markdown": "Hi!\r\n  In very rare cases, I get this error: \r\n  \r\n```\r\nmunmap_chunk(): invalid pointer\r\nAborted (core dumped)\r\n```\r\n\r\nUnfortunately, I can't share the fastq where this happens yet, because it is very large and I didn't manage to get a small portion that would demonstrate this behavior so far. \r\n\r\nThis happens for both the 0.3.0 release and the current source code (which I guess is 0.4.0)\r\n\r\nAny help appretiated. Thank you!"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 4244947616,
+   "author_login": "rfm-targa",
+   "author_association": "NONE",
+   "role": "O",
+   "role_name": "other",
+   "created_utc": "2026-04-14T15:03:00Z",
+   "updated_utc": "2026-04-14T15:03:00Z",
+   "permalink": "https://github.com/OpenGene/repaq/issues/21#issuecomment-4244947616",
+   "body_markdown": "Hello,\n\nI think I am running into a similar issue with a pair of FASTQ files I want to compress with `repaq`. Trying to compress both files into a single archive with `repaq -c -i 109_R1.fastq.gz -I 109_R2.fastq.gz -o 109.rfq.xz` outputs `Segmentation fault`. It still creates a file but `repaq --compare` returns the following:\n\n```\n{\n\t\"result\":\"failed\",\n\t\"msg\":\"The RFQ file and FASTQ file have different sequence in the 606096 pair. ACCTATTGTTGTAACCAAAAGCTAAANATTAAAAAGCTGAAAACAAACGCCAAAAACCCCTTTAAAGCATCACATAAACCAACTAAGAAGCCTATTTTCAAACCAAAAACACGGATTGAGTTAGAGAGCAGATCGGAAGAGCACACGTCTG | ACCTATTGTTGTAACCAAAAGCTAAAGATTAAAAAGCTGAAAACAAACGCCAAAAACCCCTTTAAAGCATCACATAAACCAACTAAGAAGCCTATTTTCAAACCAAAAACACGGATTGAGTTAGAGAGCAGATCGGAAGAGCACACGTCTG\",\n\t\"fastq_reads\":1212193,\n\t\"rfq_reads\":1212193,\n\t\"fastq_bases\":183041143,\n\t\"rfq_bases\":183041143\n}\n```\n\nThe sequences differ in a single position, with one sequence having a `G` and the other having an `N`. Here are the sequences with the different base highlighted with `*`:\n\n```\nACCTATTGTTGTAACCAAAAGCTAAA*N*ATTAAAAAGCTGAAAACAAACGCCAAAAACCCCTTTAAAGCATCACATAAACCAACTAAGAAGCCTATTTTCAAACCAAAAACACGGATTGAGTTAGAGAGCAGATCGGAAGAGCACACGTCTG\n\nACCTATTGTTGTAACCAAAAGCTAAA*G*ATTAAAAAGCTGAAAACAAACGCCAAAAACCCCTTTAAAGCATCACATAAACCAACTAAGAAGCCTATTTTCAAACCAAAAACACGGATTGAGTTAGAGAGCAGATCGGAAGAGCACACGTCTG\n```\n\n\nIf I try to compress the files separately it returns different errors for each file:\n\nR1\n```\nrepaq -c -i 109_R1.fastq.gz -o 109_R1.rfq.xz\nSegmentation fault\n```\n\nR2\n```\nrepaq -c -i 109_R2.fastq.gz -o 109_R2.rfq.xz\nmunmap_chunk(): invalid pointer\nAborted\n```\n\nAny idea about what may be the issue?\nThank you in advance.\n\nRafael"
+  }
+ ]
+}

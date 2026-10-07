@@ -1,0 +1,82 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 4803352,
+ "url": "https://stackoverflow.com/questions/4803352/c-string-invalid-pointer-error",
+ "title": "C++ string: Invalid pointer error",
+ "tags": [
+  "c++"
+ ],
+ "score": 0,
+ "view_count": 2337,
+ "answer_count": 3,
+ "is_answered": true,
+ "accepted_answer_id": null,
+ "created_utc": "2011-01-26T10:13:26Z",
+ "last_activity_utc": "2011-01-26T15:23:09Z",
+ "license": "CC BY-SA 2.5",
+ "author_user_id": 87968,
+ "author_display_name": "blitzkriegz",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/4803352/c-string-invalid-pointer-error",
+ "body_html": "<p>I am getting an invalid pointer error when I call the below function. Why is this happening?</p>\n\n<pre><code>void Get(const char* value)\n{\n    string st(\"testing string\");\n    string val = st.substr(1, st.length()); \n    value = val.c_str();        \n}\n\nint main()\n{\n    const char *val = NULL;\n    GetVal(val);\n    cout&lt;&lt;val;\n}\n</code></pre>\n\n<p>The objective is to return the substring.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 4803382,
+   "parent_id": 4803352,
+   "author_user_id": 57428,
+   "author_display_name": "sharptooth",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/4803382",
+   "score": 8,
+   "created_utc": "2011-01-26T10:17:23Z",
+   "last_edit_utc": "2011-01-26T15:23:09Z",
+   "last_activity_utc": "2011-01-26T15:23:09Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<p><code>val</code> variable inside <code>Get()</code> gets destroyed once <code>Get()</code> returns, thus the pointer to <code>val</code> body becomes invalid. Also <code>value</code> parameter is a copy of the original pointer, so the original <code>val</code> pointer in <code>main()</code> function is left unchanged and still holds a null pointer value.</p>\n\n<p>Change it to </p>\n\n<pre><code>string Get()\n{\n    string st(\"testing string\");\n    string val = st.substr(1, st.length()); \n    return val;\n}\n</code></pre>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 4803390,
+   "parent_id": 4803352,
+   "author_user_id": 347137,
+   "author_display_name": "Simone",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/4803390",
+   "score": 2,
+   "created_utc": "2011-01-26T10:18:11Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2011-01-26T10:18:11Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<p>I see two mistakes:</p>\n\n<ul>\n<li>You assign a <code>val.c_str()</code> to a pointer that is local to <code>GetVal()</code>;</li>\n<li><code>val</code> is destroyed at the end of <code>GetVal()</code>, so the pointer value would be invalid anyway.</li>\n</ul>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 4803414,
+   "parent_id": 4803352,
+   "author_user_id": 415784,
+   "author_display_name": "Sarfaraz Nawaz",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/4803414",
+   "score": 1,
+   "created_utc": "2011-01-26T10:20:50Z",
+   "last_edit_utc": "2011-01-26T10:26:35Z",
+   "last_activity_utc": "2011-01-26T10:26:35Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<p>Prefer using <code>std::string</code>.</p>\n\n<pre><code>string Get()\n{\n    string st(\"testing string\");\n    return st.substr(0, st.length()/2);//returning substring\n}\n\nstring s = Get();\n</code></pre>\n\n<p>By the way, an interesting article (by Herb Sutter) you would like to read now is:</p>\n\n<p><a href=\"http://herbsutter.com/2008/01/01/gotw-88-a-candidate-for-the-most-important-const/\" rel=\"nofollow\">GotW #88: A Candidate For the “Most Important const”</a></p>\n"
+  }
+ ]
+}

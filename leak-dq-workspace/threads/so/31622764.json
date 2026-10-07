@@ -1,0 +1,83 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 31622764,
+ "url": "https://stackoverflow.com/questions/31622764/valgrind-definitely-lost-and-reachable-with-exit-vs-main-return",
+ "title": "Valgrind definitely lost and reachable with exit vs main return",
+ "tags": [
+  "c",
+  "valgrind"
+ ],
+ "score": 5,
+ "view_count": 991,
+ "answer_count": 2,
+ "is_answered": true,
+ "accepted_answer_id": 31630278,
+ "created_utc": "2015-07-25T03:59:24Z",
+ "last_activity_utc": "2015-07-25T19:24:52Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 345645,
+ "author_display_name": "skeggse",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/31622764/valgrind-definitely-lost-and-reachable-with-exit-vs-main-return",
+ "body_html": "<p>Valgrind reports definitely lost memory if I exit main with <code>return 0;</code>, but reports still reachable memory if I exit main with <code>exit(0);</code>.</p>\n\n<p>test-reachable.c:</p>\n\n<pre><code>#include &lt;stdlib.h&gt;\n\nint main() {\n  void *data = malloc(256);\n  exit(0);\n}\n</code></pre>\n\n<p>test-lost.c:</p>\n\n<pre><code>#include &lt;stdlib.h&gt;\n\nint main() {\n  void *data = malloc(256);\n  return 0;\n}\n</code></pre>\n\n<p>Behavior:</p>\n\n<pre><code>$ gcc test-reachable.c -o test-reachable\n$ valgrind --leak-check=yes ./test-reachable\n==7696== Memcheck, a memory error detector\n==7696== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.\n==7696== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info\n==7696== Command: ./test-reachable\n==7696== \n==7696== \n==7696== HEAP SUMMARY:\n==7696==     in use at exit: 256 bytes in 1 blocks\n==7696==   total heap usage: 1 allocs, 0 frees, 256 bytes allocated\n==7696== \n==7696== LEAK SUMMARY:\n==7696==    definitely lost: 0 bytes in 0 blocks\n==7696==    indirectly lost: 0 bytes in 0 blocks\n==7696==      possibly lost: 0 bytes in 0 blocks\n==7696==    still reachable: 256 bytes in 1 blocks\n==7696==         suppressed: 0 bytes in 0 blocks\n==7696== Reachable blocks (those to which a pointer was found) are not shown.\n==7696== To see them, rerun with: --leak-check=full --show-leak-kinds=all\n==7696== \n==7696== For counts of detected and suppressed errors, rerun with: -v\n==7696== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)\n$ gcc test-lost.c -o test-lost\n$ valgrind --leak-check=yes ./test-lost\n==7774== Memcheck, a memory error detector\n==7774== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.\n==7774== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info\n==7774== Command: ./test-lost\n==7774== \n==7774== \n==7774== HEAP SUMMARY:\n==7774==     in use at exit: 256 bytes in 1 blocks\n==7774==   total heap usage: 1 allocs, 0 frees, 256 bytes allocated\n==7774== \n==7774== 256 bytes in 1 blocks are definitely lost in loss record 1 of 1\n==7774==    at 0x4C2C080: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)\n==7774==    by 0x40051C: main (in /tmp/test-lost)\n==7774== \n==7774== LEAK SUMMARY:\n==7774==    definitely lost: 256 bytes in 1 blocks\n==7774==    indirectly lost: 0 bytes in 0 blocks\n==7774==      possibly lost: 0 bytes in 0 blocks\n==7774==    still reachable: 0 bytes in 0 blocks\n==7774==         suppressed: 0 bytes in 0 blocks\n==7774== \n==7774== For counts of detected and suppressed errors, rerun with: -v\n==7774== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)\n</code></pre>\n\n<p>Shouldn't these behave the same?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 31625475,
+   "parent_id": 31622764,
+   "author_user_id": 4899330,
+   "author_display_name": "doqtor",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": false,
+   "permalink": "https://stackoverflow.com/a/31625475",
+   "score": 2,
+   "created_utc": "2015-07-25T10:25:09Z",
+   "last_edit_utc": "2015-07-25T17:16:40Z",
+   "last_activity_utc": "2015-07-25T17:16:40Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>In C++ when <code>return</code> in <code>main()</code> is called then the destructors will be called for locally scoped objects whereas if <code>exit()</code> is called then no destructor will be called for locally scoped objects.\nI think this is similar in C with regards to objects allocated on the stack.</p>\n\n<p>That probably explains why in the <code>return</code> case non freed memory is treated as definitely lost and in the <code>exit(0)</code> case the memory is reported as still reachable.</p>\n"
+  },
+  {
+   "post_type": "answer",
+   "post_id": 31630278,
+   "parent_id": 31622764,
+   "author_user_id": 4566976,
+   "author_display_name": "4566976",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/31630278",
+   "score": 4,
+   "created_utc": "2015-07-25T19:24:52Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2015-07-25T19:24:52Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<blockquote>\n  <p>Shouldn't these behave the same?</p>\n</blockquote>\n\n<p>No.</p>\n\n<p>In test-reachable.c the memory is referenced by the stack variable <code>data</code> at the time of the exit of the program, so it is still reachable, while in test-lost.c the memory is not referenced anymore because the <code>main</code> function has already returned, the reference does not exist anymore, the memory is definitely lost.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 51227443,
+   "parent_id": 31630278,
+   "parent_type": "answer",
+   "author_user_id": 3369324,
+   "author_display_name": "Cel Skeggs",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/31622764/#comment51227443_31630278",
+   "score": 0,
+   "created_utc": "2015-07-26T18:26:08Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "To add on to this: in test-reachable.c, valgrind probably doesn&#39;t know that exit will never return, so it assumes that control will eventually be returned to main and the variable will be accessible (in scope) then."
+  }
+ ]
+}

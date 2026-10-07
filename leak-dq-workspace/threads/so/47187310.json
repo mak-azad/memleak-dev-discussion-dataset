@@ -1,0 +1,66 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 47187310,
+ "url": "https://stackoverflow.com/questions/47187310/memory-allocation-of-string-literal-strcpy",
+ "title": "memory allocation of string literal strcpy",
+ "tags": [
+  "c",
+  "string"
+ ],
+ "score": 1,
+ "view_count": 324,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 47187568,
+ "created_utc": "2017-11-08T18:41:50Z",
+ "last_activity_utc": "2017-11-08T19:13:26Z",
+ "license": "CC BY-SA 3.0",
+ "author_user_id": 5731628,
+ "author_display_name": "c_mnon",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/47187310/memory-allocation-of-string-literal-strcpy",
+ "body_html": "<pre><code>int main()\n {\n  char *s;\n  strcpy(s,\"here\");\n  return 0;\n  }\n</code></pre>\n\n<p>In the code above I guess the memory for the string literal is assigned in a global space.Which section does it actually go to and when ? Does the compiler go through and assign it in the program space ?? Also if i initalise another string with same string literal i.e ( <code>char *k = \"here\";</code> ) will it be pointing to the same memory location.\nI am trying to think since I cannot free this location, do I run into any trouble if I have lot of string initialisations in my code. I guess the only thing I should be worried about is the compiler output being too big, since there is no run time memory allocation in this case?</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": false,
+ "in_main_nonNA_coded_346": false,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "comment",
+   "post_id": 81323808,
+   "parent_id": 47187310,
+   "parent_type": "question",
+   "author_user_id": 4253229,
+   "author_display_name": "Eugene Sh.",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/47187310/#comment81323808_47187310",
+   "score": 3,
+   "created_utc": "2017-11-08T18:43:40Z",
+   "edited": false,
+   "license": "CC BY-SA 3.0",
+   "body_html": "The literal is allocated in <code>.rodata</code>. Or even not allocated at all as it is a short string and can fit into registers.But your code is invalid, anyway. Since <code>s</code> is not allocated at all."
+  },
+  {
+   "post_type": "answer",
+   "post_id": 47187568,
+   "parent_id": 47187310,
+   "author_user_id": 134554,
+   "author_display_name": "John Bode",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/47187568",
+   "score": 3,
+   "created_utc": "2017-11-08T18:56:59Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2017-11-08T18:56:59Z",
+   "license": "CC BY-SA 3.0",
+   "body_html": "<p>The exact location depends on the object file format (<a href=\"https://en.wikipedia.org/wiki/Portable_Executable\" rel=\"nofollow noreferrer\">PE</a> vs. <a href=\"https://en.wikipedia.org/wiki/Executable_and_Linkable_Format\" rel=\"nofollow noreferrer\">ELF</a> vs. <a href=\"https://en.wikipedia.org/wiki/COFF\" rel=\"nofollow noreferrer\">COFF</a>) and any command-line options (some may allow string literals to be stored to a writable memory segment).  ELF will store it in the <code>.rodata</code> segment, which, as the name implies, is read-only.</p>\n\n<p>Multiple instances of the same string literal <em>may</em> map to the same location, but it's not required AFAIK (I'm not aware of any compiler that creates multiple instances of the same literal, but my experience isn't that broad).  </p>\n\n<p>Things that are certain:</p>\n\n<ul>\n<li>Space for string literals is allocated at program startup (usually when the program is loaded into memory) and held until the program terminates;</li>\n<li>Attempting to modify the contents of a string literal invokes <em>undefined behavior</em> - your code <em>may</em> segfault, or it may work as intended, or it may reformat your hard drive, or it may trigger the zombie apocalypse.</li>\n</ul>\n\n<p>Note that your code has a bug - you never assign a meaningful address to <code>s</code>, so the <code>strcpy</code> is essentially trying to write the string <code>\"here\"</code> to a random location, which again is undefined behavior.  You may have intended to write</p>\n\n<pre><code>s = \"here\";\n</code></pre>\n\n<p>which sets <code>s</code> to point to the literal.  If not, then <code>s</code> will either have to be an array large enough to hold the string:</p>\n\n<pre><code>char s[sizeof \"here\"]; // sizeof evaluated at compile time\n</code></pre>\n\n<p>or you'll have to allocate that space dynamically:</p>\n\n<pre><code>char *s = malloc( strlen( \"here\" ) + 1 );\nif ( s )\n  strcpy( s, \"here\" );\n</code></pre>\n"
+  }
+ ]
+}

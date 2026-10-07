@@ -1,0 +1,51 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 494530,
+ "url": "https://stackoverflow.com/questions/494530/why-does-microquill-smartheap-throw-mem-bad-pointer-errors-after-i-embed-perl",
+ "title": "Why does MIcroQuill Smartheap throw \"mem_bad_pointer\" errors after I embed perl?",
+ "tags": [
+  "c++",
+  "perl",
+  "memory-management",
+  "embed"
+ ],
+ "score": 2,
+ "view_count": 1481,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 543419,
+ "created_utc": "2009-01-30T05:01:13Z",
+ "last_activity_utc": "2009-02-15T09:43:40Z",
+ "license": "CC BY-SA 2.5",
+ "author_user_id": 16161,
+ "author_display_name": "kingkongrevenge",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/494530/why-does-microquill-smartheap-throw-mem-bad-pointer-errors-after-i-embed-perl",
+ "body_html": "<p>I am embedding perl in a C++ application that uses <a href=\"http://www.microquill.com/smartheap/index.html\" rel=\"nofollow noreferrer\">Smartheap</a>.  Regardless of whether I compile the perl to use its own malloc or the system's I get a bunch of error mem___bad_pointer dialogs.  It seems to work fine when I just click \"ok\" and ignore the errors, but obviously I need to actually solve the problem.</p>\n\n<p>Do I maybe need to compile SmartHeap into my perl build?  Is that even feasible?</p>\n\n<p>Below is <a href=\"http://www.microquill.com/kb/docs/APPENDXB.html\" rel=\"nofollow noreferrer\">the only documentation</a> page about mem__bad_pointer's I could find, but I am no closer to solving the problem.  I do not understand how or where perl and Smartheap are conflicting with each other.  Any pointers appreciated.</p>\n\n<ul>\n<li>The pointer was allocated by a memory manager other than SmartHeap, such as from another DLL or EXE, or from the compiler runtime library. Examine your map file to see that the SmartHeap version of malloc, _fmalloc/farmalloc, or operator new is being linked in.</li>\n<li>The pointer is “wild” (uninitialized), is allocated on the stack (local variable), or is otherwise invalid.</li>\n<li>The pointer was previously freed. If SmartHeap has freed the page from which the pointer was originally allocated, SmartHeap won’t be able to detect that it’s a double free. However, SmartHeap will report the invalid pointer. Use dbgMemDeferFreeing to catch this type of bug.</li>\n<li>The pointer was incremented or decremented since the time of allocation.</li>\n<li>For 16-bit x86, the pointer was cast to a near pointer after allocation, in which case the segment portion of the pointer has been lost.</li>\n<li>The memory pool from which the pointer was allocated has been freed, or SmartHeap has been unregistered from the task.</li>\n<li>The task from which the pointer was allocated has terminated (see section B.4).</li>\n</ul>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 543419,
+   "parent_id": 494530,
+   "author_user_id": 56985,
+   "author_display_name": "David",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/543419",
+   "score": 2,
+   "created_utc": "2009-02-12T21:37:47Z",
+   "last_edit_utc": null,
+   "last_activity_utc": "2009-02-12T21:37:47Z",
+   "license": "CC BY-SA 2.5",
+   "body_html": "<p>Without seeing the code it is hard to debug the problem.\nPerhaps you are allocating memory using both smartheap and the regular memory manager.  this can be caused when you allocat memory in a dll build without smart heap.</p>\n\n<p>Depending on your code, the allocation could be fine and you may be writing outside the allcoated memory area.</p>\n"
+  }
+ ]
+}

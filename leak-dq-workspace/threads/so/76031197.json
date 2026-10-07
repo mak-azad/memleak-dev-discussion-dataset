@@ -1,0 +1,67 @@
+{
+ "source": "Stack Overflow",
+ "question_id": 76031197,
+ "url": "https://stackoverflow.com/questions/76031197/why-does-this-function-cause-memory-leaks",
+ "title": "Why does this function cause memory leaks?",
+ "tags": [
+  "c",
+  "memory-leaks",
+  "glib"
+ ],
+ "score": 1,
+ "view_count": 259,
+ "answer_count": 1,
+ "is_answered": true,
+ "accepted_answer_id": 76031235,
+ "created_utc": "2023-04-17T01:42:19Z",
+ "last_activity_utc": "2023-04-17T10:02:38Z",
+ "license": "CC BY-SA 4.0",
+ "author_user_id": 13723501,
+ "author_display_name": "Parker",
+ "author_id_missing": false,
+ "permalink": "https://stackoverflow.com/questions/76031197/why-does-this-function-cause-memory-leaks",
+ "body_html": "<p>I'm playing around with <code>libfprint</code> and I created a really simple function:</p>\n<pre class=\"lang-c prettyprint-override\"><code>#include &lt;libfprint-2/fprint.h&gt;\n#include &lt;glib-2.0/glib-unix.h&gt;\n\nvoid start_device() {\n    FpContext *ctx = fp_context_new();\n    fp_context_enumerate(ctx);\n}\n\nint main() {\n    start_device();\n}\n</code></pre>\n<p>I'm compiling with gcc using <code>gcc -fsanitize=address</code> and I'm getting memory leaks and I can't figure out why.</p>\n<p>Edit: Output</p>\n<pre><code>=================================================================\n==55025==ERROR: LeakSanitizer: detected memory leaks\n\nDirect leak of 3 byte(s) in 1 object(s) allocated from:\n    #0 0x7f14a8aba6af in __interceptor_malloc (/lib64/libasan.so.8+0xba6af)\n    #1 0x7f14a56d3017 in __vasprintf_internal (/lib64/libc.so.6+0x80017)\n    #2 0x7af10c9e9cbbccff  (&lt;unknown module&gt;)\n\nSUMMARY: AddressSanitizer: 3 byte(s) leaked in 1 allocation(s).\n</code></pre>\n<p>Edit 2: If I delete <code>fp_context_enumerate(ctx);</code> I don't get memory leaks, so I guess there's the problem but I don't know why.</p>\n",
+ "passes": [
+  "main"
+ ],
+ "data_source": "so_main_cached (2026-10-05 collection)",
+ "in_main_retained_480": true,
+ "in_main_nonNA_coded_346": true,
+ "in_offcwe_nonNA_coded": false,
+ "events": [
+  {
+   "post_type": "answer",
+   "post_id": 76031235,
+   "parent_id": 76031197,
+   "author_user_id": 14860,
+   "author_display_name": "paxdiablo",
+   "author_id_missing": false,
+   "role": "responder",
+   "is_accepted": true,
+   "permalink": "https://stackoverflow.com/a/76031235",
+   "score": 2,
+   "created_utc": "2023-04-17T01:53:04Z",
+   "last_edit_utc": "2023-04-17T03:48:31Z",
+   "last_activity_utc": "2023-04-17T03:48:31Z",
+   "license": "CC BY-SA 4.0",
+   "body_html": "<p><a href=\"https://fprint.freedesktop.org/libfprint-dev/FpContext.html#fp-context-new\" rel=\"nofollow noreferrer\">That function</a> is tagged with the <code>transfer full</code> label, meaning it's transferring full responsibility to the caller for the pointer. See <a href=\"https://foldoc.org/transfer%20full\" rel=\"nofollow noreferrer\">here</a> for more detail.</p>\n<p>That means you're responsible for freeing it when you're done. And, by freeing, I <em>don't</em> mean the normal C <code>free</code> function. The returned pointer is a <code>GObject</code> one, so you should simply <code>g_object_unref</code> it and let the object reference counting framework take care of the actual freeing.</p>\n<p>In other words, something like:</p>\n<pre class=\"lang-c prettyprint-override\"><code>include &lt;libfprint-2/fprint.h&gt;\n#include &lt;glib-2.0/glib-unix.h&gt;\n\nFpContext *start_device() {\n    FpContext *ctx = fp_context_new();\n    fp_context_enumerate(ctx);\n    return ctx;\n}\n\nvoid stop_device(FpContext *ctx) {\n    g_object_unref(ctx);\n}\n\nint main() {\n    FpContext *ctx = start_device();\n\n    // Work your magic.\n\n    stop_device(ctx);\n}\n</code></pre>\n<hr />\n<p>But keep in mind that un-freed memory and memory leaks aren't quite <em>necessarily</em> the same thing (or even a bad thing), it's just when they add up over time that they cause issues.</p>\n<p>For example, startup code may leak memory that it never cleans up, such as if a 4K buffer is created once for <code>printf</code> purposes the first time it's called. It may well rely on process exit to &quot;free&quot; that memory.</p>\n<p>Obviously, this allocation won't be a real problem because it's not allocating 4K continuously, just once at the start. In that sense, it's no more serious than having a stack allocated for your process :-)</p>\n<p>In fact, based on your edit:</p>\n<blockquote>\n<p>If I delete <code>fp_context_enumerate(ctx);</code>, I don't get memory leaks so I guess there's the problem but I don't know why.</p>\n</blockquote>\n<p>That's exactly what I was stating above (confirmed by the <a href=\"https://github.com/freedesktop/libfprint/blob/master/libfprint/fp-context.c\" rel=\"nofollow noreferrer\">source code</a>). Enumerating with <code>fp_context_enumerate()</code> will, the first time it's called for a context, allocate some memory to detect and store details on each fingerprint scanning device, and that memory is subsequently kept around.</p>\n<p>Then a call to <code>fp_context_get_devices()</code> will first call <code>fp_enumerate()</code> (which returns immediately if already done for that context), then return a pointer to internal data set up during enumeration <sup>(1)</sup>.</p>\n<hr />\n<p><sup>(1)</sup> That's why it's a <code>transfer none</code> operation, it just gives you a pointer to internal data. Because that data is never actually freed within the process, there's no reference counting needed for it.</p>\n"
+  },
+  {
+   "post_type": "comment",
+   "post_id": 134093198,
+   "parent_id": 76031235,
+   "parent_type": "answer",
+   "author_user_id": 13723501,
+   "author_display_name": "Parker",
+   "author_id_missing": false,
+   "role": "asker",
+   "is_accepted": null,
+   "permalink": "https://stackoverflow.com/questions/76031197/#comment134093198_76031235",
+   "score": 0,
+   "created_utc": "2023-04-17T02:12:14Z",
+   "edited": false,
+   "license": "CC BY-SA 4.0",
+   "body_html": "Thanks for the quick response. I&#39;m still getting leaks tho, output on my question edit"
+  }
+ ]
+}

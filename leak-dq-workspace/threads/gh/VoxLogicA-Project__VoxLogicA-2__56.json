@@ -1,0 +1,63 @@
+{
+ "source": "GitHub",
+ "url": "https://github.com/VoxLogicA-Project/VoxLogicA-2/issues/56",
+ "passes": [
+  "offcwe"
+ ],
+ "title": "RSS stays ~21 GB above what the engine accounts for: freed memory is not returned to the OS",
+ "author_login": "vincenzoml",
+ "status": "ok",
+ "fetched_utc": "2026-10-07T04:21:36Z",
+ "final_url": "https://github.com/VoxLogicA-Project/VoxLogicA-2/issues/56",
+ "repo": "VoxLogicA-Project/VoxLogicA-2",
+ "repo_language": "Python",
+ "number": 56,
+ "state": "open",
+ "state_reason": null,
+ "created_at": "2026-09-06T14:53:18Z",
+ "updated_at": "2026-09-06T14:57:36Z",
+ "closed_at": null,
+ "labels": [],
+ "comments_reported": 2,
+ "query_buckets": [
+  "GROWTH"
+ ],
+ "events": [
+  {
+   "post_type": "issue_body",
+   "post_id": "-",
+   "author_login": "vincenzoml",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-06T14:53:18Z",
+   "updated_utc": "2026-09-06T14:57:36Z",
+   "permalink": "https://github.com/VoxLogicA-Project/VoxLogicA-2/issues/56",
+   "body_markdown": "After the loop expander stopped materializing whole sequences, the engine's own\naccounting drops to 1.9 GB while the process keeps 23-30 GB resident. The gap\nis memory the engine has released and the allocator has not given back.\n\n## Measured\n\n`brats026_4mod_309.imgql`, 309 cases, 4 modalities, on fmt-5000, engine at\n`fbd0e15`. Columns are the engine's own memory log:\n\n| t | accounted | RSS | gap |\n|---|---|---|---|\n| 5 s | 22.8 GB | 27.3 GB | 4.5 GB |\n| 115 s | 1.9 GB | 30.6 GB | **28.7 GB** (peak) |\n| 606 s | 1.9 GB | 26.6 GB | 24.6 GB |\n| 1806 s | 1.9 GB | 24.1 GB | 22.2 GB |\n| 2406 s | 1.9 GB | 23.3 GB | 21.3 GB |\n\n`RssAnon` is 24.4 GB of a 24.4 GB `VmRSS`; file-backed is 11 MB. nnU-Net's\ndataloader workers are separate processes (3.5 GB, not counted above).\n\n## It is retained heap, not PyTorch\n\nAt 115 s the gap was already 28.7 GB and the GPU was at 0% -- training had not\nstarted. The residency is what image production left behind, not what nnU-Net\nallocated.\n\nThe reassuring half: when training did start, RSS **fell** (30.6 -> 23.3 GB)\nrather than rising. nnU-Net is allocating INTO the retained heap instead of on\ntop of it, so the memory is reusable by this process. Nothing is leaking in the\nsense of being unreachable.\n\n## Why it still matters\n\nOn a shared machine the process looks like it holds 23 GB. The OOM killer reads\nRSS, not our accounting, so a run that is genuinely small can be killed for\nmemory that is free-but-unreturned -- and other users' work with it. This host\nis shared with two other people's trainings.\n\n## What to try\n\n`malloc_trim(0)` after a large release -- the engine already knows when one\nhappened, since `_reclaim_memory` and the eviction paths are the only places\nthat free at this scale. It belongs there and not in an environment variable\n(`MALLOC_TRIM_THRESHOLD_` and friends are exactly the kind of outside knob\nAGENTS.md forbids as a fix).\n\nWorth checking first whether the retention is glibc arena fragmentation from\nmany large short-lived buffers, in which case the buffer pool's own reuse may\nalready be the better lever, and a trim would only paper over it.\n\n## How to measure it\n\nThe engine's memory log already carries both numbers, so the gap is\n`rss_mb - accounted_mb` per sample. Compare the peak gap and the gap at steady\nstate, same program, same machine, with and without the trim."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5560045468,
+   "author_login": "vincenzoml",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-06T14:55:02Z",
+   "updated_utc": "2026-09-06T14:55:02Z",
+   "permalink": "https://github.com/VoxLogicA-Project/VoxLogicA-2/issues/56#issuecomment-5560045468",
+   "body_markdown": "Measured, and the mechanism is now isolated. `malloc_trim` is the right lever\nafter all -- the first experiment that said otherwise was the flawed one.\n\n## Where the memory is\n\nOn the live run (`brats026_4mod_309.imgql`, 40 minutes in, accounted 1.9 GB):\n\n```\nRss  24,402,636 kB   Pss_Anon 24,391,108 kB   Pss_File 1,610 kB\n[heap]                18.6 GB\neverything else        4.7 GB   (largest single anonymous mapping: 2.0 GB)\n```\n\nSo it is the **brk heap**, not a set of large mappings.\n\n## Why, and why the first test missed it\n\nglibc mmaps allocations above its mmap threshold and munmaps them on free, so a\n4 MB image buffer is returned immediately -- which is what the first experiment\nshowed, and it was measuring the wrong regime. glibc RAISES that threshold\ndynamically to the size of any mmap-ed block it frees. One freed 4 MB buffer is\nenough; from then on buffers of that size come from the heap, and freed heap is\nnot returned.\n\nControlled experiment on the same host and interpreter, 1000 buffers of 4 MB,\nafter one warm-up allocate-and-free to raise the threshold:\n\n| stage | RSS | `[heap]` |\n|---|---|---|\n| peak | 3.94 GB | 3.91 GB |\n| after `del` + `gc.collect()` | 3.94 GB | 3.91 GB |\n| after `malloc_trim(0)` | **0.04 GB** | **0.00 GB** |\n\nFreeing returned nothing. The trim returned 3.90 of 3.91 GB.\n\nThat is exactly the shape of this workload: many image-sized buffers, allocated\nand freed repeatedly, after the first free has moved them all into the heap.\n\n## What to do\n\nCall `malloc_trim(0)` after a large release. The engine already knows when one\nhappened -- `_reclaim_memory` and the eviction paths are the only places that\nfree at this scale -- so it belongs there, on a threshold of bytes released,\nnot on every eviction (the call walks the heap's free lists and is not free).\n\nNot an environment variable: `MALLOC_MMAP_THRESHOLD_` would also pin the\nthreshold and prevent the migration into the heap, but that is an outside knob\nconfiguring correctness, which AGENTS.md rules out as a fix.\n\n## How the next run will show it\n\nThe engine's memory log carries both numbers, so the gap is\n`rss_mb - accounted_mb` per sample. On this run: 28.7 GB peak gap, 21.3 GB at\nsteady state, against an accounted 1.9 GB. Same program, same machine, with the\ntrim, is the comparison."
+  },
+  {
+   "post_type": "comment",
+   "post_id": 5560060045,
+   "author_login": "vincenzoml",
+   "author_association": "CONTRIBUTOR",
+   "role": "R",
+   "role_name": "reporter",
+   "created_utc": "2026-09-06T14:57:36Z",
+   "updated_utc": "2026-09-06T14:57:36Z",
+   "permalink": "https://github.com/VoxLogicA-Project/VoxLogicA-2/issues/56#issuecomment-5560060045",
+   "body_markdown": "Measured the cost, and the conclusion reverses: **do not trim.** The retained\nheap is earning its keep.\n\nSame host and interpreter, 2 GB in 4 MB pieces, allocate / free / reallocate\nand touch every page, alternating:\n\n| | RSS while idle | reallocate + touch 2 GB |\n|---|---|---|\n| heap kept | 1.99 GB | **7 ms** |\n| after `malloc_trim(0)` | 0.04 GB | **172-190 ms** |\n\nGiving the heap back costs about 25x on the next allocation -- roughly 90 ms\nper GB re-faulted, so ~1.8 s for a 20 GB heap. Negligible once in a six-hour\nrun, ruinous if the engine trimmed after each reclaim wave: at 170 nodes/s with\nimage buffers allocated and freed continuously, every 7 ms reallocation becomes\n180 ms.\n\nThere is also direct evidence from the run this issue is about. When nnU-Net\ntraining started, RSS FELL from 30.6 to 23.3 GB: the training allocated INTO\nthe retained heap instead of on top of it. The retention was not waste, it was\nreuse.\n\n## What stands\n\nThe observation is still true -- RSS sits ~21 GB above what the engine accounts\nfor, and the Linux OOM killer reads RSS, not our accounting, so on a shared\nmachine a genuinely small run can be killed for memory that is free. That is\nworth knowing and worth not being surprised by.\n\nBut the fix proposed above is worse than the problem in the general case. The\nonly defensible version is far narrower: trim when the engine KNOWS it has\nentered a long phase that will not allocate -- one node in flight, ready queue\nempty, sustained -- which is exactly the state of a run sitting inside\n`nnunet.train_internal` for forty minutes. That is a heuristic, and a heuristic\nthat fires wrongly costs 25x, so it needs a real case before it is worth\nwriting.\n\nLeaving this open as the record of the measurement rather than as work to do."
+  }
+ ]
+}
